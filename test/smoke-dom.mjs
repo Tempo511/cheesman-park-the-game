@@ -136,11 +136,19 @@ try {
   state.events.push({ type: 'archetypeChoice' });
   ui.drainEvents(state);
   ok('archetype pick overlay builds without throwing', true);
-  for (const arch of [null, 'volleyball', 'tech', 'hippie']) for (const st of ['m', 'f']) {
+  for (const arch of [null, 'volleyball', 'tech', 'hippie', 'jogger', 'yogi']) for (const st of ['m', 'f']) {
     state.player.archetype = arch; state.player.style = st;
     for (const dir of ['down', 'up', 'left', 'right']) { state.player.dir = dir; render.render(state, 9); }
   }
   ok('renders every archetype × style × facing combination', true);
+
+  // jogger/yogi effect visuals: sprint trail + ghosting, boulder trail, zen tint
+  state.player.archetype = 'jogger'; state.player.moving = true; state.player.fx = 1; state.player.fy = 0;
+  state.player.ghostT = 1; render.render(state, 9.3);
+  state.player.ghostT = 0; state.player.boulderT = 2; render.render(state, 9.6);
+  state.player.boulderT = 0; state.zenT = 3; render.render(state, 9.9);
+  state.zenT = 0;
+  ok('renders sprint/boulder trails and zen tint', true);
 
   // ability buffs render + ability HUD updates
   state.player.archetype = 'volleyball'; state.player.level = 6;

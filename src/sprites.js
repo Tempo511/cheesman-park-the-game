@@ -188,7 +188,7 @@ export function drawPlayerChar(x2, ax, ay, dir, phase, archId, style, flash) {
     px(x2, dir === 'left' ? ax - 6 : ax + 4, ay - 8 + armOff, 2, 2, '#c94f43');
   } else if (archId === 'tech') {
     // puffer vest over grey long sleeves, earbuds, phone perpetually in hand
-    drawPerson(x2, ax, ay, dir, phase, { skin:'#e8b58a', shirt:'#4c6b57', pants:'#8a8a8a', hair:'#2b2b2b' }, false);
+    drawPerson(x2, ax, ay, dir, phase, { skin:'#e8b58a', shirt:'#4c6b57', pants: fem ? '#5a4a6b' : '#8a8a8a', hair:'#2b2b2b' }, false);
     px(x2, ax, ay - 11, 1, 4, '#7fb4a4');                                        // vest zipper
     px(x2, ax - 4, ay - 11, 1, 6, '#37514a'); px(x2, ax + 3, ay - 11, 1, 6, '#37514a'); // vest quilting edges
     px(x2, ax - 6, ay - 11 + (sw > 0 ? 1 : 0), 2, 3, '#9aa0a8');                 // grey sleeves
@@ -196,9 +196,29 @@ export function drawPlayerChar(x2, ax, ay, dir, phase, archId, style, flash) {
     px(x2, ax - 4, ay - 14, 1, 2, '#f4f4f4'); px(x2, ax + 3, ay - 14, 1, 2, '#f4f4f4'); // earbuds
     if (dir !== 'up') {                                                          // the phone. always the phone.
       const hx = dir === 'left' ? ax - 7 : ax + 5;
-      px(x2, hx, ay - 8, 3, 4, '#15151c'); px(x2, hx + 1, ay - 7, 1, 2, '#7fd0ff');
+      px(x2, hx, ay - 8, 3, 4, fem ? '#d98aa6' : '#15151c');                     // (hers has a pink case)
+      px(x2, hx + 1, ay - 7, 1, 2, '#7fd0ff');
     }
-    if (fem) { px(x2, ax - 1, ay - 19, 3, 2, '#2b2b2b'); }                       // topknot bun
+    if (fem) {
+      // shoulder-length hair + high ponytail swinging with her stride, leggings
+      px(x2, ax - 4, ay - 16, 1, 4, '#2b2b2b'); px(x2, ax + 3, ay - 16, 1, 4, '#2b2b2b');
+      px(x2, ax - 1, ay - 19, 3, 2, '#2b2b2b');
+      px(x2, ax + (dir === 'left' ? -3 : 2), ay - 19 + (sw > 0 ? 1 : 0), 2, 4, '#2b2b2b');
+    }
+  } else if (archId === 'jogger') {
+    // race tank with a stripe, visor, always mid-stride
+    drawPerson(x2, ax, ay, dir, phase, { skin:'#c98e63', shirt:'#e07a3f', pants:'#2f3742', hair:'#1f1a14' }, false);
+    px(x2, ax, ay - 11, 1, 6, '#f2ead6');                                        // racing stripe
+    px(x2, ax - 3, ay - 15, 6, 1, '#e5c04b');                                    // visor brim
+    if (fem) {
+      px(x2, ax + (dir === 'left' ? 3 : -4), ay - 18 + (sw > 0 ? 0 : 1), 2, 5, '#1f1a14'); // bouncing ponytail
+    }
+  } else if (archId === 'yogi') {
+    // calm teal, light pants, rolled mat on the back, bun for everyone
+    drawPerson(x2, ax, ay, dir, phase, { skin:'#f0c8a0', shirt:'#7fb4b4', pants:'#e8e4d4', hair:'#4a3123' }, false);
+    px(x2, dir === 'left' ? ax + 4 : ax - 6, ay - 13, 2, 8, '#c94f43');          // the mat goes everywhere
+    px(x2, ax - 1, ay - 19, 3, 2, '#4a3123');                                    // bun (guy or gal, it's yoga)
+    if (fem) { px(x2, ax - 4, ay - 16, 1, 4, '#4a3123'); px(x2, ax + 3, ay - 16, 1, 4, '#4a3123'); }
   } else if (archId === 'hippie') {
     // tie-dye shirt with a daisy on it, shades, beard (bro) / long hair (gal)
     drawPerson(x2, ax, ay, dir, phase, { skin:'#d9a06f', shirt:'#8e6fb8', pants:'#4c6b57', hair:'#6b4a2e' }, false);

@@ -285,6 +285,78 @@ mkFoe(au, 10, 0, 1).xp = 5;
 for (let i = 0; i < 120 && au.player.level < 5; i++) { au.player.fx = 1; au.player.fy = 0; au.player.atkCd = 0; step(au, { move: { x: 0, y: 0 }, attack: true }, 1 / 60); }
 ok('reaching level 5 emits an abilityUnlock event', au.events.some((e) => e.type === 'abilityUnlock' && e.slot === 1 && e.name === 'Overclock'));
 
+// --- 6c-1c. new tribes: jogger + yogi ----------------------------------------
+section('Jogger & Yogi');
+// tech buff: +20% ranged damage on projectiles
+const tr = createState(); tr.started = true; tr.player.archetype = 'tech';
+step(tr, { move: { x: 0, y: 0 }, attack: true }, 1 / 60);
+ok('tech projectiles carry +20% ranged damage', tr.projectiles.length > 0 && Math.abs(tr.projectiles[0].dmg - 12 * 1.2) < 0.01);
+
+// jogger: faster + takes less damage while moving
+ok('jogger moves 30% faster', stepDist('jogger') > stepDist(null) * 1.25);
+const jm = createState(); jm.started = true; jm.player.archetype = 'jogger'; jm.player.maxHp = 500; jm.player.hp = 500;
+jm.enemies.push({ kind: 'zombie', x: jm.player.x, y: jm.player.y, hp: 999, maxHp: 999, spd: 0, dmg: 12, xp: 0, coin: 0, rise: 1, phase: 0, hitT: 0, kx: 0, ky: 0, dir: 'left', lungeT: 99, lunging: 0, blinkT: 99, ramCd: 0 });
+let jmDmg = 0;
+for (let i = 0; i < 30 && !jmDmg; i++) { const b = jm.player.hp; step(jm, { move: { x: 1, y: 0 }, attack: false }, 1 / 60); jmDmg = b - jm.player.hp; }
+ok('jogger takes reduced damage while moving (12 -> 9)', jmDmg === 9);
+
+// jogger sprint: phases through enemies unharmed
+const js = withTribe('jogger', 5); js.player.maxHp = 500; js.player.hp = 500;
+js.enemies.push({ kind: 'zombie', x: js.player.x, y: js.player.y, hp: 999, maxHp: 999, spd: 0, dmg: 50, xp: 0, coin: 0, rise: 1, phase: 0, hitT: 0, kx: 0, ky: 0, dir: 'left', lungeT: 99, lunging: 0, blinkT: 99, ramCd: 0 });
+step(js, { move: { x: 1, y: 0 }, attack: false, ability1: true }, 1 / 60);
+ok('sprint grants phasing (ghostT)', js.player.ghostT > 0);
+const jsHp = js.player.hp;
+for (let i = 0; i < 30; i++) step(js, { move: { x: 0, y: 0 }, attack: false }, 1 / 60);
+ok('no contact damage while sprint-phasing', js.player.hp === jsHp);
+
+// jogger ultimate: ramming damages enemies
+const jb = withTribe('jogger', 8); jb.player.maxHp = 500; jb.player.hp = 500;
+const ramFoe = mkFoe(jb, 20, 0, 500);
+step(jb, { move: { x: 1, y: 0 }, attack: false, ability2: true }, 1 / 60);
+ok('bolder boulder activates', jb.player.boulderT > 0);
+for (let i = 0; i < 20 && ramFoe.hp === ramFoe.maxHp; i++) step(jb, { move: { x: 1, y: 0 }, attack: false }, 1 / 60);
+ok('ramming an enemy damages it', ramFoe.hp < ramFoe.maxHp);
+ok('rammed enemy got knocked back', ramFoe.kx !== 0 || ramFoe.ky !== 0 || ramFoe.x > jb.player.x);
+
+// yogi: dodge + stillness regen
+const yd = createState(); yd.started = true; yd.player.archetype = 'yogi'; yd.player.maxHp = 5000; yd.player.hp = 5000;
+const ydBase = createState(); ydBase.started = true; ydBase.player.maxHp = 5000; ydBase.player.hp = 5000;
+for (const st of [yd, ydBase]) st.enemies.push({ kind: 'zombie', x: st.player.x, y: st.player.y, hp: 9999, maxHp: 9999, spd: 0, dmg: 10, xp: 0, coin: 0, rise: 1, phase: 0, hitT: 0, kx: 0, ky: 0, dir: 'left', lungeT: 99, lunging: 0, blinkT: 99, ramCd: 0 });
+let sawMiss = false;
+for (let i = 0; i < 1500; i++) {
+  step(yd, NO_INPUT, 1 / 60); step(ydBase, NO_INPUT, 1 / 60);
+  if (yd.floats.some((f) => f.txt === 'miss')) sawMiss = true;
+  // keep them pinned on the enemy (contact knockback shoves them off)
+  yd.player.x = yd.enemies[0].x; yd.player.y = yd.enemies[0].y;
+  ydBase.player.x = ydBase.enemies[0].x; ydBase.player.y = ydBase.enemies[0].y;
+}
+ok('yogi dodges some attacks ("miss" floats)', sawMiss);
+// note: yogi also regens while standing, so the HP gap includes both perks
+ok('yogi ends with more HP than baseline under identical assault', yd.player.hp > ydBase.player.hp);
+const ys = createState(); ys.started = true; ys.player.archetype = 'yogi'; ys.player.maxHp = 200; ys.player.hp = 100;
+for (let i = 0; i < 120; i++) step(ys, NO_INPUT, 1 / 60);
+ok('yogi regenerates while standing still', ys.player.hp > 100);
+
+// yogi flow roll: i-frames, no damage dealt
+const yr = withTribe('yogi', 5);
+const rollFoe = mkFoe(yr, 12, 0, 100);
+yr.player.fx = 1; yr.player.fy = 0;
+step(yr, { move: { x: 0, y: 0 }, attack: false, ability1: true }, 1 / 60);
+ok('flow roll dashes (dashT)', yr.player.dashT > 0);
+ok('flow roll deals no damage', rollFoe.hp === rollFoe.maxHp);
+
+// yogi zen mode: world slows, yogi heals
+const yz = withTribe('yogi', 8); yz.player.maxHp = 300; yz.player.hp = 100;
+const zenFoe = mkFoe(yz, 200, 0, 500);
+const yzRef = withTribe('yogi', 8);
+const refFoe2 = mkFoe(yzRef, 200, 0, 500);
+step(yz, { move: { x: 0, y: 0 }, attack: false, ability2: true }, 1 / 60);
+ok('zen mode activates', yz.zenT > 0);
+const zx0 = zenFoe.x, rx02 = refFoe2.x;
+for (let i = 0; i < 30; i++) { step(yz, NO_INPUT, 1 / 60); step(yzRef, NO_INPUT, 1 / 60); }
+ok('zen slows enemies to a crawl', (zx0 - zenFoe.x) < (rx02 - refFoe2.x) * 0.6);
+ok('zen heals the yogi', yz.player.hp > 100);
+
 // --- 6c-2. character style (cosmetic) ----------------------------------------
 section('Character style');
 const sty = createState();

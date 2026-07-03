@@ -85,6 +85,13 @@ function movePlayer(state, inputs, dt, rng) {
     if (passable(state, p.x, ny)) p.y = ny;
     p.phase += dt * 10;
   }
+  if (p.boulderT > 0) {                    // Bolder Boulder: ram everything you touch
+    for (const e of state.enemies) {
+      if (e.rise < 1 || (e.ramCd || 0) > 0) continue;
+      const ex = e.x - p.x, ey = (e.y - 8) - (p.y - 8), d2 = Math.hypot(ex, ey);
+      if (d2 < 16) { e.ramCd = 0.5; damageEnemy(state, e, p.ramDmg * p.dmgMult, ex / Math.max(1, d2) * p.ramKnock, ey / Math.max(1, d2) * p.ramKnock, rng); }
+    }
+  }
   if (inputs.attack) tryAttack(state, rng);
 }
 
@@ -175,6 +182,7 @@ function updateEnemies(state, dt, rng) {
   for (const e of state.enemies) {
     const ty = ENEMY_TYPES[e.kind];
     if (e.hitT > 0) e.hitT -= dt;
+    if (e.ramCd > 0) e.ramCd -= dt;
     if (e.rise < 1) { e.rise += dt * ty.riseSpd; continue; }
     e.phase += dt * (ty.fly ? 4 : 6);
     e.x += e.kx * dt * 6; e.y += e.ky * dt * 6; e.kx *= Math.pow(.001, dt); e.ky *= Math.pow(.001, dt);
@@ -186,6 +194,7 @@ function updateEnemies(state, dt, rng) {
     for (const c of state.clouds) if (Math.hypot(e.x - c.x, e.y - c.y) < c.r) { inCloud = c; break; }
     let spd = e.spd;
     if (inCloud) spd *= inCloud.slow;                      // mellowed, moving through syrup
+    if (state.zenT > 0) spd *= ARCHETYPES.yogi.ability2.slow; // zen: the world moves like honey
     if (ty.lunge) {                                    // werewolf: periodic speed bursts
       e.lungeT -= dt;
       if (e.lungeT <= 0) { e.lungeT = 1.4 + rng() * 1.2; e.lunging = 0.35; }
@@ -207,11 +216,19 @@ function updateEnemies(state, dt, rng) {
       if (zPassable(state, e.x, ny)) e.y = ny; else e.x += (dx > 0 ? 1 : -1) * spd * dt * 0.7;
     }
 
-    if (d < 12 && player.hurtCd <= 0 && player.dashT <= 0 && !inCloud) {  // dashT = i-frames; clouded enemies are too chill to bite
-      player.hurtCd = 0.8; player.flashT = 0.25;
+    // dashT = i-frames; ghostT = sprint phasing; boulderT = you're the hazard;
+    // clouded enemies are too chill to bite
+    if (d < 12 && player.hurtCd <= 0 && player.dashT <= 0 && player.ghostT <= 0 && player.boulderT <= 0 && !inCloud) {
       const pk = perk(state);
+      if (pk.dodge && rng() < pk.dodge) {                  // yogi: the attack just... misses
+        player.hurtCd = 0.8;
+        addFloat(state, player.x, player.y - 24, 'miss', '#b9c79a');
+        continue;
+      }
+      player.hurtCd = 0.8; player.flashT = 0.25;
       let dmg = e.dmg;
       if (pk.superRes && ty.super) dmg = Math.round(dmg * (1 - pk.superRes)); // hippie shrugs off the supernatural
+      if (pk.moveRes && player.moving) dmg = Math.round(dmg * (1 - pk.moveRes)); // jogger: momentum armor
       if (player.shieldT > 0) dmg = Math.round(dmg * (1 - player.shieldAmt)); // second wind
       player.hp -= dmg;
       addFloat(state, player.x, player.y - 24, '-' + dmg, '#c94f43');
@@ -309,7 +326,7 @@ function tryAttack(state, rng) {
     }
   } else {
     state.projectiles.push({ x: player.x + ax * 8, y: player.y - 9 + ay * 8, vx: ax * w.spd, vy: ay * w.spd,
-      dmg: w.dmg * player.dmgMult, ttl: w.ttl, size: w.size, col: w.col, splash: w.splash || 0, spin: 0, style: w.style });
+      dmg: w.dmg * player.dmgMult * (perk(state).rangedMult || 1), ttl: w.ttl, size: w.size, col: w.col, splash: w.splash || 0, spin: 0, style: w.style });
   }
 }
 
@@ -396,6 +413,14 @@ function useAbility1(state, rng) {
     p.hp = Math.min(p.maxHp, p.hp + heal);
     p.shieldT = ab.dur; p.shieldAmt = ab.resist;
     addFloat(state, p.x, p.y - 26, '+' + heal + ' HP', '#7cc95a');
+  } else if (p.archetype === 'jogger') {         // Sprint: burst + phase through enemies
+    p.hasteT = ab.dur; p.hasteMoveMult = ab.speed; p.hasteRateMult = 1;
+    p.ghostT = ab.dur;
+    addFloat(state, p.x, p.y - 26, 'ON YOUR LEFT!', '#e07a3f');
+  } else if (p.archetype === 'yogi') {           // Flow Roll: i-frame reposition, no damage
+    let dx = p.fx, dy = p.fy; const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m;
+    p.dashT = ab.rollTime; p.dashVX = dx * ab.rollSpd; p.dashVY = dy * ab.rollSpd;
+    p.dashDmg = 0; p.dashRange = 0; p.dashKnock = 0;
   }
 }
 
@@ -428,6 +453,14 @@ function useAbility2(state, rng) {
   } else if (p.archetype === 'hippie') {         // Smoke Cloud
     state.clouds.push({ x: p.x, y: p.y - 6, r: ab.radius, ttl: ab.dur, slow: ab.slow });
     addFloat(state, p.x, p.y - 26, 'chill…', '#b9c79a');
+  } else if (p.archetype === 'jogger') {         // Bolder Boulder: weaponized momentum
+    p.boulderT = ab.dur; p.hasteT = ab.dur; p.hasteMoveMult = ab.speed; p.hasteRateMult = 1;
+    p.ramDmg = ab.dmg; p.ramKnock = ab.knock;
+    for (const e of state.enemies) e.ramCd = 0;
+    addFloat(state, p.x, p.y - 28, 'BOLDER BOULDER!', '#e07a3f');
+  } else if (p.archetype === 'yogi') {           // Zen Mode: the world slows down
+    state.zenT = ab.dur;
+    addFloat(state, p.x, p.y - 28, '☯ zen', '#b9a8d8');
   }
 }
 
@@ -447,7 +480,7 @@ function updateDrone(state, dt) {
       d.fireCd = ab.rate;
       const ang = Math.atan2((best.y - 8) - d.y, best.x - d.x);
       state.projectiles.push({ x: d.x, y: d.y, vx: Math.cos(ang) * 260, vy: Math.sin(ang) * 260,
-        dmg: ab.dmg * p.dmgMult, ttl: 0.8, size: 3, col: '#7fd0ff', splash: 0, spin: 0, style: 'bolt' });
+        dmg: ab.dmg * p.dmgMult * (ARCHETYPES.tech.rangedMult || 1), ttl: 0.8, size: 3, col: '#7fd0ff', splash: 0, spin: 0, style: 'bolt' });
     }
   }
 }
@@ -510,7 +543,7 @@ function spawnEnemy(state, rng) {
   const dmg = ty.dmg + lateNights(night);                     // +1 damage per late night
   state.enemies.push({ kind, x, y, hp, maxHp: hp, spd, dmg, xp: ty.xp,
     coin: ty.coin0 + night + (rng() * 3 | 0), rise: ty.rise, phase: rng() * 6, hitT: 0, kx: 0, ky: 0, dir: 'down',
-    lungeT: rng() * 1.5, lunging: 0, blinkT: rng() * 3 });
+    lungeT: rng() * 1.5, lunging: 0, blinkT: rng() * 3, ramCd: 0 });
   for (let i = 0; i < 6; i++) state.particles.push({ x: x + (rng() * 10 - 5), y, vx: rng() * 20 - 10, vy: -20 - rng() * 30, ttl: .5, col: ty.spawnCol });
 }
 
@@ -530,10 +563,10 @@ export function respawn(state) {
   p.x = 53 * T; p.y = 46 * T;
   // clear transient combat state so you don't wake up mid-dash or pre-buffed
   p.atkCd = 0; p.hurtCd = 0; p.flashT = 0; p.ab1Cd = 0; p.ab2Cd = 0;
-  p.dashT = 0; p.hasteT = 0; p.shieldT = 0;
+  p.dashT = 0; p.hasteT = 0; p.shieldT = 0; p.ghostT = 0; p.boulderT = 0;
   state.enemies.length = 0; state.projectiles.length = 0;
   state.swings.length = 0; state.particles.length = 0; state.floats.length = 0; state.pickups.length = 0;
-  state.drone = null; state.clouds.length = 0; state.shocks.length = 0;
+  state.drone = null; state.clouds.length = 0; state.shocks.length = 0; state.zenT = 0;
   state.phase = 'day'; state.phaseT = 25;
   state.dead = false; state.paused = false;
   toast(state, '☀ Dawn', 'You wake up on the pavilion steps. A ranger took a 25% "rescue fee."', 5000);
@@ -654,7 +687,14 @@ export function step(state, inputs, dt) {
   p.dashT = Math.max(0, p.dashT - dt);
   p.hasteT = Math.max(0, p.hasteT - dt);
   p.shieldT = Math.max(0, p.shieldT - dt);
+  p.ghostT = Math.max(0, p.ghostT - dt);
+  p.boulderT = Math.max(0, p.boulderT - dt);
+  if (state.zenT > 0) {                                   // zen: heal while the world crawls
+    state.zenT = Math.max(0, state.zenT - dt);
+    p.hp = Math.min(p.maxHp, p.hp + ARCHETYPES.yogi.ability2.regen * dt);
+  }
   if (perk(state).regen) p.hp = Math.min(p.maxHp, p.hp + perk(state).regen * dt); // hippie regen
+  if (perk(state).stillRegen && !p.moving) p.hp = Math.min(p.maxHp, p.hp + perk(state).stillRegen * dt); // yogi stillness
 
   for (const s of [...state.swings]) { s.t -= dt; if (s.t <= 0) state.swings.splice(state.swings.indexOf(s), 1); }
   for (const pt of [...state.particles]) {

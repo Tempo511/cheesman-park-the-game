@@ -183,12 +183,15 @@ export function render(state, t) {
   ents.push({ y: player.y, draw: () => {
     const flash = player.flashT > 0 && ((t * 20) | 0) % 2 === 0;
     const ax = (player.x | 0) - camX, ay = (player.y | 0) - camY;
-    // Spike Dash afterimages (drawn behind)
-    if (player.dashT > 0) {
-      const dl = Math.hypot(player.dashVX, player.dashVY) || 1;
+    // speed afterimages: dash/roll uses the dash vector; sprint/boulder trail the facing
+    let tvx = 0, tvy = 0;
+    if (player.dashT > 0) { tvx = player.dashVX; tvy = player.dashVY; }
+    else if ((player.boulderT > 0 || player.ghostT > 0) && player.moving) { tvx = player.fx * 200; tvy = player.fy * 200; }
+    if (tvx || tvy) {
+      const dl = Math.hypot(tvx, tvy) || 1;
       for (let k = 3; k >= 1; k--) {
         ctx.globalAlpha = 0.1 * (4 - k);
-        drawPlayerChar(ctx, ax - (player.dashVX / dl) * k * 5, ay - (player.dashVY / dl) * k * 5, player.dir, player.phase, player.archetype, player.style, false);
+        drawPlayerChar(ctx, ax - (tvx / dl) * k * 5, ay - (tvy / dl) * k * 5, player.dir, player.phase, player.archetype, player.style, false);
       }
       ctx.globalAlpha = 1;
     }
@@ -201,7 +204,9 @@ export function render(state, t) {
       ctx.strokeStyle = 'rgba(124,201,90,' + (0.45 + Math.sin(t * 10) * 0.2) + ')'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(ax, ay - 8, 14, 0, 7); ctx.stroke();
     }
+    if (player.ghostT > 0) ctx.globalAlpha = 0.65;   // sprint: phasing, semi-transparent
     drawPlayerChar(ctx, ax, ay, player.dir, player.moving ? player.phase : 0, player.archetype, player.style, flash);
+    ctx.globalAlpha = 1;
   } });
   if (state.phase === 'day') for (const n of state.npcs) ents.push({ y: n.y, draw: () => {
     drawPerson(ctx, (n.x | 0) - camX, (n.y | 0) - camY, n.dir, n.phase, n.pal, false);
@@ -389,6 +394,11 @@ export function render(state, t) {
       grd.addColorStop(0, 'rgba(255,214,140,' + (na * 0.5) + ')'); grd.addColorStop(1, 'rgba(255,214,140,0)');
       ctx.fillStyle = grd; ctx.fillRect(ax - r, ay - r, r * 2, r * 2);
     }
+  }
+  // zen mode: the world takes on a lavender calm
+  if (state.zenT > 0) {
+    ctx.fillStyle = 'rgba(142,111,184,' + (0.1 + Math.sin(t * 3) * 0.03) + ')';
+    ctx.fillRect(0, 0, VW, VH);
   }
   ctx.fillStyle = 'rgba(255,225,150,.04)'; ctx.fillRect(0, 0, VW, VH);
 }

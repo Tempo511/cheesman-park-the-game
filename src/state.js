@@ -32,6 +32,7 @@ export function createState(seed = DEFAULT_SEED) {
     acorns: [], squirrels: [],             // daytime critters
     parkScore: 0, bestScore: 0, crittersActive: false, acornT: 0,
     drone: null, clouds: [], shocks: [],   // ultimate-ability entities
+    zenT: 0,                               // yogi ultimate: global slow-motion
 
     player: {
       x: 6 * T + 8, y: 45.5 * T, dir: 'right', fx: 1, fy: 0, phase: 0, moving: false, speed: 76,
@@ -43,6 +44,9 @@ export function createState(seed = DEFAULT_SEED) {
       dashT: 0, dashVX: 0, dashVY: 0, dashDmg: 0, dashRange: 0, dashKnock: 0,
       hasteT: 0, hasteMoveMult: 1, hasteRateMult: 1,
       shieldT: 0, shieldAmt: 0,
+      ghostT: 0,                            // jogger sprint: phase through enemies
+      boulderT: 0, ramDmg: 0, ramKnock: 0,  // jogger ultimate: ramming
+
       acorns: 0,                            // acorns currently carried (for feeding squirrels)
     },
 
