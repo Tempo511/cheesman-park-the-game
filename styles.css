@@ -129,10 +129,27 @@ html,body{width:100%;height:100%;overflow:hidden;background:#151a12;touch-action
 .btn.gold{background:var(--gold);color:var(--ink)}
 .btn.red{background:var(--blood)}
 .btn[disabled]{opacity:.45;pointer-events:none}
-/* character style toggle on the intro card */
-.stylebtns{display:flex;gap:10px;justify-content:center;margin-bottom:14px}
-.stylebtns .btn{padding:7px 18px;font-size:11px;background:#8a8a7a}
-.stylebtns .btn.sel{background:#4f7d3a}
+/* park-goer portrait picker on the intro card (no labels — just pick a look) */
+.stylebtns{display:flex;gap:12px;justify-content:center;margin-bottom:14px}
+.stylebtns .pick{padding:4px;line-height:0;cursor:pointer;background:#b8b2a0;
+  border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.stylebtns .pick:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.stylebtns .pick.sel{background:var(--gold)}
+.stylebtns .pick canvas{width:44px;height:48px;image-rendering:pixelated}
+/* instructions: show the set matching the device (body.touch is live-updated) */
+.ctrl-mobile{display:none}
+.touch .ctrl-mobile{display:block}
+.touch .ctrl-desktop{display:none}
+/* landscape phones: the whole intro card must fit without scrolling */
+@media (orientation:landscape) and (pointer:coarse){
+  .card{max-width:540px;padding:10px 16px 10px;max-height:96vh}
+  .card h1{font-size:15px}
+  .card .sub{font-size:8px;margin:3px 0 6px}
+  .card p{font-size:10px;line-height:1.35;margin-bottom:6px}
+  .card .btn{padding:6px 16px;font-size:11px}
+  .stylebtns{gap:8px;margin-bottom:8px}
+  .stylebtns .pick canvas{width:32px;height:35px}
+}
 /* shop */
 #shop{display:none}
 .item{display:flex;align-items:center;gap:10px;border:2px solid var(--ink);padding:8px;margin-bottom:8px;

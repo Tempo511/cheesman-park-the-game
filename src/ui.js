@@ -39,7 +39,14 @@ export function initUI(state, { onStart, onRespawn, onNewRun } = {}) {
   $('respawn').addEventListener('click', () => { onRespawn && onRespawn(); });
   $('newRun').addEventListener('click', () => { onNewRun && onNewRun(); });
   $('start').addEventListener('click', () => { $('intro').style.display = 'none'; onStart && onStart(); });
-  // character style toggle (cosmetic)
+  // park-goer picker (cosmetic): two unlabeled portraits — just pick a look
+  for (const [id, style] of [['portraitM', 'm'], ['portraitF', 'f']]) {
+    const x = $(id).getContext('2d');
+    x.imageSmoothingEnabled = false;
+    x.fillStyle = '#84ae59'; x.fillRect(0, 0, 26, 28);
+    x.fillStyle = '#79a251'; x.fillRect(0, 22, 26, 6);
+    drawPlayerChar(x, 13, 24, 'down', 0, null, style, false);
+  }
   const styleM = $('styleM'), styleF = $('styleF');
   styleM.addEventListener('click', () => { setStyle(S, 'm'); styleM.classList.add('sel'); styleF.classList.remove('sel'); });
   styleF.addEventListener('click', () => { setStyle(S, 'f'); styleF.classList.add('sel'); styleM.classList.remove('sel'); });

@@ -50,13 +50,16 @@
     clearing was… incomplete. By day: stroll the park, find landmarks, earn Bucks.
     By night: the residents of Mount Prospect claw out of the Great Lawn, and the
     ghosts get bold.</p>
-    <p><b>Move:</b> WASD / arrows or joystick &nbsp;·&nbsp; <b>Attack:</b> Space / J or the red button
+    <p class="ctrl-desktop"><b>Move:</b> WASD / arrows &nbsp;·&nbsp; <b>Attack:</b> Space / J
     &nbsp;·&nbsp; <b>Shop:</b> E at the Ranger Cart by the pavilion.
-    &nbsp;·&nbsp; <b>Tribe abilities</b> (levels 5 &amp; 8): Q / R, or the buttons that appear by Fire.</p>
+    &nbsp;·&nbsp; <b>Tribe abilities</b> (levels 5 &amp; 8): Q / R.</p>
+    <p class="ctrl-mobile"><b>Move:</b> touch &amp; drag on the left half &nbsp;·&nbsp; <b>Attack:</b> hold FIRE
+    &nbsp;·&nbsp; <b>Shop:</b> tap the cart button by the pavilion.
+    &nbsp;·&nbsp; <b>Tribe abilities</b> (levels 5 &amp; 8): buttons appear beside FIRE.</p>
     <p>You have a frisbee. Good luck.</p>
-    <div class="stylebtns" aria-label="Character style">
-      <button class="btn sel" id="styleM" type="button">Guy</button>
-      <button class="btn" id="styleF" type="button">Gal</button>
+    <div class="stylebtns" aria-label="Pick your park-goer">
+      <button class="pick sel" id="styleM" type="button" aria-label="First park-goer"><canvas id="portraitM" width="26" height="28"></canvas></button>
+      <button class="pick" id="styleF" type="button" aria-label="Second park-goer"><canvas id="portraitF" width="26" height="28"></canvas></button>
     </div>
     <button class="btn" id="start">Clock in</button>
   </div>
