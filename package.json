@@ -1,0 +1,14 @@
+{
+  "name": "cheesman-park-the-game",
+  "version": "0.2.0",
+  "description": "Top-down pixel-art survival game set in Denver's Cheesman Park.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "python3 -m http.server 8123",
+    "test": "node test/headless-sim.mjs && node test/smoke-dom.mjs && node test/smoke-main.mjs",
+    "test:sim": "node test/headless-sim.mjs",
+    "test:dom": "node test/smoke-dom.mjs",
+    "test:main": "node test/smoke-main.mjs"
+  }
+}

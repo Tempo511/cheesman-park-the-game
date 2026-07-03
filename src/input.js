@@ -1,0 +1,112 @@
+// ============================================================================
+// input.js — turns local hardware (keyboard, floating touch stick, fire button)
+// into a per-frame `inputs` object: { move:{x,y}, attack }.
+//
+// Touch model (landscape): the LEFT half of the screen is a floating joystick —
+// touch anywhere and a stick spawns under your thumb. The bottom-right is a
+// hold-to-fire button. Each finger is tracked by its own touch identifier, so
+// moving and firing at the same time never interfere (the classic mobile
+// multi-touch bug the old code had by reading `touches[0]`).
+//
+// Co-op design note: this is the ONLY place raw devices are read. The sim never
+// sees a keyboard or a touch — it consumes the neutral inputs object, so a
+// remote player's inputs slot in identically.
+// ============================================================================
+
+const keys = {};
+let attackHeld = false;                 // fire button held
+let ability1Held = false;               // ability button held
+const joy = { x: 0, y: 0 };             // normalized move vector from the stick
+let moveId = null, moveOX = 0, moveOY = 0;
+const DEAD = 0.2, MAXR = 52;
+
+let stickEl, nubEl, fireBtn, moveZone, ability1Btn;
+
+// Build this frame's input intent for the local player.
+export function getInputs() {
+  let dx = 0, dy = 0;
+  if (keys['arrowleft'] || keys['a']) dx -= 1;
+  if (keys['arrowright'] || keys['d']) dx += 1;
+  if (keys['arrowup'] || keys['w']) dy -= 1;
+  if (keys['arrowdown'] || keys['s']) dy += 1;
+  dx += joy.x; dy += joy.y;
+  const attack = !!(keys[' '] || keys['j'] || keys['k'] || attackHeld);
+  const ability1 = !!(keys['q'] || ability1Held);
+  return { move: { x: dx, y: dy }, attack, ability1 };
+}
+
+function setJoy(px, py) {
+  let dx = px - moveOX, dy = py - moveOY;
+  const m = Math.hypot(dx, dy);
+  if (m > MAXR) { dx = dx / m * MAXR; dy = dy / m * MAXR; }
+  joy.x = dx / MAXR; joy.y = dy / MAXR;
+  if (Math.hypot(joy.x, joy.y) < DEAD) { joy.x = 0; joy.y = 0; }
+  if (nubEl) nubEl.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+}
+function showStick(x, y) {
+  moveOX = x; moveOY = y;
+  if (stickEl) { stickEl.style.left = x + 'px'; stickEl.style.top = y + 'px'; stickEl.style.display = 'block'; }
+}
+function hideStick() {
+  joy.x = 0; joy.y = 0; moveId = null;
+  if (stickEl) stickEl.style.display = 'none';
+  if (nubEl) nubEl.style.transform = 'translate(-50%,-50%)';
+}
+
+export function initInput({ onShop, onEscape } = {}) {
+  addEventListener('keydown', (e) => {
+    const k = e.key.toLowerCase(); keys[k] = true;
+    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault();
+    if (k === 'e') onShop && onShop();
+    else if (k === 'escape') onEscape && onEscape();
+  });
+  addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+
+  stickEl = document.getElementById('stick');
+  nubEl = document.getElementById('nub');
+  fireBtn = document.getElementById('btnA');
+  moveZone = document.getElementById('moveZone');
+  ability1Btn = document.getElementById('btnAbility1');
+
+  if ('ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0) document.body.classList.add('touch');
+
+  // --- MOVE: floating stick within the left-half zone ---------------------
+  if (moveZone) {
+    moveZone.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (moveId !== null) return;               // one move finger at a time
+      const t = e.changedTouches[0];
+      moveId = t.identifier;
+      showStick(t.clientX, t.clientY);
+      setJoy(t.clientX, t.clientY);
+    }, { passive: false });
+    moveZone.addEventListener('touchmove', (e) => {
+      for (const t of e.changedTouches) if (t.identifier === moveId) { e.preventDefault(); setJoy(t.clientX, t.clientY); }
+    }, { passive: false });
+    const end = (e) => { for (const t of e.changedTouches) if (t.identifier === moveId) hideStick(); };
+    moveZone.addEventListener('touchend', end);
+    moveZone.addEventListener('touchcancel', end);
+  }
+
+  // --- FIRE: hold the bottom-right button ---------------------------------
+  if (fireBtn) {
+    const down = (e) => { e.preventDefault(); attackHeld = true; fireBtn.classList.add('pressed'); };
+    const up = () => { attackHeld = false; fireBtn.classList.remove('pressed'); };
+    fireBtn.addEventListener('touchstart', down, { passive: false });
+    fireBtn.addEventListener('touchend', up);
+    fireBtn.addEventListener('touchcancel', up);
+    fireBtn.addEventListener('mousedown', down);
+    addEventListener('mouseup', up);
+  }
+
+  // --- ABILITY 1: tap the ability button ----------------------------------
+  if (ability1Btn) {
+    const down = (e) => { e.preventDefault(); ability1Held = true; };
+    const up = () => { ability1Held = false; };
+    ability1Btn.addEventListener('touchstart', down, { passive: false });
+    ability1Btn.addEventListener('touchend', up);
+    ability1Btn.addEventListener('touchcancel', up);
+    ability1Btn.addEventListener('mousedown', down);
+    addEventListener('mouseup', up);
+  }
+}

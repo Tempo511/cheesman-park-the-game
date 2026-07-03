@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#5f8f5d" />
+    <title>Cheesman Park: The Game</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main id="gameShell" aria-label="Cheesman Park game prototype">
+      <canvas id="gameCanvas"></canvas>
+
+      <section id="hud" aria-label="Game status">
+        <div class="brand">
+          <span class="brand__title">Cheesman Park</span>
+          <span id="zoneLabel" class="brand__zone">Pavilion Lawn</span>
+        </div>
+        <div class="score">
+          <span class="score__coin" aria-hidden="true"></span>
+          <span id="coinCount">0</span>
+        </div>
+      </section>
+
+      <section id="eventToast" class="toast" aria-live="polite">
+        <span id="eventTitle">Sunset at the pavilion</span>
+        <span id="eventText">Collect picnic coins before the ghost drifts by.</span>
+      </section>
+
+      <nav id="controls" aria-label="Touch controls">
+        <div id="stick" class="stick">
+          <div id="nub" class="stick__nub"></div>
+        </div>
+        <button id="actionButton" type="button" aria-label="Use flashlight">
+          <span></span>
+        </button>
+      </nav>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>

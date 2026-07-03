@@ -1,0 +1,204 @@
+:root {
+  color-scheme: dark;
+  font-family: ui-rounded, "SF Pro Rounded", "Avenir Next", system-ui, sans-serif;
+  background: #26352f;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#gameShell {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+}
+
+#gameShell {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  background: #27372f;
+}
+
+#gameCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+#hud {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.brand,
+.score,
+.toast,
+#actionButton,
+.stick {
+  border: 2px solid rgba(36, 50, 42, 0.56);
+  background: rgba(248, 231, 180, 0.88);
+  box-shadow: 0 4px 0 rgba(32, 40, 34, 0.38);
+  color: #26352f;
+}
+
+.brand {
+  min-width: 0;
+  max-width: min(68vw, 360px);
+  padding: 8px 10px;
+}
+
+.brand__title,
+.brand__zone {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand__title {
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.1;
+}
+
+.brand__zone {
+  margin-top: 2px;
+  color: #52624a;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.score {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 64px;
+  justify-content: center;
+  padding: 8px 10px;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.score__coin {
+  width: 16px;
+  height: 16px;
+  background:
+    linear-gradient(90deg, transparent 0 2px, #f0a93b 2px 14px, transparent 14px),
+    linear-gradient(#f8d066 0 100%);
+  border: 2px solid #8d542c;
+}
+
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: calc(126px + env(safe-area-inset-bottom));
+  width: min(88vw, 430px);
+  transform: translateX(-50%);
+  padding: 10px 12px;
+  opacity: 0;
+  transition: opacity 180ms ease, transform 180ms ease;
+  pointer-events: none;
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+.toast span {
+  display: block;
+}
+
+#eventTitle {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+#eventText {
+  margin-top: 3px;
+  color: #53614e;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+#controls {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.stick {
+  position: absolute;
+  left: max(18px, env(safe-area-inset-left));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  width: 98px;
+  height: 98px;
+  border-radius: 50%;
+  background: rgba(248, 231, 180, 0.36);
+  pointer-events: auto;
+}
+
+.stick__nub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 38px;
+  height: 38px;
+  border: 2px solid rgba(36, 50, 42, 0.62);
+  border-radius: 50%;
+  background: rgba(248, 231, 180, 0.92);
+  transform: translate(-50%, -50%);
+}
+
+#actionButton {
+  position: absolute;
+  right: max(22px, env(safe-area-inset-right));
+  bottom: max(32px, env(safe-area-inset-bottom));
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  pointer-events: auto;
+}
+
+#actionButton span {
+  position: absolute;
+  left: 18px;
+  top: 19px;
+  width: 40px;
+  height: 28px;
+  background:
+    linear-gradient(90deg, #f8f1bd 0 18px, transparent 18px),
+    linear-gradient(90deg, transparent 0 19px, #41545a 19px 31px, transparent 31px);
+  border-left: 4px solid #41545a;
+  transform: rotate(-20deg);
+}
+
+@media (min-width: 760px) {
+  .stick,
+  #actionButton {
+    opacity: 0.72;
+  }
+}

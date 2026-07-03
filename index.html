@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Cheesman Park: The Game</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+<canvas id="fx"></canvas>
+
+<!-- touch: left-half capture layer for the floating move stick -->
+<div id="moveZone"></div>
+
+<div id="hud">
+  <div class="chip" id="stats">
+    <div class="row"><span>HP</span><span id="livesRow">♥♥♥</span><span id="hpTxt">100/100</span></div>
+    <div class="bar" id="hpbar"><i style="width:100%"></i></div>
+    <div class="row"><span>LV <span id="lvTxt">1</span></span><span>$&nbsp;<b id="coinTxt">0</b></span></div>
+    <div class="bar" id="xpbar"><i style="width:0%"></i></div>
+    <div id="wep">Frisbee</div>
+    <div id="tribe"></div>
+    <div id="ability"></div>
+  </div>
+  <div id="hud-right">
+    <div class="chip" id="phase"><span id="phaseTxt">☀ Day</span> · <span id="phaseTimer"></span></div>
+    <div class="chip" style="font-size:10px">Spots: <b id="found" style="color:var(--gold)">0</b>/8</div>
+    <div class="chip" style="font-size:10px">Score <b id="scoreTxt" style="color:var(--gold)">0</b> · 🌰<b id="acornTxt">0</b></div>
+    <canvas id="mini" width="72" height="92"></canvas>
+  </div>
+</div>
+
+<div id="toast"><h3 id="toast-h"></h3><p id="toast-p"></p></div>
+
+<div id="stick"><div id="nub"></div></div>
+<button id="btnA">Fire</button>
+<button id="btnAbility1"><span id="ab1fill"></span><b id="ab1lbl">◆</b></button>
+<button id="btnShop">Ranger Cart [E]</button>
+
+<div class="overlay" id="intro">
+  <div class="card">
+    <h1>Cheesman Park<br>The Game</h1>
+    <div class="sub">Mount Prospect Rises · Denver, CO</div>
+    <p>Cheesman Park was built on Denver's first cemetery — and the 1893 grave
+    clearing was… incomplete. By day: stroll the park, find landmarks, earn Bucks.
+    By night: the residents of Mount Prospect claw out of the Great Lawn, and the
+    ghosts get bold.</p>
+    <p><b>Move:</b> WASD / arrows or joystick &nbsp;·&nbsp; <b>Attack:</b> Space / J or the red button
+    &nbsp;·&nbsp; <b>Shop:</b> E at the Ranger Cart by the pavilion.</p>
+    <p>You have a frisbee. Good luck.</p>
+    <div class="stylebtns" aria-label="Character style">
+      <button class="btn sel" id="styleM" type="button">Guy</button>
+      <button class="btn" id="styleF" type="button">Gal</button>
+    </div>
+    <button class="btn" id="start">Clock in</button>
+  </div>
+</div>
+
+<div class="overlay" id="shop">
+  <div class="card">
+    <h1>Ranger Cart</h1>
+    <div class="sub">Parks &amp; Rec Surplus · Bucks accepted: <b id="shopCoins">$0</b></div>
+    <div id="shopItems"></div>
+    <button class="btn gold" id="buyChile">Green Chile Snack — $25 (heal 35)</button>
+    <div style="height:10px"></div>
+    <button class="btn" id="closeShop">Back to the park</button>
+  </div>
+</div>
+
+<div class="overlay" id="death" style="display:none">
+  <div class="card" id="deathCard">
+    <h1 id="deathTitle">You Got Got</h1>
+    <div class="sub" id="deathSub">The lawn reclaims another one</div>
+    <p id="deathTxt">A ranger drags you back to the pavilion at dawn. You dropped some Bucks on the way.</p>
+    <button class="btn red" id="respawn">Respawn at the pavilion</button>
+    <button class="btn" id="newRun" style="display:none">Start a new run</button>
+  </div>
+</div>
+
+<div class="overlay" id="archetype" style="display:none">
+  <div class="card">
+    <h1>Choose Your Tribe</h1>
+    <div class="sub">Level 3 · the park has claimed you</div>
+    <div id="archetypeItems"></div>
+  </div>
+</div>
+
+<div id="rotate">
+  <div class="ico">🔄</div>
+  <div class="msg">Rotate your phone</div>
+  <div class="sub2">Cheesman Park plays in landscape.</div>
+</div>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
