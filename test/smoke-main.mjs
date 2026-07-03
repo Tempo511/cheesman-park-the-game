@@ -41,7 +41,7 @@ globalThis.document = {
   getElementById(id) { return els[id] || (els[id] = makeEl(id === 'game' || id === 'fx' || id === 'mini' ? 'canvas' : 'div')); },
   querySelector() { return makeEl('i'); },
   createElement(tag) { return makeEl(tag); },
-  body: { classList: { add() {}, remove() {} } },
+  body: { classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } } },
   addEventListener() {},
 };
 globalThis.window = globalThis;

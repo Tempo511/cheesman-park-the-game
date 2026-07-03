@@ -44,11 +44,14 @@ resize();
 resizeFx();
 
 // --- mobile: block play in portrait (a CSS overlay tells them to rotate) ----
-const coarsePointer = matchMedia('(pointer: coarse)').matches;
+// pointer coarseness is read live (it changes when DevTools emulation toggles)
+const coarseMQ = matchMedia('(pointer: coarse)');
 const portraitMQ = matchMedia('(orientation: portrait)');
-let orientationBlocked = coarsePointer && portraitMQ.matches;
-function refreshOrientation() { orientationBlocked = coarsePointer && portraitMQ.matches; last = 0; }
-portraitMQ.addEventListener ? portraitMQ.addEventListener('change', refreshOrientation) : portraitMQ.addListener(refreshOrientation);
+let orientationBlocked = coarseMQ.matches && portraitMQ.matches;
+function refreshOrientation() { orientationBlocked = coarseMQ.matches && portraitMQ.matches; last = 0; }
+for (const mq of [portraitMQ, coarseMQ]) {
+  mq.addEventListener ? mq.addEventListener('change', refreshOrientation) : mq.addListener(refreshOrientation);
+}
 addEventListener('resize', () => { resize(); resizeFx(); refreshOrientation(); });
 
 initUI(state, {

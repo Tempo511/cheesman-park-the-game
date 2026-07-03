@@ -71,7 +71,14 @@ export function initInput({ onShop, onEscape } = {}) {
   ability1Btn = document.getElementById('btnAbility1');
   ability2Btn = document.getElementById('btnAbility2');
 
-  if ('ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0) document.body.classList.add('touch');
+  // Track touch-ness LIVE via the pointer media query (it flips in real time
+  // when DevTools device emulation is toggled — a one-shot check would strand
+  // the page in the wrong layout until reload).
+  const coarseMQ = matchMedia('(pointer: coarse)');
+  const applyTouch = () => document.body.classList.toggle('touch', coarseMQ.matches);
+  applyTouch();
+  if (coarseMQ.addEventListener) coarseMQ.addEventListener('change', applyTouch);
+  else if (coarseMQ.addListener) coarseMQ.addListener(applyTouch);
 
   // --- MOVE: floating stick within the left-half zone ---------------------
   if (moveZone) {
