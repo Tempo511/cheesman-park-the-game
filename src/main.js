@@ -13,8 +13,10 @@ import { buildSprites } from './sprites.js';
 import { initRender, renderGround, buildMini, render, renderFx, renderMini, resize, resizeFx } from './render.js';
 import { initUI, updateHud, drainEvents, hideDeath, openShop, closeShop, isShopOpen, toast as drainToast } from './ui.js';
 import { initInput, getInputs } from './input.js';
+import { unlock as unlockAudio, updateAudio, setMuted, isMuted } from './audio.js';
 
 const SAVE_KEY = 'cheesman.save.v1';
+const MUTE_KEY = 'cheesman.muted';
 
 // --- state -----------------------------------------------------------------
 const state = createState();
@@ -69,6 +71,19 @@ initInput({
   onEscape: () => { if (isShopOpen()) closeShop(); },
 });
 
+// --- sound: unlock on first gesture (browser autoplay policy), mute toggle --
+try { setMuted(localStorage.getItem(MUTE_KEY) === '1'); } catch (e) { /* fine */ }
+addEventListener('pointerdown', unlockAudio);
+addEventListener('keydown', unlockAudio);
+const muteBtn = document.getElementById('muteBtn');
+const paintMute = () => { muteBtn.textContent = isMuted() ? '🔇' : '🔊'; };
+paintMute();
+muteBtn.addEventListener('click', () => {
+  setMuted(!isMuted());
+  try { localStorage.setItem(MUTE_KEY, isMuted() ? '1' : '0'); } catch (e) { /* fine */ }
+  paintMute();
+});
+
 // --- haptics (Android; iOS Safari has no Vibration API and simply ignores) --
 const buzz = (p) => { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) { /* unsupported */ } };
 
@@ -101,6 +116,7 @@ function frame(ts) {
   render(state, t);
   renderFx(state);
   renderMini(state, t);
+  updateAudio(state);   // observes state diffs; no-op until first gesture
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
