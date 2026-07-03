@@ -36,6 +36,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#151a12;touch-action
 #mini{width:94px;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;
   background:#151a12;border:2px solid var(--paper);box-shadow:3px 3px 0 rgba(0,0,0,.35)}
 @media (max-width:480px){ #mini{width:74px} #stats{min-width:148px} }
+/* landscape phones: compact the right HUD column so the minimap ends well
+   above the fire button (which owns the bottom-right corner) */
+@media (orientation:landscape) and (pointer:coarse){
+  #hud-right{gap:5px}
+  .chip{padding:4px 7px;font-size:9px}
+  #stats{min-width:132px}
+  #mini{width:58px}
+}
 /* toast plaque — anchored bottom-center so it never covers the play field */
 #toast{position:fixed;left:50%;
   bottom:calc(20px + env(safe-area-inset-bottom));
