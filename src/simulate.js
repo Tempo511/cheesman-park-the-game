@@ -86,10 +86,19 @@ function movePlayer(state, inputs, dt, rng) {
     p.phase += dt * 10;
   }
   if (p.boulderT > 0) {                    // Bolder Boulder: ram everything you touch
+    if (p.moving && rng() < 0.55) {        // kicked-up dust in your wake
+      state.particles.push({ x: p.x - p.fx * 6 + rng() * 8 - 4, y: p.y + rng() * 3,
+        vx: -p.fx * 24 + rng() * 24 - 12, vy: -10 - rng() * 14, ttl: 0.45, col: rng() < 0.5 ? '#b8a888' : '#9a8a6f' });
+    }
     for (const e of state.enemies) {
       if (e.rise < 1 || (e.ramCd || 0) > 0) continue;
       const ex = e.x - p.x, ey = (e.y - 8) - (p.y - 8), d2 = Math.hypot(ex, ey);
-      if (d2 < 16) { e.ramCd = 0.5; damageEnemy(state, e, p.ramDmg * p.dmgMult, ex / Math.max(1, d2) * p.ramKnock, ey / Math.max(1, d2) * p.ramKnock, rng); }
+      if (d2 < 16) {
+        e.ramCd = 0.5;
+        damageEnemy(state, e, p.ramDmg * p.dmgMult, ex / Math.max(1, d2) * p.ramKnock, ey / Math.max(1, d2) * p.ramKnock, rng);
+        state.shocks.push({ x: e.x, y: e.y - 8, r: 0, max: 26, t: 0.2, t0: 0.2 });   // impact pop
+        for (let k = 0; k < 6; k++) state.particles.push({ x: e.x, y: e.y - 8, vx: rng() * 90 - 45, vy: rng() * -70, ttl: 0.35, col: k % 2 ? '#e07a3f' : '#f2ead6' });
+      }
     }
   }
   if (inputs.attack) tryAttack(state, rng);
@@ -438,7 +447,7 @@ function useAbility2(state, rng) {
   if (!ab) return;
   p.ab2Cd = ab.cd;
   if (p.archetype === 'volleyball') {            // Ace: radial shockwave
-    state.shocks.push({ x: p.x, y: p.y - 8, r: 0, max: ab.radius, t: 0.35 });
+    state.shocks.push({ x: p.x, y: p.y - 8, r: 0, max: ab.radius, t: 0.35, t0: 0.35 });
     for (const e of state.enemies) {
       if (e.rise < 1) continue;
       const dx = e.x - p.x, dy = (e.y - 8) - (p.y - 8), d = Math.hypot(dx, dy);
@@ -683,7 +692,7 @@ export function step(state, inputs, dt) {
   p.ab1Cd = Math.max(0, p.ab1Cd - dt);
   p.ab2Cd = Math.max(0, p.ab2Cd - dt);
   for (let i = state.clouds.length - 1; i >= 0; i--) { const c = state.clouds[i]; c.ttl -= dt; if (c.ttl <= 0) state.clouds.splice(i, 1); }
-  for (let i = state.shocks.length - 1; i >= 0; i--) { const s = state.shocks[i]; s.t -= dt; s.r = s.max * (1 - Math.max(0, s.t) / 0.35); if (s.t <= 0) state.shocks.splice(i, 1); }
+  for (let i = state.shocks.length - 1; i >= 0; i--) { const s = state.shocks[i]; s.t -= dt; s.r = s.max * (1 - Math.max(0, s.t) / (s.t0 || 0.35)); if (s.t <= 0) state.shocks.splice(i, 1); }
   p.dashT = Math.max(0, p.dashT - dt);
   p.hasteT = Math.max(0, p.hasteT - dt);
   p.shieldT = Math.max(0, p.shieldT - dt);

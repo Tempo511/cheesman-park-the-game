@@ -317,6 +317,8 @@ ok('bolder boulder activates', jb.player.boulderT > 0);
 for (let i = 0; i < 20 && ramFoe.hp === ramFoe.maxHp; i++) step(jb, { move: { x: 1, y: 0 }, attack: false }, 1 / 60);
 ok('ramming an enemy damages it', ramFoe.hp < ramFoe.maxHp);
 ok('rammed enemy got knocked back', ramFoe.kx !== 0 || ramFoe.ky !== 0 || ramFoe.x > jb.player.x);
+ok('ram impact spawns a shockwave pop', jb.shocks.length > 0);
+ok('boulder kicks up dust particles', jb.particles.length > 0);
 
 // yogi: dodge + stillness regen
 const yd = createState(); yd.started = true; yd.player.archetype = 'yogi'; yd.player.maxHp = 5000; yd.player.hp = 5000;

@@ -138,8 +138,12 @@ function nightAlpha(state, t) {
 
 export function render(state, t) {
   const player = state.player;
-  const camX = Math.max(0, Math.min(MW * T - VW, player.x - VW / 2)) | 0;
-  const camY = Math.max(0, Math.min(MH * T - VH, player.y - VH / 2)) | 0;
+  let camX = Math.max(0, Math.min(MW * T - VW, player.x - VW / 2)) | 0;
+  let camY = Math.max(0, Math.min(MH * T - VH, player.y - VH / 2)) | 0;
+  if (player.boulderT > 0) {               // Bolder Boulder: the ground rumbles
+    camX += Math.round(Math.sin(t * 43) * 1.5);
+    camY += Math.round(Math.cos(t * 37) * 1.5);
+  }
   CAMX = camX; CAMY = camY;
   ctx.drawImage(groundCv, camX, camY, VW, VH, 0, 0, VW, VH);
   // water shimmer + jets
@@ -189,14 +193,21 @@ export function render(state, t) {
     else if ((player.boulderT > 0 || player.ghostT > 0) && player.moving) { tvx = player.fx * 200; tvy = player.fy * 200; }
     if (tvx || tvy) {
       const dl = Math.hypot(tvx, tvy) || 1;
-      for (let k = 3; k >= 1; k--) {
-        ctx.globalAlpha = 0.1 * (4 - k);
+      const kMax = player.boulderT > 0 ? 5 : 3;       // boulder leaves a longer wake
+      for (let k = kMax; k >= 1; k--) {
+        ctx.globalAlpha = 0.35 / kMax * (kMax + 1 - k);
         drawPlayerChar(ctx, ax - (tvx / dl) * k * 5, ay - (tvy / dl) * k * 5, player.dir, player.phase, player.archetype, player.style, false);
       }
       ctx.globalAlpha = 1;
     }
     // Overclock aura (cyan) + Second Wind shield (green)
-    if (player.hasteT > 0) {
+    if (player.boulderT > 0) {
+      // rumbling orange double-aura, nothing like Sprint's cool blue
+      ctx.strokeStyle = 'rgba(224,122,63,' + (0.5 + Math.sin(t * 16) * 0.25) + ')'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(ax, ay - 8, 13 + Math.sin(t * 10) * 2, 0, 7); ctx.stroke();
+      ctx.strokeStyle = 'rgba(229,192,75,.35)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(ax, ay - 8, 17 + Math.sin(t * 7) * 2, 0, 7); ctx.stroke();
+    } else if (player.hasteT > 0) {
       ctx.strokeStyle = 'rgba(127,208,255,' + (0.4 + Math.sin(t * 14) * 0.2) + ')'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(ax, ay - 8, 12, 0, 7); ctx.stroke();
     }
@@ -358,7 +369,7 @@ export function render(state, t) {
     ctx.globalAlpha = 1;
   }
   for (const s of state.shocks) {
-    const a = Math.max(0, s.t / 0.35);
+    const a = Math.max(0, s.t / (s.t0 || 0.35));
     ctx.strokeStyle = 'rgba(242,234,214,' + (a * 0.9) + ')'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.arc(s.x - camX, s.y - camY, s.r, 0, 7); ctx.stroke();
     ctx.strokeStyle = 'rgba(229,192,75,' + (a * 0.5) + ')'; ctx.lineWidth = 1;
