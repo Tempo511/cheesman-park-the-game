@@ -89,15 +89,18 @@ export const ARCHETYPE_LEVEL = 3;
 
 // Ranger rescues per run: die this many times and the run is over.
 export const MAX_LIVES = 3;
+// display name for an archetype, honoring the player's chosen style
+export const archName = (a, style) => (style === 'f' && a.nameF) ? a.nameF : a.name;
+
 export const ARCHETYPES = {
-  volleyball: { id:'volleyball', name:'🏐 Volleyball Bro',
+  volleyball: { id:'volleyball', name:'🏐 Volleyball Bro', nameF:'🏐 Volleyball Gal',
     flavor:'Bumps zombies like they’re serves — fast, physical, all knockback.',
     perkText:'+15% speed · +25% knockback · +10% melee damage',
     moveMult:1.15, knockMult:1.25, meleeMult:1.10,
     pal:{ skin:'#e8b58a', shirt:'#f2ead6', pants:'#2f3742', hair:'#4a3123' }, prop:'headband',
     ability1:{ name:'Spike Dash', icon:'»', level:5, cd:6, dashSpd:440, dashTime:0.2, dmg:26, range:24, knock:200 },
     ability2:{ name:'Ace', icon:'◎', level:8, cd:18, dmg:40, radius:90, knock:260, stun:1.2 } },
-  tech: { id:'tech', name:'💻 Tech Bro',
+  tech: { id:'tech', name:'💻 Tech Bro', nameF:'💻 Tech Gal',
     flavor:'Out-earns the apocalypse. More Bucks, cheaper gear.',
     perkText:'+50% Bucks · 15% off at the Ranger Cart',
     coinMult:1.5, priceMult:0.85,

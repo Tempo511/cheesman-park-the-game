@@ -293,6 +293,13 @@ setStyle(sty, 'f');
 ok('setStyle switches to f', sty.player.style === 'f');
 setStyle(sty, 'banana');
 ok('setStyle rejects invalid values', sty.player.style === 'f');
+// style-aware tribe names
+const gal = createState(); gal.started = true; setStyle(gal, 'f');
+chooseArchetype(gal, 'volleyball');
+ok('gal style gets "Volleyball Gal"', gal.events.some((e) => e.type === 'toast' && e.t.includes('Volleyball Gal')));
+const guy = createState(); guy.started = true;
+chooseArchetype(guy, 'tech');
+ok('guy style keeps "Tech Bro"', guy.events.some((e) => e.type === 'toast' && e.t.includes('Tech Bro')));
 
 // --- 6d. daytime: squirrels, acorns, Park Score -----------------------------
 section('Daytime loop');

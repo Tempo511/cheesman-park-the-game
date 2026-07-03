@@ -8,7 +8,7 @@
 // broadcast the resulting state — no gameplay code changes. Randomness flows
 // through state.simSeed so outcomes are reproducible.
 // ============================================================================
-import { WEAPONS, ZONES, ENEMY_TYPES, ENEMY_ORDER, ARCHETYPES, ARCHETYPE_LEVEL, xpNeed, T, MW, MH, G, SOLID_GROUND, SHOP_POS } from './constants.js';
+import { WEAPONS, ZONES, ENEMY_TYPES, ENEMY_ORDER, ARCHETYPES, ARCHETYPE_LEVEL, archName, xpNeed, T, MW, MH, G, SOLID_GROUND, SHOP_POS } from './constants.js';
 import { gi, inMap, getG } from './tiles.js';
 import { makeRng } from './rng.js';
 
@@ -366,7 +366,7 @@ export function chooseArchetype(state, id) {
   if (!ARCHETYPES[id]) return;
   state.player.archetype = id;
   state.choosing = false; state.paused = false;
-  toast(state, ARCHETYPES[id].name, ARCHETYPES[id].flavor, 4500);
+  toast(state, archName(ARCHETYPES[id], state.player.style), ARCHETYPES[id].flavor, 4500);
 }
 
 // --- abilities -------------------------------------------------------------

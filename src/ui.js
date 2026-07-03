@@ -5,7 +5,7 @@
 // simulation) to show toasts / the death card. Shop purchases call the
 // authoritative sim functions so the same rules apply everywhere.
 // ============================================================================
-import { WEAPONS, WEAPON_ORDER, xpNeed, ARCHETYPES, ARCHETYPE_ORDER, MAX_LIVES } from './constants.js';
+import { WEAPONS, WEAPON_ORDER, xpNeed, ARCHETYPES, ARCHETYPE_ORDER, MAX_LIVES, archName } from './constants.js';
 import { nearShop, buyWeapon, buyChile, chooseArchetype, setStyle, weaponPrice, effectivePrice, ability1State, ability2State } from './simulate.js';
 import { mkCanvas, px, drawPlayerChar } from './sprites.js';
 
@@ -85,7 +85,7 @@ function showArchetypeChoice() {
     const div = document.createElement('div'); div.className = 'item';
     div.appendChild(archPortrait(id, S.player.style));
     const mid = document.createElement('div');
-    mid.innerHTML = `<div class="nm">${a.name}</div><div class="ds">${a.flavor}</div><div class="st">${a.perkText}</div>`;
+    mid.innerHTML = `<div class="nm">${archName(a, S.player.style)}</div><div class="ds">${a.flavor}</div><div class="st">${a.perkText}</div>`;
     div.appendChild(mid);
     const b = document.createElement('button'); b.className = 'buy'; b.textContent = 'Choose';
     b.addEventListener('click', () => { chooseArchetype(S, id); $('archetype').style.display = 'none'; });
@@ -127,7 +127,7 @@ export function updateHud(state) {
   lvTxt.textContent = p.level;
   coinTxt.textContent = p.coins;
   wepEl.textContent = WEAPONS[p.weapon].name;
-  tribeEl.textContent = ARCHETYPES[p.archetype] ? ARCHETYPES[p.archetype].name : '';
+  tribeEl.textContent = ARCHETYPES[p.archetype] ? archName(ARCHETYPES[p.archetype], p.style) : '';
   foundEl.textContent = state.found.size;
   scoreEl.textContent = state.parkScore;
   acornEl.textContent = p.acorns;
