@@ -9,7 +9,7 @@
 // ============================================================================
 import { createState, toSaveData, applySaveData, DEFAULT_SEED } from '../src/state.js';
 import { step, respawn, buyWeapon, buyChile, nearShop, chooseArchetype, setStyle, weaponPrice, ability1State, ability2State } from '../src/simulate.js';
-import { G, T, WEAPONS, ENEMY_TYPES } from '../src/constants.js';
+import { G, T, WEAPONS, ENEMY_TYPES, xpNeed } from '../src/constants.js';
 import { gi } from '../src/tiles.js';
 
 let passed = 0, failed = 0;
@@ -276,6 +276,14 @@ const cFoe = mkFoe(sc, 230, 0, 500); sc.clouds[0].x = cFoe.x; sc.clouds[0].ttl =
 const cx0 = cFoe.x, rx0 = refFoe.x;
 for (let i = 0; i < 30; i++) { step(sc, ULT_OFF, 1 / 60); step(scRef, ULT_OFF, 1 / 60); }
 ok('clouded enemies move slower', (cx0 - cFoe.x) < (rx0 - refFoe.x) * 0.7);
+
+// hitting an ability level announces the unlock (so the UI can show the key)
+const au = createState(); au.started = true; au.player.archetype = 'tech'; au.player.level = 4;
+au.player.xp = xpNeed(4) - 1;                        // one kill from level 5
+au.player.weapon = 'paddle'; au.player.owned.add('paddle');
+mkFoe(au, 10, 0, 1).xp = 5;
+for (let i = 0; i < 120 && au.player.level < 5; i++) { au.player.fx = 1; au.player.fy = 0; au.player.atkCd = 0; step(au, { move: { x: 0, y: 0 }, attack: true }, 1 / 60); }
+ok('reaching level 5 emits an abilityUnlock event', au.events.some((e) => e.type === 'abilityUnlock' && e.slot === 1 && e.name === 'Overclock'));
 
 // --- 6c-2. character style (cosmetic) ----------------------------------------
 section('Character style');

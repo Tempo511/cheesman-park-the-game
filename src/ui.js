@@ -57,6 +57,13 @@ export function drainEvents(state) {
     if (ev.type === 'toast') toast(ev.t, ev.p, ev.ms);
     else if (ev.type === 'death') showDeath(ev);
     else if (ev.type === 'archetypeChoice') showArchetypeChoice();
+    else if (ev.type === 'abilityUnlock') {
+      const touch = document.body.classList.contains('touch');
+      const how = touch
+        ? 'Tap the new ' + (ev.slot === 1 ? 'blue' : 'orange') + ' button by Fire to use it.'
+        : 'Press ' + (ev.slot === 1 ? 'Q' : 'R') + ' to use it.';
+      toast(ev.icon + ' ' + ev.name + ' unlocked!', how, 6000);
+    }
   }
   state.events.length = 0;
 }

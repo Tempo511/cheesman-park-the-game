@@ -344,6 +344,12 @@ function gainXp(state, n) {
     player.hp = Math.min(player.maxHp, player.hp + Math.round(player.maxHp * 0.4));
     addFloat(state, player.x, player.y - 24, 'LEVEL ' + player.level + '!', '#e5c04b');
     toast(state, 'Level ' + player.level, 'Max HP +10, damage +7%. The park recognizes your service.', 3500);
+    // announce newly unlocked tribe abilities (UI adds the device-specific key/button hint)
+    const arch = ARCHETYPES[player.archetype];
+    if (arch) {
+      if (arch.ability1 && player.level === arch.ability1.level) emit(state, { type: 'abilityUnlock', slot: 1, name: arch.ability1.name, icon: arch.ability1.icon });
+      if (arch.ability2 && player.level === arch.ability2.level) emit(state, { type: 'abilityUnlock', slot: 2, name: arch.ability2.name, icon: arch.ability2.icon });
+    }
     if (player.level >= ARCHETYPE_LEVEL && !player.archetype && !state.choosing) {
       state.choosing = true; state.paused = true;                 // freeze for the tribe pick
       emit(state, { type: 'archetypeChoice' });
