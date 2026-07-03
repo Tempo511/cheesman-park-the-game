@@ -5,11 +5,11 @@
 // the same authoritative world independently (each with its own camera on its
 // own player). Nothing here feeds back into the simulation.
 // ============================================================================
-import { T, MW, MH, G, PAL, ZONES, SHOP_POS } from './constants.js';
+import { T, MW, MH, G, PAL, ZONES, SHOP_POS, ENEMY_TYPES } from './constants.js';
 import { gi, getG } from './tiles.js';
 import { ambientActive } from './simulate.js';
 import {
-  mkCanvas, px, drawPerson, drawPlayerChar, drawDog, drawSquirrel, drawZombie, drawGhostE, drawVampire, drawWerewolf, drawAlien, drawDancer, drawYogi,
+  mkCanvas, px, drawPerson, drawPlayerChar, drawDog, drawSquirrel, drawZombie, drawGhostE, drawVampire, drawWerewolf, drawAlien, drawSexton, drawDancer, drawYogi,
 } from './sprites.js';
 
 let cv, ctx, fxCv, fctx, miniCv, mctx, SPR;
@@ -284,7 +284,17 @@ export function render(state, t) {
   }
   for (const e of state.enemies) ents.push({ y: e.y, draw: () => {
     const ax = (e.x | 0) - camX, ay = (e.y | 0) - camY, hit = e.hitT > 0;
-    if (e.kind === 'zombie') drawZombie(ctx, ax, ay, e.dir, e.phase, e.rise, hit);
+    if (e.kind === 'sexton') {
+      if (e.winding > 0) {                            // slam telegraph: don't stand here
+        const r = ENEMY_TYPES.sexton.slamR;
+        ctx.strokeStyle = 'rgba(201,79,67,' + (0.35 + Math.sin(t * 20) * 0.2) + ')'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(ax, ay - 8, r, 0, 7); ctx.stroke();
+        ctx.fillStyle = 'rgba(201,79,67,.07)';
+        ctx.beginPath(); ctx.arc(ax, ay - 8, r, 0, 7); ctx.fill();
+      }
+      drawSexton(ctx, ax, ay, e.dir, e.phase, e.rise, hit, e.winding);
+    }
+    else if (e.kind === 'zombie') drawZombie(ctx, ax, ay, e.dir, e.phase, e.rise, hit);
     else if (e.kind === 'ghost') drawGhostE(ctx, ax, ay, t, Math.min(0.85, e.rise * 2), hit);
     else if (e.kind === 'vampire') drawVampire(ctx, ax, ay, e.dir, e.phase, e.rise, hit);
     else if (e.kind === 'werewolf') drawWerewolf(ctx, ax, ay, e.dir, e.phase, e.rise, hit);
@@ -455,7 +465,10 @@ export function renderMini(state, t) {
   }
   mctx.fillStyle = '#7fb4b4'; mctx.fillRect(44, 54, 2, 2); // ranger cart
   const MINI_COL = { zombie: '#c94f43', ghost: '#9db4e0', vampire: '#b83a6a', werewolf: '#c79a4a', alien: '#7ef05a' };
-  for (const e of state.enemies) { mctx.fillStyle = MINI_COL[e.kind] || '#c94f43'; mctx.fillRect(e.x / T | 0, e.y / T | 0, 1, 1); }
+  for (const e of state.enemies) {
+    if (ENEMY_TYPES[e.kind].boss) { mctx.fillStyle = ((t * 3 | 0) % 2) ? '#e5c04b' : '#c94f43'; mctx.fillRect((e.x / T | 0) - 1, (e.y / T | 0) - 1, 3, 3); }
+    else { mctx.fillStyle = MINI_COL[e.kind] || '#c94f43'; mctx.fillRect(e.x / T | 0, e.y / T | 0, 1, 1); }
+  }
   mctx.fillStyle = '#fff'; mctx.fillRect((state.player.x / T | 0) - 1, (state.player.y / T | 0) - 1, 3, 3);
   mctx.fillStyle = '#c94f43'; mctx.fillRect(state.player.x / T | 0, state.player.y / T | 0, 1, 1);
 }

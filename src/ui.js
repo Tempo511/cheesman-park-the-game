@@ -5,7 +5,7 @@
 // simulation) to show toasts / the death card. Shop purchases call the
 // authoritative sim functions so the same rules apply everywhere.
 // ============================================================================
-import { WEAPONS, WEAPON_ORDER, xpNeed, ARCHETYPES, ARCHETYPE_ORDER, MAX_LIVES, archName } from './constants.js';
+import { WEAPONS, WEAPON_ORDER, xpNeed, ARCHETYPES, ARCHETYPE_ORDER, MAX_LIVES, archName, ENEMY_TYPES } from './constants.js';
 import { nearShop, buyWeapon, buyChile, chooseArchetype, setStyle, weaponPrice, effectivePrice, ability1State, ability2State } from './simulate.js';
 import { mkCanvas, px, drawPlayerChar } from './sprites.js';
 
@@ -13,7 +13,7 @@ let S = null;
 const $ = (id) => document.getElementById(id);
 let hpTxt, hpBar, xpBar, lvTxt, coinTxt, wepEl, phaseTxt, phaseTimer, btnShop, foundEl, tribeEl;
 let scoreEl, acornEl, abilityEl, abBtn, ab1Lbl, ab1Fill, livesEl;
-let ability2El, ab2Btn, ab2Lbl, ab2Fill;
+let ability2El, ab2Btn, ab2Lbl, ab2Fill, bossbarEl, bossFillEl;
 let shopEl, shopItemsEl;
 let toastEl, toastH, toastP, toastTO = null;
 
@@ -28,6 +28,7 @@ export function initUI(state, { onStart, onRespawn, onNewRun } = {}) {
   abBtn = $('btnAbility1'); ab1Lbl = $('ab1lbl'); ab1Fill = $('ab1fill');
   ability2El = $('ability2'); ab2Btn = $('btnAbility2'); ab2Lbl = $('ab2lbl'); ab2Fill = $('ab2fill');
   livesEl = $('livesRow');
+  bossbarEl = $('bossbar'); bossFillEl = $('bossfill');
   shopEl = $('shop'); shopItemsEl = $('shopItems');
   toastEl = $('toast'); toastH = $('toast-h'); toastP = $('toast-p');
 
@@ -147,6 +148,13 @@ export function updateHud(state) {
   // abilities: desktop chips + mobile buttons (with cooldown drain)
   updateAbilityUI(ability1State(state), abilityEl, abBtn, ab1Lbl, ab1Fill, 'Q');
   updateAbilityUI(ability2State(state), ability2El, ab2Btn, ab2Lbl, ab2Fill, 'R');
+
+  // boss health bar
+  const boss = state.enemies.find((e) => ENEMY_TYPES[e.kind] && ENEMY_TYPES[e.kind].boss);
+  if (boss) {
+    bossbarEl.style.display = 'block';
+    bossFillEl.style.width = Math.max(0, boss.hp / boss.maxHp * 100) + '%';
+  } else bossbarEl.style.display = 'none';
 }
 
 function updateAbilityUI(ab, chipEl, btn, lblEl, fillEl, key) {

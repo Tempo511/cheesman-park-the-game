@@ -317,6 +317,39 @@ export function drawAlien(x2, ax, ay, dir, phase, rise, hit) {
   x2.globalAlpha = 1;
 }
 
+// THE SEXTON — hulking boss gravedigger, ~2x scale, shovel raised on windup
+export function drawSexton(x2, ax, ay, dir, phase, rise, hit, winding) {
+  const sw = Math.sin(phase * 0.6);
+  const skin = hit ? '#fff' : '#7da05f', overalls = hit ? '#fff' : '#3b4a6b',
+    shirt = hit ? '#fff' : '#5a4a3a', hat = hit ? '#fff' : '#43362a';
+  const body = () => {
+    px(x2, ax - 6, ay - 8, 5, 8, overalls); px(x2, ax + 2, ay - 8, 5, 8, overalls);          // legs
+    px(x2, ax - 8, ay - 20, 16, 12, overalls); px(x2, ax - 8, ay - 20, 16, 3, shirt);        // torso
+    px(x2, ax - 6, ay - 20, 2, 6, shirt); px(x2, ax + 4, ay - 20, 2, 6, shirt);              // straps
+    px(x2, ax - 11, ay - 19 + (sw > 0 ? 1 : 0), 3, 10, skin);                                // left arm
+    px(x2, ax - 5, ay - 28, 10, 8, skin);                                                    // head
+    x2.fillStyle = hit ? '#fff' : '#8a1f1f';
+    x2.fillRect(ax - 3, ay - 25, 2, 2); x2.fillRect(ax + 1, ay - 25, 2, 2);                  // eyes
+    px(x2, ax - 7, ay - 30, 14, 2, hat); px(x2, ax - 4, ay - 33, 8, 4, hat);                 // wide-brim hat
+    if (winding > 0) {                                                                        // shovel raised!
+      px(x2, ax + 6, ay - 22 + (sw > 0 ? 1 : 0), 3, 4, skin);
+      px(x2, ax + 7, ay - 38, 2, 16, '#7a5230'); px(x2, ax + 5, ay - 43, 6, 6, '#8a8f95');
+    } else {                                                                                  // at his side
+      px(x2, ax + 8, ay - 19 + (sw > 0 ? 0 : 1), 3, 8, skin);
+      px(x2, ax + 9, ay - 24, 2, 18, '#7a5230'); px(x2, ax + 7, ay - 8, 6, 6, '#8a8f95');
+    }
+  };
+  if (rise < 1) {                                                                             // clawing out, big
+    const h = (rise * 30) | 0;
+    x2.fillStyle = 'rgba(60,40,25,.6)'; x2.fillRect(ax - 10, ay - 3, 20, 6);
+    x2.save(); x2.beginPath(); x2.rect(ax - 16, ay - h, 32, h); x2.clip();
+    x2.translate(0, 30 - h); body(); x2.restore();
+    return;
+  }
+  x2.fillStyle = 'rgba(0,0,0,.3)'; x2.fillRect(ax - 8, ay - 2, 16, 4);
+  body();
+}
+
 export function drawGhostE(x2, ax, ay, t, alpha, hit) {
   x2.globalAlpha = alpha;
   const bob = Math.sin(t * 3 + ax) * 2;

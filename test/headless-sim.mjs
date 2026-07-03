@@ -128,14 +128,62 @@ function nightfallAt(prevNight) {
   st.spawnTimer = 0; step(st, NO_INPUT, 1 / 60);               // force one spawn
   return { night: st.night, wave, e: st.enemies[0] };
 }
-const n5 = nightfallAt(4), n12 = nightfallAt(11);
-ok('night 5 wave unchanged by late scaling (5+4n)', n5.wave === 25);
+const n4 = nightfallAt(3), n12 = nightfallAt(11);   // (nights 5/10 are boss nights with thinned waves)
+ok('night 4 wave unchanged by late scaling (5+4n)', n4.wave === 21);
 ok('night 12 wave exceeds the old cap of 30', n12.wave > 30);
-const t5 = ENEMY_TYPES[n5.e.kind], t12 = ENEMY_TYPES[n12.e.kind];
-ok('night 5 enemy HP uses the gentle formula', n5.e.hp === t5.hp0 + t5.hpN * 5);
+const t4 = ENEMY_TYPES[n4.e.kind], t12 = ENEMY_TYPES[n12.e.kind];
+ok('night 4 enemy HP uses the gentle formula', n4.e.hp === t4.hp0 + t4.hpN * 4);
 ok('night 12 enemy HP compounds (doubled growth past 7)', n12.e.hp === t12.hp0 + t12.hpN * (12 + 5));
-ok('night 5 enemy damage is base', n5.e.dmg === t5.dmg);
+ok('night 4 enemy damage is base', n4.e.dmg === t4.dmg);
 ok('night 12 enemy damage is base +5', n12.e.dmg === t12.dmg + 5);
+
+// --- 5d. boss nights: The Sexton ---------------------------------------------
+section('Boss nights');
+const bossNightfall = (prev) => { const st = createState(); st.started = true; st.night = prev; st.phaseT = 0.001; step(st, NO_INPUT, 1 / 60); return st; };
+const b5 = bossNightfall(4);
+ok('night 5 summons The Sexton', b5.enemies.some((e) => e.kind === 'sexton'));
+ok('boss night halves the regular wave', b5.spawnLeft <= 13);
+ok('night 6 has no boss', !bossNightfall(5).enemies.some((e) => e.kind === 'sexton'));
+ok('night 10 summons him again', bossNightfall(9).enemies.some((e) => e.kind === 'sexton'));
+
+// dawn waits for the boss
+b5.phaseT = 0.4;
+step(b5, NO_INPUT, 1 / 60);
+ok('the night timer holds while the boss lives', b5.phase === 'night' && b5.phaseT >= 0.9);
+
+// slam: windup -> shockwave + player damage + fresh zombies
+const bs = bossNightfall(4);
+const sexton = bs.enemies.find((e) => e.kind === 'sexton');
+sexton.rise = 1; sexton.slamT = 0.01;
+bs.spawnLeft = 0;                                        // no regular spawns interfering
+bs.player.maxHp = 800; bs.player.hp = 800;
+const enemiesBefore = bs.enemies.length;
+let slammed = false, sawShock = false;
+for (let i = 0; i < 180 && !slammed; i++) {
+  bs.player.x = sexton.x + 30; bs.player.y = sexton.y;   // stay in blast radius
+  step(bs, NO_INPUT, 1 / 60);
+  if (bs.shocks.length > 0) sawShock = true;
+  if (bs.player.hp < 800) slammed = true;
+}
+ok('sexton slam damages a player in the radius', slammed);
+ok('slam emits a shockwave ring', sawShock);
+ok('slam raises fresh zombies', bs.enemies.length > enemiesBefore);
+
+// killing the boss breaks dawn early with a big score bonus
+const bk = bossNightfall(4);
+const sx2 = bk.enemies.find((e) => e.kind === 'sexton');
+bk.spawnLeft = 0; sx2.rise = 1; sx2.hp = 1; sx2.spd = 0;
+bk.player.weapon = 'paddle'; bk.player.owned.add('paddle');
+const scoreB = bk.parkScore;
+let bossDead = false;
+for (let i = 0; i < 240 && !bossDead; i++) {
+  bk.player.x = sx2.x - 22; bk.player.y = sx2.y + 8; bk.player.fx = 1; bk.player.fy = 0; bk.player.atkCd = 0;
+  step(bk, { move: { x: 0, y: 0 }, attack: true }, 1 / 60);
+  if (!bk.enemies.includes(sx2)) bossDead = true;
+}
+ok('the boss can be killed', bossDead);
+ok('boss death breaks dawn immediately', bk.phase === 'day');
+ok('boss death awards a big score bonus (150 x night)', bk.parkScore >= scoreB + 150 * 5);
 
 // --- 6. XP / leveling -------------------------------------------------------
 section('Leveling');

@@ -199,6 +199,31 @@ function updateEnemies(state, dt, rng) {
     const dx = player.x - e.x, dy = (player.y - 4) - e.y, d = Math.hypot(dx, dy);
     e.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
 
+    // boss: telegraphed ground slam that also raises fresh zombies
+    if (ty.boss) {
+      if (e.winding > 0) {
+        e.winding -= dt;
+        if (e.winding <= 0) {                                // SLAM
+          state.shocks.push({ x: e.x, y: e.y - 8, r: 0, max: ty.slamR, t: 0.3, t0: 0.3 });
+          for (let k = 0; k < 12; k++) state.particles.push({ x: e.x + (rng() * 30 - 15), y: e.y - 4, vx: rng() * 80 - 40, vy: -20 - rng() * 50, ttl: .5, col: k % 2 ? '#43362a' : '#8a7a5f' });
+          const pd = Math.hypot(player.x - e.x, (player.y - 4) - e.y);
+          if (pd < ty.slamR && player.dashT <= 0 && player.ghostT <= 0) {
+            let sd = ty.slamDmg + lateNights(state.night);
+            if (player.shieldT > 0) sd = Math.round(sd * (1 - player.shieldAmt));
+            player.hp -= sd; player.flashT = 0.25; player.hurtCd = 0.8;
+            addFloat(state, player.x, player.y - 24, '-' + sd, '#c94f43');
+            const kd = Math.max(1, pd);
+            player.x += (player.x - e.x) / kd * 22; player.y += ((player.y - 4) - e.y) / kd * 22;
+            if (player.hp <= 0) die(state);
+          }
+          for (let k = 0; k < ty.summon; k++) makeEnemy(state, 'zombie', e.x + (rng() * 90 - 45), e.y + (rng() * 70 - 35), rng);
+        }
+        continue;                                            // rooted while winding up
+      }
+      e.slamT -= dt;
+      if (e.slamT <= 0 && d < 150) { e.winding = ty.slamWind; e.slamT = ty.slamCd; continue; }
+    }
+
     let inCloud = null;
     for (const c of state.clouds) if (Math.hypot(e.x - c.x, e.y - c.y) < c.r) { inCloud = c; break; }
     let spd = e.spd;
@@ -340,7 +365,7 @@ function tryAttack(state, rng) {
 }
 
 function damageEnemy(state, e, dmg, kx, ky, rng) {
-  const km = perk(state).knockMult || 1;
+  const km = (perk(state).knockMult || 1) * (ENEMY_TYPES[e.kind].boss ? 0.15 : 1); // bosses barely budge
   e.hp -= dmg; e.hitT = 0.1; e.kx += (kx || 0) * km; e.ky += (ky || 0) * km;
   addFloat(state, e.x + (rng() * 8 - 4), e.y - 18, Math.round(dmg), '#fff');
   if (e.hp <= 0) killEnemy(state, e, true, rng);
@@ -359,6 +384,11 @@ function killEnemy(state, e, drops, rng) {
   while (c > 0) { const v = Math.min(c, 2 + (rng() * 3 | 0)); c -= v;
     state.pickups.push({ t: 'coin', v, x: e.x + rng() * 16 - 8, y: e.y + rng() * 12 - 6, ttl: 20, bob: rng() * 6 }); }
   if (rng() < 0.10) state.pickups.push({ t: 'chile', x: e.x, y: e.y, ttl: 20, bob: rng() * 6 });
+  if (ENEMY_TYPES[e.kind].boss) {                  // boss down: big score, dawn breaks early
+    addScore(state, 150 * state.night);
+    toast(state, '🌅 The Sexton rests', 'Back under the lawn… for now. Dawn breaks early.', 6000);
+    startDay(state, rng);
+  }
 }
 
 function gainXp(state, n) {
@@ -511,7 +541,7 @@ function handleAbilities(state, inputs, rng) {
 // Player power keeps growing too, so runs should end around nights 8–12.
 const lateNights = (night) => Math.max(0, night - 7);
 
-function startNight(state) {
+function startNight(state, rng) {
   state.night++; state.phase = 'night'; state.phaseT = 55;
   state.spawnLeft = Math.min(60, 5 + 4 * state.night + lateNights(state.night) * 3);
   state.spawnTimer = 0.8;
@@ -523,6 +553,13 @@ function startNight(state) {
     const ty = ENEMY_TYPES[k];
     if (ty.minNight === state.night && ty.intro) toast(state, ty.intro[0], ty.intro[1], 6000);
   }
+  // every 5th night: a thinner wave, and The Sexton claws out of the cemetery
+  if (state.night % 5 === 0) {
+    state.spawnLeft = Math.max(4, Math.round(state.spawnLeft * 0.5));
+    makeEnemy(state, 'sexton', 22 * T, 32 * T, rng);   // the old cemetery lawn
+    const ty = ENEMY_TYPES.sexton;
+    toast(state, ty.intro[0], ty.intro[1], 6500);
+  }
 }
 function startDay(state, rng) {
   state.phase = 'day'; state.phaseT = 25;
@@ -533,6 +570,21 @@ function startDay(state, rng) {
   for (const e of [...state.enemies]) killEnemy(state, e, false, rng);
   toast(state, '☀ Dawn', 'Night ' + state.night + ' survived. Ranger bonus: $' + bonus + '. Restock while you can.', 5000);
 }
+// build one enemy of `kind` at (x,y) with night-scaled stats and spawn particles
+function makeEnemy(state, kind, x, y, rng) {
+  const night = state.night, ty = ENEMY_TYPES[kind];
+  const hp = ty.hp0 + ty.hpN * (night + lateNights(night));   // HP growth doubles past night 7
+  const spd = Math.min(ty.spdMax, ty.spd0 + ty.spdN * night);
+  const dmg = ty.dmg + lateNights(night);                     // +1 damage per late night
+  const e = { kind, x, y, hp, maxHp: hp, spd, dmg, xp: ty.xp,
+    coin: ty.coin0 + night + (rng() * 3 | 0), rise: ty.rise, phase: rng() * 6, hitT: 0, kx: 0, ky: 0, dir: 'down',
+    lungeT: rng() * 1.5, lunging: 0, blinkT: rng() * 3, ramCd: 0,
+    slamT: ty.slamCd || 0, winding: 0 };
+  state.enemies.push(e);
+  for (let i = 0; i < 6; i++) state.particles.push({ x: x + (rng() * 10 - 5), y, vx: rng() * 20 - 10, vy: -20 - rng() * 30, ttl: .5, col: ty.spawnCol });
+  return e;
+}
+
 function spawnEnemy(state, rng) {
   const player = state.player, night = state.night;
   // weighted pick among the kinds unlocked by this night
@@ -540,20 +592,13 @@ function spawnEnemy(state, rng) {
   let total = 0; for (const k of elig) total += ENEMY_TYPES[k].weight;
   let r = rng() * total, kind = elig[elig.length - 1];
   for (const k of elig) { r -= ENEMY_TYPES[k].weight; if (r <= 0) { kind = k; break; } }
-  const ty = ENEMY_TYPES[kind];
   let x, y, tries = 0;
   do {
     if (rng() < 0.6) { x = (18 + rng() * 10) * T; y = (28 + rng() * 10) * T; }  // cemetery lawn
     else { x = (6 + rng() * (MW - 14)) * T; y = (6 + rng() * (MH - 14)) * T; }
     tries++;
   } while ((Math.hypot(x - player.x, y - player.y) < 130 || SOLID_GROUND.has(getG(state, x / T | 0, y / T | 0))) && tries < 24);
-  const hp = ty.hp0 + ty.hpN * (night + lateNights(night));   // HP growth doubles past night 7
-  const spd = Math.min(ty.spdMax, ty.spd0 + ty.spdN * night);
-  const dmg = ty.dmg + lateNights(night);                     // +1 damage per late night
-  state.enemies.push({ kind, x, y, hp, maxHp: hp, spd, dmg, xp: ty.xp,
-    coin: ty.coin0 + night + (rng() * 3 | 0), rise: ty.rise, phase: rng() * 6, hitT: 0, kx: 0, ky: 0, dir: 'down',
-    lungeT: rng() * 1.5, lunging: 0, blinkT: rng() * 3, ramCd: 0 });
-  for (let i = 0; i < 6; i++) state.particles.push({ x: x + (rng() * 10 - 5), y, vx: rng() * 20 - 10, vy: -20 - rng() * 30, ttl: .5, col: ty.spawnCol });
+  makeEnemy(state, kind, x, y, rng);
 }
 
 // --- death / respawn -------------------------------------------------------
@@ -720,8 +765,10 @@ export function step(state, inputs, dt) {
       state.spawnTimer -= dt;
       if (state.spawnTimer <= 0) { spawnEnemy(state, rng); state.spawnLeft--; state.spawnTimer = Math.max(0.5, 2.0 - state.night * 0.08 - lateNights(state.night) * 0.06); }
     }
+    // a boss night doesn't end until the boss is down — dawn waits on him
+    if (state.enemies.some((e) => ENEMY_TYPES[e.kind].boss)) state.phaseT = Math.max(state.phaseT, 1);
     if (state.phaseT <= 0 || (state.spawnLeft === 0 && state.enemies.length === 0)) startDay(state, rng);
-  } else if (state.phaseT <= 0) startNight(state);
+  } else if (state.phaseT <= 0) startNight(state, rng);
 
   state.simSeed = rng.getSeed();
 }
