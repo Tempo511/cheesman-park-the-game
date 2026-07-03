@@ -162,8 +162,10 @@ export function drawSquirrel(x2, ax, ay, dir, phase) {
 
 // long hair, drawn over drawPerson's head for the 'f' style
 function drawLongHair(x2, ax, ay, dir, col) {
-  if (dir === 'up') { px(x2, ax - 4, ay - 17, 8, 4, col); }        // from behind: full
-  else { px(x2, ax - 4, ay - 16, 1, 6, col); px(x2, ax + 3, ay - 16, 1, 6, col); } // side strands
+  if (dir === 'up') {                                              // from behind:
+    px(x2, ax - 4, ay - 17, 8, 4, col);                            // full head of hair...
+    px(x2, ax - 3, ay - 13, 6, 5, col);                            // ...cascading down the back (no neck gap)
+  } else { px(x2, ax - 4, ay - 16, 1, 6, col); px(x2, ax + 3, ay - 16, 1, 6, col); } // side strands
 }
 
 // The player character: base person + archetype outfit + style ('m'|'f').
