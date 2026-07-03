@@ -195,12 +195,13 @@ export function drawPlayerChar(x2, ax, ay, dir, phase, archId, style, flash) {
       px(x2, hx, ay - 8, 3, 4, '#15151c'); px(x2, hx + 1, ay - 7, 1, 2, '#7fd0ff');
     }
     if (fem) { px(x2, ax - 1, ay - 19, 3, 2, '#2b2b2b'); }                       // topknot bun
-  } else if (archId === 'pothead') {
-    // tie-dye shirt with a leaf on it, shades, beard (bro) / long hair (gal)
+  } else if (archId === 'hippie') {
+    // tie-dye shirt with a daisy on it, shades, beard (bro) / long hair (gal)
     drawPerson(x2, ax, ay, dir, phase, { skin:'#d9a06f', shirt:'#8e6fb8', pants:'#4c6b57', hair:'#6b4a2e' }, false);
     px(x2, ax - 3, ay - 7, 6, 1, '#a98fd0'); px(x2, ax - 4, ay - 9, 1, 2, '#d98aa6'); px(x2, ax + 3, ay - 10, 1, 2, '#e5c04b'); // tie-dye swirls
-    px(x2, ax - 1, ay - 11, 2, 1, '#4c9a3f'); px(x2, ax - 2, ay - 10, 4, 1, '#4c9a3f'); // the leaf
-    px(x2, ax - 1, ay - 9, 2, 1, '#4c9a3f'); px(x2, ax, ay - 8, 1, 1, '#2c5a28');       // (stem)
+    px(x2, ax, ay - 11, 1, 1, '#f7f3e8'); px(x2, ax, ay - 9, 1, 1, '#f7f3e8');   // the daisy: petals...
+    px(x2, ax - 1, ay - 10, 1, 1, '#f7f3e8'); px(x2, ax + 1, ay - 10, 1, 1, '#f7f3e8');
+    px(x2, ax, ay - 10, 1, 1, '#e5c04b');                                        // ...and center
     if (dir !== 'up') px(x2, ax - 3, ay - 14, 6, 2, '#1c1c1c');                  // shades, always
     if (fem) drawLongHair(x2, ax, ay, dir, '#6b4a2e');
     else if (dir !== 'up') px(x2, ax - 3, ay - 13, 6, 2, '#6b4a2e');             // beard

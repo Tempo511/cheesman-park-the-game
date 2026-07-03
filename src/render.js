@@ -338,6 +338,36 @@ export function render(state, t) {
       ctx.beginPath(); ctx.arc(sx, sy, sw.range, sw.ang - 0.9, sw.ang + 0.9); ctx.stroke();
     }
   }
+  // ultimate effects: smoke clouds, Ace shockwaves, the tech drone
+  for (const c of state.clouds) {
+    const ax = c.x - camX, ay = c.y - camY, fade = Math.min(1, c.ttl);
+    ctx.globalAlpha = 0.28 * fade;
+    ctx.fillStyle = '#b9c7a8';
+    ctx.beginPath(); ctx.arc(ax, ay, c.r, 0, 7); ctx.fill();
+    ctx.globalAlpha = 0.22 * fade;
+    ctx.fillStyle = '#cfd8c0';
+    for (let k = 0; k < 3; k++) {
+      const px2 = ax + Math.sin(t * 0.8 + k * 2.1) * c.r * 0.4, py2 = ay + Math.cos(t * 0.6 + k * 1.7) * c.r * 0.3;
+      ctx.beginPath(); ctx.arc(px2, py2, c.r * 0.45, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  for (const s of state.shocks) {
+    const a = Math.max(0, s.t / 0.35);
+    ctx.strokeStyle = 'rgba(242,234,214,' + (a * 0.9) + ')'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(s.x - camX, s.y - camY, s.r, 0, 7); ctx.stroke();
+    ctx.strokeStyle = 'rgba(229,192,75,' + (a * 0.5) + ')'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(s.x - camX, s.y - camY, Math.max(0, s.r - 4), 0, 7); ctx.stroke();
+  }
+  if (state.drone) {
+    const d = state.drone, ax = (d.x | 0) - camX, ay = (d.y | 0) - camY;
+    ctx.fillStyle = 'rgba(0,0,0,.15)'; ctx.fillRect(ax - 3, ay + 22, 7, 2);   // shadow far below
+    const rot = ((t * 30) | 0) % 2;                                            // rotor flicker
+    px(ctx, ax - 6, ay - 2, 4, 1, rot ? '#9fb4c4' : '#dfe8ee'); px(ctx, ax + 3, ay - 2, 4, 1, rot ? '#dfe8ee' : '#9fb4c4');
+    px(ctx, ax - 3, ay - 1, 7, 4, '#3a3a40'); px(ctx, ax - 3, ay - 1, 7, 1, '#55555f');
+    px(ctx, ax - 1, ay + 1, 3, 2, '#7fd0ff');                                  // camera eye
+    if (d.ttl < 2 && ((t * 6) | 0) % 2) px(ctx, ax + 3, ay - 4, 2, 2, '#c94f43'); // low-battery blink
+  }
   // particles & floats
   for (const p of state.particles) { ctx.globalAlpha = Math.min(1, p.ttl * 3); px(ctx, (p.x | 0) - camX, (p.y | 0) - camY, 2, 2, p.col); }
   ctx.globalAlpha = 1;

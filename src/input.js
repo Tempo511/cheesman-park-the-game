@@ -16,11 +16,12 @@
 const keys = {};
 let attackHeld = false;                 // fire button held
 let ability1Held = false;               // ability button held
+let ability2Held = false;               // ultimate button held
 const joy = { x: 0, y: 0 };             // normalized move vector from the stick
 let moveId = null, moveOX = 0, moveOY = 0;
 const DEAD = 0.2, MAXR = 52;
 
-let stickEl, nubEl, fireBtn, moveZone, ability1Btn;
+let stickEl, nubEl, fireBtn, moveZone, ability1Btn, ability2Btn;
 
 // Build this frame's input intent for the local player.
 export function getInputs() {
@@ -32,7 +33,8 @@ export function getInputs() {
   dx += joy.x; dy += joy.y;
   const attack = !!(keys[' '] || keys['j'] || keys['k'] || attackHeld);
   const ability1 = !!(keys['q'] || ability1Held);
-  return { move: { x: dx, y: dy }, attack, ability1 };
+  const ability2 = !!(keys['r'] || ability2Held);
+  return { move: { x: dx, y: dy }, attack, ability1, ability2 };
 }
 
 function setJoy(px, py) {
@@ -67,6 +69,7 @@ export function initInput({ onShop, onEscape } = {}) {
   fireBtn = document.getElementById('btnA');
   moveZone = document.getElementById('moveZone');
   ability1Btn = document.getElementById('btnAbility1');
+  ability2Btn = document.getElementById('btnAbility2');
 
   if ('ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0) document.body.classList.add('touch');
 
@@ -99,14 +102,17 @@ export function initInput({ onShop, onEscape } = {}) {
     addEventListener('mouseup', up);
   }
 
-  // --- ABILITY 1: tap the ability button ----------------------------------
-  if (ability1Btn) {
-    const down = (e) => { e.preventDefault(); ability1Held = true; };
-    const up = () => { ability1Held = false; };
-    ability1Btn.addEventListener('touchstart', down, { passive: false });
-    ability1Btn.addEventListener('touchend', up);
-    ability1Btn.addEventListener('touchcancel', up);
-    ability1Btn.addEventListener('mousedown', down);
+  // --- ABILITIES: tap the ability buttons ----------------------------------
+  const wireAbilityBtn = (btn, set) => {
+    if (!btn) return;
+    const down = (e) => { e.preventDefault(); set(true); };
+    const up = () => set(false);
+    btn.addEventListener('touchstart', down, { passive: false });
+    btn.addEventListener('touchend', up);
+    btn.addEventListener('touchcancel', up);
+    btn.addEventListener('mousedown', down);
     addEventListener('mouseup', up);
-  }
+  };
+  wireAbilityBtn(ability1Btn, (v) => { ability1Held = v; });
+  wireAbilityBtn(ability2Btn, (v) => { ability2Held = v; });
 }

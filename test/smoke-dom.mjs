@@ -136,7 +136,7 @@ try {
   state.events.push({ type: 'archetypeChoice' });
   ui.drainEvents(state);
   ok('archetype pick overlay builds without throwing', true);
-  for (const arch of [null, 'volleyball', 'tech', 'pothead']) for (const st of ['m', 'f']) {
+  for (const arch of [null, 'volleyball', 'tech', 'hippie']) for (const st of ['m', 'f']) {
     state.player.archetype = arch; state.player.style = st;
     for (const dir of ['down', 'up', 'left', 'right']) { state.player.dir = dir; render.render(state, 9); }
   }
@@ -149,6 +149,15 @@ try {
   render.render(state, 10);
   ui.updateHud(state);
   ok('renders ability buffs + updates the ability HUD', true);
+
+  // ultimate effects render + dual-ability HUD
+  state.player.level = 10;
+  state.drone = { ttl: 5, fireCd: 0, x: state.player.x + 16, y: state.player.y - 30 };
+  state.clouds.push({ x: state.player.x, y: state.player.y, r: 64, ttl: 3, slow: 0.35 });
+  state.shocks.push({ x: state.player.x, y: state.player.y - 8, r: 40, max: 90, t: 0.2 });
+  render.render(state, 11);
+  ui.updateHud(state);
+  ok('renders drone + smoke cloud + shockwave and the ultimate HUD', true);
 } catch (e) { err = e; failed++; console.error('  ✗ THREW:', e && e.stack || e); }
 
 console.log(`\n${failed === 0 ? '✓ ALL PASSED' : '✗ FAILURES'} — ${passed} passed, ${failed} failed`);

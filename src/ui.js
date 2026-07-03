@@ -6,13 +6,14 @@
 // authoritative sim functions so the same rules apply everywhere.
 // ============================================================================
 import { WEAPONS, WEAPON_ORDER, xpNeed, ARCHETYPES, ARCHETYPE_ORDER, MAX_LIVES } from './constants.js';
-import { nearShop, buyWeapon, buyChile, chooseArchetype, setStyle, weaponPrice, effectivePrice, ability1State } from './simulate.js';
+import { nearShop, buyWeapon, buyChile, chooseArchetype, setStyle, weaponPrice, effectivePrice, ability1State, ability2State } from './simulate.js';
 import { mkCanvas, px, drawPlayerChar } from './sprites.js';
 
 let S = null;
 const $ = (id) => document.getElementById(id);
 let hpTxt, hpBar, xpBar, lvTxt, coinTxt, wepEl, phaseTxt, phaseTimer, btnShop, foundEl, tribeEl;
 let scoreEl, acornEl, abilityEl, abBtn, ab1Lbl, ab1Fill, livesEl;
+let ability2El, ab2Btn, ab2Lbl, ab2Fill;
 let shopEl, shopItemsEl;
 let toastEl, toastH, toastP, toastTO = null;
 
@@ -25,6 +26,7 @@ export function initUI(state, { onStart, onRespawn, onNewRun } = {}) {
   foundEl = $('found'); tribeEl = $('tribe');
   scoreEl = $('scoreTxt'); acornEl = $('acornTxt'); abilityEl = $('ability');
   abBtn = $('btnAbility1'); ab1Lbl = $('ab1lbl'); ab1Fill = $('ab1fill');
+  ability2El = $('ability2'); ab2Btn = $('btnAbility2'); ab2Lbl = $('ab2lbl'); ab2Fill = $('ab2fill');
   livesEl = $('livesRow');
   shopEl = $('shop'); shopItemsEl = $('shopItems');
   toastEl = $('toast'); toastH = $('toast-h'); toastP = $('toast-p');
@@ -128,23 +130,27 @@ export function updateHud(state) {
   phaseTimer.textContent = Math.ceil(state.phaseT) + 's';
   btnShop.style.display = (state.started && !state.paused && nearShop(state)) ? 'block' : 'none';
 
-  // ability 1: desktop chip + mobile button (with cooldown drain)
-  const ab = ability1State(state);
+  // abilities: desktop chips + mobile buttons (with cooldown drain)
+  updateAbilityUI(ability1State(state), abilityEl, abBtn, ab1Lbl, ab1Fill, 'Q');
+  updateAbilityUI(ability2State(state), ability2El, ab2Btn, ab2Lbl, ab2Fill, 'R');
+}
+
+function updateAbilityUI(ab, chipEl, btn, lblEl, fillEl, key) {
   if (!ab || !ab.unlocked) {
-    abilityEl.innerHTML = '';
-    if (abBtn) abBtn.style.display = 'none';
-  } else {
-    if (abBtn) {
-      abBtn.style.display = '';
-      abBtn.classList.toggle('cooling', !ab.ready);
-      ab1Lbl.textContent = ab.icon;
-      ab1Fill.style.height = (ab.ready ? 0 : ab.cd / ab.cdMax * 100) + '%';
-    }
-    const pct = ab.ready ? 100 : Math.round((1 - ab.cd / ab.cdMax) * 100);
-    abilityEl.innerHTML = ab.ready
-      ? `<span class="rdy">Q · ${ab.name} · READY</span>`
-      : `Q · ${ab.name}<div class="abar"><i style="width:${pct}%"></i></div>`;
+    chipEl.innerHTML = '';
+    if (btn) btn.style.display = 'none';
+    return;
   }
+  if (btn) {
+    btn.style.display = '';
+    btn.classList.toggle('cooling', !ab.ready);
+    lblEl.textContent = ab.icon;
+    fillEl.style.height = (ab.ready ? 0 : ab.cd / ab.cdMax * 100) + '%';
+  }
+  const pct = ab.ready ? 100 : Math.round((1 - ab.cd / ab.cdMax) * 100);
+  chipEl.innerHTML = ab.ready
+    ? `<span class="rdy">${key} · ${ab.name} · READY</span>`
+    : `${key} · ${ab.name}<div class="abar"><i style="width:${pct}%"></i></div>`;
 }
 
 // --- shop ------------------------------------------------------------------

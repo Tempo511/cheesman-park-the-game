@@ -178,10 +178,14 @@ function updateEnemies(state, dt, rng) {
     if (e.rise < 1) { e.rise += dt * ty.riseSpd; continue; }
     e.phase += dt * (ty.fly ? 4 : 6);
     e.x += e.kx * dt * 6; e.y += e.ky * dt * 6; e.kx *= Math.pow(.001, dt); e.ky *= Math.pow(.001, dt);
+    if (e.stunT > 0) { e.stunT -= dt; continue; }          // Ace-stunned: knockback drift only
     const dx = player.x - e.x, dy = (player.y - 4) - e.y, d = Math.hypot(dx, dy);
     e.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
 
+    let inCloud = null;
+    for (const c of state.clouds) if (Math.hypot(e.x - c.x, e.y - c.y) < c.r) { inCloud = c; break; }
     let spd = e.spd;
+    if (inCloud) spd *= inCloud.slow;                      // mellowed, moving through syrup
     if (ty.lunge) {                                    // werewolf: periodic speed bursts
       e.lungeT -= dt;
       if (e.lungeT <= 0) { e.lungeT = 1.4 + rng() * 1.2; e.lunging = 0.35; }
@@ -203,11 +207,11 @@ function updateEnemies(state, dt, rng) {
       if (zPassable(state, e.x, ny)) e.y = ny; else e.x += (dx > 0 ? 1 : -1) * spd * dt * 0.7;
     }
 
-    if (d < 12 && player.hurtCd <= 0 && player.dashT <= 0) {  // dashT > 0 = i-frames
+    if (d < 12 && player.hurtCd <= 0 && player.dashT <= 0 && !inCloud) {  // dashT = i-frames; clouded enemies are too chill to bite
       player.hurtCd = 0.8; player.flashT = 0.25;
       const pk = perk(state);
       let dmg = e.dmg;
-      if (pk.superRes && ty.super) dmg = Math.round(dmg * (1 - pk.superRes)); // pothead shrugs off the supernatural
+      if (pk.superRes && ty.super) dmg = Math.round(dmg * (1 - pk.superRes)); // hippie shrugs off the supernatural
       if (player.shieldT > 0) dmg = Math.round(dmg * (1 - player.shieldAmt)); // second wind
       player.hp -= dmg;
       addFloat(state, player.x, player.y - 24, '-' + dmg, '#c94f43');
@@ -381,7 +385,7 @@ function useAbility1(state, rng) {
   } else if (p.archetype === 'tech') {           // Overclock
     p.hasteT = ab.dur; p.hasteMoveMult = ab.speed; p.hasteRateMult = ab.haste;
     addFloat(state, p.x, p.y - 26, 'OVERCLOCK', '#7fd0ff');
-  } else if (p.archetype === 'pothead') {        // Second Wind
+  } else if (p.archetype === 'hippie') {         // Second Wind
     const heal = Math.round(p.maxHp * ab.healFrac);
     p.hp = Math.min(p.maxHp, p.hp + heal);
     p.shieldT = ab.dur; p.shieldAmt = ab.resist;
@@ -389,11 +393,68 @@ function useAbility1(state, rng) {
   }
 }
 
+// UI-facing status for ability 2 (the ultimate).
+export function ability2State(state) {
+  const ab = (ARCHETYPES[state.player.archetype] || {}).ability2;
+  if (!ab) return null;
+  const unlocked = state.player.level >= ab.level;
+  return { name: ab.name, icon: ab.icon, unlocked, cd: state.player.ab2Cd, cdMax: ab.cd,
+    ready: unlocked && state.player.ab2Cd <= 0 };
+}
+
+function useAbility2(state, rng) {
+  const p = state.player, ab = (ARCHETYPES[p.archetype] || {}).ability2;
+  if (!ab) return;
+  p.ab2Cd = ab.cd;
+  if (p.archetype === 'volleyball') {            // Ace: radial shockwave
+    state.shocks.push({ x: p.x, y: p.y - 8, r: 0, max: ab.radius, t: 0.35 });
+    for (const e of state.enemies) {
+      if (e.rise < 1) continue;
+      const dx = e.x - p.x, dy = (e.y - 8) - (p.y - 8), d = Math.hypot(dx, dy);
+      if (d > ab.radius) continue;
+      e.stunT = ab.stun;
+      damageEnemy(state, e, ab.dmg * p.dmgMult, dx / Math.max(1, d) * ab.knock, dy / Math.max(1, d) * ab.knock, rng);
+    }
+    addFloat(state, p.x, p.y - 28, 'ACE!', '#f2ead6');
+  } else if (p.archetype === 'tech') {           // Deploy Drone
+    state.drone = { ttl: ab.dur, fireCd: 0.4, x: p.x + 16, y: p.y - 30 };
+    addFloat(state, p.x, p.y - 26, 'DRONE ONLINE', '#7fd0ff');
+  } else if (p.archetype === 'hippie') {         // Smoke Cloud
+    state.clouds.push({ x: p.x, y: p.y - 6, r: ab.radius, ttl: ab.dur, slow: ab.slow });
+    addFloat(state, p.x, p.y - 26, 'chill…', '#b9c79a');
+  }
+}
+
+// the Tech drone: hovers by the player, auto-fires at the nearest enemy
+function updateDrone(state, dt) {
+  const d = state.drone; if (!d) return;
+  d.ttl -= dt; if (d.ttl <= 0) { state.drone = null; return; }
+  const p = state.player;
+  const tx = p.x + 16, ty = p.y - 30 + Math.sin(state.time * 4) * 3;
+  d.x += (tx - d.x) * Math.min(1, dt * 6); d.y += (ty - d.y) * Math.min(1, dt * 6);
+  d.fireCd -= dt;
+  if (d.fireCd <= 0) {
+    let best = null, bd = 170;
+    for (const e of state.enemies) { if (e.rise < 1) continue; const dist = Math.hypot(e.x - d.x, (e.y - 8) - d.y); if (dist < bd) { bd = dist; best = e; } }
+    if (best) {
+      const ab = ARCHETYPES.tech.ability2;
+      d.fireCd = ab.rate;
+      const ang = Math.atan2((best.y - 8) - d.y, best.x - d.x);
+      state.projectiles.push({ x: d.x, y: d.y, vx: Math.cos(ang) * 260, vy: Math.sin(ang) * 260,
+        dmg: ab.dmg * p.dmgMult, ttl: 0.8, size: 3, col: '#7fd0ff', splash: 0, spin: 0, style: 'bolt' });
+    }
+  }
+}
+
 // edge-triggered: fires on the frame the input goes from up -> down
 function handleAbilities(state, inputs, rng) {
-  const p = state.player, st = ability1State(state);
-  if (inputs.ability1 && !p.ab1Held && st && st.ready) useAbility1(state, rng);
+  const p = state.player;
+  const st1 = ability1State(state);
+  if (inputs.ability1 && !p.ab1Held && st1 && st1.ready) useAbility1(state, rng);
   p.ab1Held = !!inputs.ability1;
+  const st2 = ability2State(state);
+  if (inputs.ability2 && !p.ab2Held && st2 && st2.ready) useAbility2(state, rng);
+  p.ab2Held = !!inputs.ability2;
 }
 
 // --- day / night -----------------------------------------------------------
@@ -462,10 +523,11 @@ export function respawn(state) {
   p.hp = p.maxHp;
   p.x = 53 * T; p.y = 46 * T;
   // clear transient combat state so you don't wake up mid-dash or pre-buffed
-  p.atkCd = 0; p.hurtCd = 0; p.flashT = 0; p.ab1Cd = 0;
+  p.atkCd = 0; p.hurtCd = 0; p.flashT = 0; p.ab1Cd = 0; p.ab2Cd = 0;
   p.dashT = 0; p.hasteT = 0; p.shieldT = 0;
   state.enemies.length = 0; state.projectiles.length = 0;
   state.swings.length = 0; state.particles.length = 0; state.floats.length = 0; state.pickups.length = 0;
+  state.drone = null; state.clouds.length = 0; state.shocks.length = 0;
   state.phase = 'day'; state.phaseT = 25;
   state.dead = false; state.paused = false;
   toast(state, '☀ Dawn', 'You wake up on the pavilion steps. A ranger took a 25% "rescue fee."', 5000);
@@ -572,6 +634,7 @@ export function step(state, inputs, dt) {
   updateNpcs(state, dt, rng);
   updateAmbients(state, dt, rng);
   updateEnemies(state, dt, rng);
+  updateDrone(state, dt);
   updateProjectiles(state, dt, rng);
   updatePickups(state, dt);
   updateDaytime(state, dt, rng);
@@ -579,10 +642,13 @@ export function step(state, inputs, dt) {
 
   p.atkCd -= dt; p.hurtCd -= dt; p.flashT -= dt;
   p.ab1Cd = Math.max(0, p.ab1Cd - dt);
+  p.ab2Cd = Math.max(0, p.ab2Cd - dt);
+  for (let i = state.clouds.length - 1; i >= 0; i--) { const c = state.clouds[i]; c.ttl -= dt; if (c.ttl <= 0) state.clouds.splice(i, 1); }
+  for (let i = state.shocks.length - 1; i >= 0; i--) { const s = state.shocks[i]; s.t -= dt; s.r = s.max * (1 - Math.max(0, s.t) / 0.35); if (s.t <= 0) state.shocks.splice(i, 1); }
   p.dashT = Math.max(0, p.dashT - dt);
   p.hasteT = Math.max(0, p.hasteT - dt);
   p.shieldT = Math.max(0, p.shieldT - dt);
-  if (perk(state).regen) p.hp = Math.min(p.maxHp, p.hp + perk(state).regen * dt); // pothead regen
+  if (perk(state).regen) p.hp = Math.min(p.maxHp, p.hp + perk(state).regen * dt); // hippie regen
 
   for (const s of [...state.swings]) { s.t -= dt; if (s.t <= 0) state.swings.splice(state.swings.indexOf(s), 1); }
   for (const pt of [...state.particles]) {

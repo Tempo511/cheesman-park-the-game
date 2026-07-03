@@ -31,14 +31,15 @@ export function createState(seed = DEFAULT_SEED) {
     enemies: [], projectiles: [], pickups: [], particles: [], floats: [], swings: [],
     acorns: [], squirrels: [],             // daytime critters
     parkScore: 0, bestScore: 0, crittersActive: false, acornT: 0,
+    drone: null, clouds: [], shocks: [],   // ultimate-ability entities
 
     player: {
       x: 6 * T + 8, y: 45.5 * T, dir: 'right', fx: 1, fy: 0, phase: 0, moving: false, speed: 76,
       hp: 100, maxHp: 100, coins: 0, xp: 0, level: 1, dmgMult: 1,
       weapon: 'frisbee', owned: new Set(['frisbee']), atkCd: 0, hurtCd: 0, flashT: 0, kills: 0,
       archetype: null, style: 'm',           // cosmetic look: 'm' | 'f'
-      // ability 1 + transient buffs
-      ab1Cd: 0, ab1Held: false,
+      // abilities + transient buffs
+      ab1Cd: 0, ab1Held: false, ab2Cd: 0, ab2Held: false,
       dashT: 0, dashVX: 0, dashVY: 0, dashDmg: 0, dashRange: 0, dashKnock: 0,
       hasteT: 0, hasteMoveMult: 1, hasteRateMult: 1,
       shieldT: 0, shieldAmt: 0,

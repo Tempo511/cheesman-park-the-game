@@ -8,7 +8,7 @@
 //   node test/headless-sim.mjs
 // ============================================================================
 import { createState, toSaveData, applySaveData, DEFAULT_SEED } from '../src/state.js';
-import { step, respawn, buyWeapon, buyChile, nearShop, chooseArchetype, setStyle, weaponPrice, ability1State } from '../src/simulate.js';
+import { step, respawn, buyWeapon, buyChile, nearShop, chooseArchetype, setStyle, weaponPrice, ability1State, ability2State } from '../src/simulate.js';
 import { G, T, WEAPONS, ENEMY_TYPES } from '../src/constants.js';
 import { gi } from '../src/tiles.js';
 
@@ -180,8 +180,8 @@ const hitBy = (kind, arch) => {
   s.enemies.push({ kind, x: s.player.x, y: s.player.y, hp: 999, maxHp: 999, spd: 0, dmg: 20, xp: 0, coin: 0, rise: 1, phase: 0, hitT: 0, kx: 0, ky: 0, dir: 'left', lungeT: 0, lunging: 0, blinkT: 0 });
   const b = s.player.hp; for (let i = 0; i < 10 && s.player.hp === b; i++) step(s, NO_INPUT, 1 / 60); return b - s.player.hp;
 };
-ok('pothead takes less damage from a ghost (supernatural)', hitBy('ghost', 'pothead') < hitBy('ghost', null));
-ok('pothead does NOT reduce zombie (physical) damage', Math.abs(hitBy('zombie', 'pothead') - hitBy('zombie', null)) < 1);
+ok('hippie takes less damage from a ghost (supernatural)', hitBy('ghost', 'hippie') < hitBy('ghost', null));
+ok('hippie does NOT reduce zombie (physical) damage', Math.abs(hitBy('zombie', 'hippie') - hitBy('zombie', null)) < 1);
 
 // --- 6c. tribe abilities (phase 2) ------------------------------------------
 section('Tribe abilities');
@@ -218,13 +218,64 @@ const oc = withTribe('tech', 6); step(oc, AB_ON, 1 / 60);
 ok('overclock applies a haste buff', oc.player.hasteT > 0 && oc.player.hasteMoveMult > 1);
 
 // Second Wind
-const sw = withTribe('pothead', 6); sw.player.maxHp = 200; sw.player.hp = 50;
+const sw = withTribe('hippie', 6); sw.player.maxHp = 200; sw.player.hp = 50;
 step(sw, AB_ON, 1 / 60);
 ok('second wind heals', sw.player.hp > 50);
 ok('second wind grants a damage shield', sw.player.shieldT > 0 && sw.player.shieldAmt > 0);
 const swHp = sw.player.hp;
 step(sw, AB_OFF, 1 / 60); step(sw, AB_ON, 1 / 60);   // release + press while still on cooldown
 ok('cannot recast while on cooldown', sw.player.hp <= swHp + 2);
+
+// --- 6c-1b. tribe ultimates (phase 3) ----------------------------------------
+section('Tribe ultimates');
+const ULT_ON = { move: { x: 0, y: 0 }, attack: false, ability1: false, ability2: true };
+const ULT_OFF = { move: { x: 0, y: 0 }, attack: false, ability1: false, ability2: false };
+const mkFoe = (s, dx, dy, hp = 60) => { const e = { kind: 'zombie', x: s.player.x + dx, y: s.player.y + dy, hp, maxHp: hp, spd: 30, dmg: 10,
+  xp: 0, coin: 0, rise: 1, phase: 0, hitT: 0, kx: 0, ky: 0, dir: 'left', lungeT: 99, lunging: 0, blinkT: 99 }; s.enemies.push(e); return e; };
+
+ok('ultimate locked before level 10', ability2State(withTribe('volleyball', 9)).unlocked === false);
+ok('ultimate unlocked + ready at level 10', ability2State(withTribe('volleyball', 10)).ready === true);
+
+// Ace: shockwave damages + stuns everything nearby
+const ace = withTribe('volleyball', 10);
+const near = mkFoe(ace, 40, 0), far = mkFoe(ace, 300, 0);
+step(ace, ULT_ON, 1 / 60);
+ok('ace damages a nearby enemy', near.hp < near.maxHp);
+ok('ace stuns the nearby enemy', near.stunT > 0);
+ok('ace spares distant enemies', far.hp === far.maxHp && !far.stunT);
+ok('ace spawns a shockwave + goes on cooldown', ace.shocks.length === 1 && ace.player.ab2Cd > 0);
+const nx0 = near.x;
+for (let i = 0; i < 30; i++) step(ace, ULT_OFF, 1 / 60);
+ok('stunned enemy does not chase (knockback drift only)', near.x >= nx0); // chasing would move it LEFT toward the player
+
+// Drone: deploys, auto-fires, expires
+const dr = withTribe('tech', 10);
+mkFoe(dr, 60, 0, 500);
+step(dr, ULT_ON, 1 / 60);
+ok('drone deploys', dr.drone !== null);
+let droneFired = false;
+for (let i = 0; i < 90; i++) { step(dr, ULT_OFF, 1 / 60); if (dr.projectiles.some((p) => p.style === 'bolt')) { droneFired = true; break; } }
+ok('drone auto-fires at a nearby enemy', droneFired);
+dr.drone.ttl = 0.01; step(dr, ULT_OFF, 1 / 60);
+ok('drone expires after its duration', dr.drone === null);
+
+// Smoke Cloud: slows enemies inside and pacifies them
+const sc = withTribe('hippie', 10);
+const inFoe = mkFoe(sc, 30, 0, 500);
+step(sc, ULT_ON, 1 / 60);
+ok('smoke cloud placed', sc.clouds.length === 1);
+// pacified: sitting inside the cloud, on top of the player, it can't bite
+sc.player.hp = sc.player.maxHp = 300; inFoe.x = sc.player.x; inFoe.y = sc.player.y;
+const hpB = sc.player.hp;
+for (let i = 0; i < 40; i++) step(sc, ULT_OFF, 1 / 60);
+ok('clouded enemies are too mellow to attack', sc.player.hp === hpB);
+// slowed: compare approach speed with a cloudless twin
+const scRef = withTribe('hippie', 10);
+const refFoe = mkFoe(scRef, 30, 0, 500); refFoe.x = scRef.player.x + 200;
+const cFoe = mkFoe(sc, 230, 0, 500); sc.clouds[0].x = cFoe.x; sc.clouds[0].ttl = 99;
+const cx0 = cFoe.x, rx0 = refFoe.x;
+for (let i = 0; i < 30; i++) { step(sc, ULT_OFF, 1 / 60); step(scRef, ULT_OFF, 1 / 60); }
+ok('clouded enemies move slower', (cx0 - cFoe.x) < (rx0 - refFoe.x) * 0.7);
 
 // --- 6c-2. character style (cosmetic) ----------------------------------------
 section('Character style');
