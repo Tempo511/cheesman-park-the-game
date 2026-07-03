@@ -145,11 +145,11 @@ export function updateHud(state) {
 function updateAbilityUI(ab, chipEl, btn, lblEl, fillEl, key) {
   if (!ab || !ab.unlocked) {
     chipEl.innerHTML = '';
-    if (btn) btn.style.display = 'none';
+    if (btn) btn.classList.remove('unlocked');    // CSS shows .unlocked buttons on touch only
     return;
   }
   if (btn) {
-    btn.style.display = '';
+    btn.classList.add('unlocked');
     btn.classList.toggle('cooling', !ab.ready);
     lblEl.textContent = ab.icon;
     fillEl.style.height = (ab.ready ? 0 : ab.cd / ab.cdMax * 100) + '%';
