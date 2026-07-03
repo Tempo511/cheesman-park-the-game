@@ -189,9 +189,9 @@ const withTribe = (id, lvl = 6) => { const s = createState(); s.started = true; 
 const AB_ON = { move: { x: 0, y: 0 }, attack: false, ability1: true };
 const AB_OFF = { move: { x: 0, y: 0 }, attack: false, ability1: false };
 
-ok('ability locked before level 6', ability1State(withTribe('volleyball', 5)).unlocked === false);
-const abUn = withTribe('volleyball', 6);
-ok('ability unlocked + ready at level 6', ability1State(abUn).unlocked && ability1State(abUn).ready);
+ok('ability locked before level 5', ability1State(withTribe('volleyball', 4)).unlocked === false);
+const abUn = withTribe('volleyball', 5);
+ok('ability unlocked + ready at level 5', ability1State(abUn).unlocked && ability1State(abUn).ready);
 
 // Spike Dash
 const dash = withTribe('volleyball', 6); dash.player.fx = 1; dash.player.fy = 0;
@@ -233,8 +233,8 @@ const ULT_OFF = { move: { x: 0, y: 0 }, attack: false, ability1: false, ability2
 const mkFoe = (s, dx, dy, hp = 60) => { const e = { kind: 'zombie', x: s.player.x + dx, y: s.player.y + dy, hp, maxHp: hp, spd: 30, dmg: 10,
   xp: 0, coin: 0, rise: 1, phase: 0, hitT: 0, kx: 0, ky: 0, dir: 'left', lungeT: 99, lunging: 0, blinkT: 99 }; s.enemies.push(e); return e; };
 
-ok('ultimate locked before level 10', ability2State(withTribe('volleyball', 9)).unlocked === false);
-ok('ultimate unlocked + ready at level 10', ability2State(withTribe('volleyball', 10)).ready === true);
+ok('ultimate locked before level 8', ability2State(withTribe('volleyball', 7)).unlocked === false);
+ok('ultimate unlocked + ready at level 8', ability2State(withTribe('volleyball', 8)).ready === true);
 
 // Ace: shockwave damages + stuns everything nearby
 const ace = withTribe('volleyball', 10);
