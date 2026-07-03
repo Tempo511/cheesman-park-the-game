@@ -183,7 +183,9 @@ export function drawPlayerChar(x2, ax, ay, dir, phase, archId, style, flash) {
     if (fem) { px(x2, ax - 4, ay - 11, 8, 3, '#f2ead6'); drawLongHair(x2, ax, ay, dir, '#4a3123'); }
     else { px(x2, ax, ay - 10, 1, 4, '#c9925e'); px(x2, ax - 2, ay - 9, 1, 1, '#c9925e'); px(x2, ax + 1, ay - 9, 1, 1, '#c9925e'); } // pecs/abs hints
     px(x2, ax - 3, ay - 16, 6, 1, '#c94f43');                                    // headband
-    px(x2, dir === 'left' ? ax - 6 : ax + 4, ay - 7, 2, 2, '#f2ead6');           // wristband
+    // red sweatband, tracking the arm's walk-cycle bob (drawPerson offsets)
+    const armOff = dir === 'left' ? (sw > 0 ? 1 : 0) : (sw > 0 ? 0 : 1);
+    px(x2, dir === 'left' ? ax - 6 : ax + 4, ay - 8 + armOff, 2, 2, '#c94f43');
   } else if (archId === 'tech') {
     // puffer vest over grey long sleeves, earbuds, phone perpetually in hand
     drawPerson(x2, ax, ay, dir, phase, { skin:'#e8b58a', shirt:'#4c6b57', pants:'#8a8a8a', hair:'#2b2b2b' }, false);
