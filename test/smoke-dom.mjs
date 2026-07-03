@@ -133,14 +133,14 @@ try {
   ok('renders all monster types without throwing', true);
 
   // the boss: sprite (idle + winding), slam telegraph, minimap blip, boss bar
-  state.enemies.push({ kind: 'sexton', x: state.player.x + 60, y: state.player.y, hp: 300, maxHp: 600, spd: 20, dmg: 20, xp: 0, coin: 0, rise: 1, phase: 1, hitT: 0, kx: 0, ky: 0, dir: 'left', lungeT: 0, lunging: 0, blinkT: 0, ramCd: 0, slamT: 1, winding: 0.4 });
+  state.enemies.push({ kind: 'mcgovern', x: state.player.x + 60, y: state.player.y, hp: 300, maxHp: 600, spd: 20, dmg: 20, xp: 0, coin: 0, rise: 1, phase: 1, hitT: 0, kx: 0, ky: 0, dir: 'left', lungeT: 0, lunging: 0, blinkT: 0, ramCd: 0, slamT: 1, winding: 0.4 });
   render.render(state, 8.5);
   render.renderMini(state, 8.5);
   ui.updateHud(state);
   state.enemies[state.enemies.length - 1].winding = 0;
   state.enemies[state.enemies.length - 1].rise = 0.5;
   render.render(state, 8.7);
-  ok('renders The Sexton (telegraph, rising, boss bar) without throwing', true);
+  ok('renders E.P. McGovern (telegraph, rising, boss bar) without throwing', true);
 
   // archetype pick overlay builds, and the player renders with the makeover
   state.events.push({ type: 'archetypeChoice' });

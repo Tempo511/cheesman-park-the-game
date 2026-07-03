@@ -137,14 +137,14 @@ ok('night 12 enemy HP compounds (doubled growth past 7)', n12.e.hp === t12.hp0 +
 ok('night 4 enemy damage is base', n4.e.dmg === t4.dmg);
 ok('night 12 enemy damage is base +5', n12.e.dmg === t12.dmg + 5);
 
-// --- 5d. boss nights: The Sexton ---------------------------------------------
+// --- 5d. boss nights: E.P. McGovern ---------------------------------------------
 section('Boss nights');
 const bossNightfall = (prev) => { const st = createState(); st.started = true; st.night = prev; st.phaseT = 0.001; step(st, NO_INPUT, 1 / 60); return st; };
 const b5 = bossNightfall(4);
-ok('night 5 summons The Sexton', b5.enemies.some((e) => e.kind === 'sexton'));
+ok('night 5 summons E.P. McGovern', b5.enemies.some((e) => e.kind === 'mcgovern'));
 ok('boss night halves the regular wave', b5.spawnLeft <= 13);
-ok('night 6 has no boss', !bossNightfall(5).enemies.some((e) => e.kind === 'sexton'));
-ok('night 10 summons him again', bossNightfall(9).enemies.some((e) => e.kind === 'sexton'));
+ok('night 6 has no boss', !bossNightfall(5).enemies.some((e) => e.kind === 'mcgovern'));
+ok('night 10 summons him again', bossNightfall(9).enemies.some((e) => e.kind === 'mcgovern'));
 
 // dawn waits for the boss
 b5.phaseT = 0.4;
@@ -153,25 +153,25 @@ ok('the night timer holds while the boss lives', b5.phase === 'night' && b5.phas
 
 // slam: windup -> shockwave + player damage + fresh zombies
 const bs = bossNightfall(4);
-const sexton = bs.enemies.find((e) => e.kind === 'sexton');
-sexton.rise = 1; sexton.slamT = 0.01;
+const mcgovern = bs.enemies.find((e) => e.kind === 'mcgovern');
+mcgovern.rise = 1; mcgovern.slamT = 0.01;
 bs.spawnLeft = 0;                                        // no regular spawns interfering
 bs.player.maxHp = 800; bs.player.hp = 800;
 const enemiesBefore = bs.enemies.length;
 let slammed = false, sawShock = false;
 for (let i = 0; i < 180 && !slammed; i++) {
-  bs.player.x = sexton.x + 30; bs.player.y = sexton.y;   // stay in blast radius
+  bs.player.x = mcgovern.x + 30; bs.player.y = mcgovern.y;   // stay in blast radius
   step(bs, NO_INPUT, 1 / 60);
   if (bs.shocks.length > 0) sawShock = true;
   if (bs.player.hp < 800) slammed = true;
 }
-ok('sexton slam damages a player in the radius', slammed);
+ok('mcgovern slam damages a player in the radius', slammed);
 ok('slam emits a shockwave ring', sawShock);
 ok('slam raises fresh zombies', bs.enemies.length > enemiesBefore);
 
 // killing the boss breaks dawn early with a big score bonus
 const bk = bossNightfall(4);
-const sx2 = bk.enemies.find((e) => e.kind === 'sexton');
+const sx2 = bk.enemies.find((e) => e.kind === 'mcgovern');
 bk.spawnLeft = 0; sx2.rise = 1; sx2.hp = 1; sx2.spd = 0;
 bk.player.weapon = 'paddle'; bk.player.owned.add('paddle');
 const scoreB = bk.parkScore;

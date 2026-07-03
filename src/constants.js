@@ -81,10 +81,10 @@ export const ENEMY_TYPES = {
     intro:['👽 …Aliens?', 'They blink around and hit hard — but they’re worth a fortune.'] },
   // THE SEXTON — Mount Prospect's old caretaker; boss of every 5th night.
   // Not in ENEMY_ORDER (never random-spawned): startNight places him.
-  sexton:   { boss:true, hp0:320, hpN:75, spd0:24, spdN:1.5, spdMax:40, dmg:24, xp:120, coin0:60, rise:0, riseSpd:0.5, fly:false,
+  mcgovern:   { boss:true, hp0:320, hpN:75, spd0:24, spdN:1.5, spdMax:40, dmg:24, xp:120, coin0:60, rise:0, riseSpd:0.5, fly:false,
     slamCd:4.5, slamWind:0.8, slamR:58, slamDmg:20, summon:2,
     spawnCol:'#43362a', deathCol:'#8a6d3b',
-    intro:['🌕 The Sexton stirs', 'Mount Prospect’s caretaker still tends his graves. He’d like you to stay.'] },
+    intro:['🌕 E.P. McGovern rises', 'The undertaker Denver hired in 1893 to move these graves — paid $1.90 per body, so he made every body count as three. Fired mid-job, he left the rest under your feet. Tonight he’s back to finish the count. With you.'] },
 };
 export const ENEMY_ORDER = ['zombie', 'ghost', 'vampire', 'werewolf', 'alien'];
 

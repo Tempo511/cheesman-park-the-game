@@ -318,7 +318,7 @@ export function drawAlien(x2, ax, ay, dir, phase, rise, hit) {
 }
 
 // THE SEXTON — hulking boss gravedigger, ~2x scale, shovel raised on windup
-export function drawSexton(x2, ax, ay, dir, phase, rise, hit, winding) {
+export function drawMcGovern(x2, ax, ay, dir, phase, rise, hit, winding) {
   const sw = Math.sin(phase * 0.6);
   const skin = hit ? '#fff' : '#7da05f', overalls = hit ? '#fff' : '#3b4a6b',
     shirt = hit ? '#fff' : '#5a4a3a', hat = hit ? '#fff' : '#43362a';

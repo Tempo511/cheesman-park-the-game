@@ -9,7 +9,7 @@ import { T, MW, MH, G, PAL, ZONES, SHOP_POS, ENEMY_TYPES } from './constants.js'
 import { gi, getG } from './tiles.js';
 import { ambientActive } from './simulate.js';
 import {
-  mkCanvas, px, drawPerson, drawPlayerChar, drawDog, drawSquirrel, drawZombie, drawGhostE, drawVampire, drawWerewolf, drawAlien, drawSexton, drawDancer, drawYogi,
+  mkCanvas, px, drawPerson, drawPlayerChar, drawDog, drawSquirrel, drawZombie, drawGhostE, drawVampire, drawWerewolf, drawAlien, drawMcGovern, drawDancer, drawYogi,
 } from './sprites.js';
 
 let cv, ctx, fxCv, fctx, miniCv, mctx, SPR;
@@ -284,15 +284,15 @@ export function render(state, t) {
   }
   for (const e of state.enemies) ents.push({ y: e.y, draw: () => {
     const ax = (e.x | 0) - camX, ay = (e.y | 0) - camY, hit = e.hitT > 0;
-    if (e.kind === 'sexton') {
+    if (e.kind === 'mcgovern') {
       if (e.winding > 0) {                            // slam telegraph: don't stand here
-        const r = ENEMY_TYPES.sexton.slamR;
+        const r = ENEMY_TYPES.mcgovern.slamR;
         ctx.strokeStyle = 'rgba(201,79,67,' + (0.35 + Math.sin(t * 20) * 0.2) + ')'; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.arc(ax, ay - 8, r, 0, 7); ctx.stroke();
         ctx.fillStyle = 'rgba(201,79,67,.07)';
         ctx.beginPath(); ctx.arc(ax, ay - 8, r, 0, 7); ctx.fill();
       }
-      drawSexton(ctx, ax, ay, e.dir, e.phase, e.rise, hit, e.winding);
+      drawMcGovern(ctx, ax, ay, e.dir, e.phase, e.rise, hit, e.winding);
     }
     else if (e.kind === 'zombie') drawZombie(ctx, ax, ay, e.dir, e.phase, e.rise, hit);
     else if (e.kind === 'ghost') drawGhostE(ctx, ax, ay, t, Math.min(0.85, e.rise * 2), hit);

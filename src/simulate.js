@@ -386,7 +386,7 @@ function killEnemy(state, e, drops, rng) {
   if (rng() < 0.10) state.pickups.push({ t: 'chile', x: e.x, y: e.y, ttl: 20, bob: rng() * 6 });
   if (ENEMY_TYPES[e.kind].boss) {                  // boss down: big score, dawn breaks early
     addScore(state, 150 * state.night);
-    toast(state, '🌅 The Sexton rests', 'Back under the lawn… for now. Dawn breaks early.', 6000);
+    toast(state, '🌅 McGovern is fired. Again.', 'Back under the lawn with the rest of his handiwork. Dawn breaks early.', 6000);
     startDay(state, rng);
   }
 }
@@ -553,12 +553,12 @@ function startNight(state, rng) {
     const ty = ENEMY_TYPES[k];
     if (ty.minNight === state.night && ty.intro) toast(state, ty.intro[0], ty.intro[1], 6000);
   }
-  // every 5th night: a thinner wave, and The Sexton claws out of the cemetery
+  // every 5th night: a thinner wave, and E.P. McGovern claws out of the cemetery
   if (state.night % 5 === 0) {
     state.spawnLeft = Math.max(4, Math.round(state.spawnLeft * 0.5));
-    makeEnemy(state, 'sexton', 22 * T, 32 * T, rng);   // the old cemetery lawn
-    const ty = ENEMY_TYPES.sexton;
-    toast(state, ty.intro[0], ty.intro[1], 6500);
+    makeEnemy(state, 'mcgovern', 22 * T, 32 * T, rng);   // the old cemetery lawn
+    const ty = ENEMY_TYPES.mcgovern;
+    toast(state, ty.intro[0], ty.intro[1], 9500);   // the lore card gets time to be read
   }
 }
 function startDay(state, rng) {
