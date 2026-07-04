@@ -214,8 +214,13 @@ function refreshShop() {
   }
   const cp = effectivePrice(S, 25);
   const bc = $('buyChile');
-  bc.textContent = 'Green Chile Snack — $' + cp + ' (heal 35)';
-  bc.disabled = S.player.coins < cp || S.player.hp >= S.player.maxHp;
+  if (S.phase !== 'day') {                        // kitchen keeps day hours
+    bc.textContent = 'Green Chile Snack — kitchen closed till dawn 🌙';
+    bc.disabled = true;
+  } else {
+    bc.textContent = 'Green Chile Snack — $' + cp + ' (heal 35)';
+    bc.disabled = S.player.coins < cp || S.player.hp >= S.player.maxHp;
+  }
 }
 
 export function openShop() { S.shopOpen = true; S.paused = true; refreshShop(); shopEl.style.display = 'flex'; }

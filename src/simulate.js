@@ -651,6 +651,7 @@ export function buyWeapon(state, id) {
   else if (state.player.coins >= price) { state.player.coins -= price; state.player.owned.add(id); state.player.weapon = id; }
 }
 export function buyChile(state) {
+  if (state.phase !== 'day') return;   // the kitchen closes at night — no mid-horde heal spam
   const price = effectivePrice(state, 25);
   if (state.player.coins >= price && state.player.hp < state.player.maxHp) {
     state.player.coins -= price; state.player.hp = Math.min(state.player.maxHp, state.player.hp + 35);

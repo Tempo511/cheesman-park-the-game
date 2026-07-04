@@ -126,7 +126,7 @@ window.__state = state;
 window.__diag = () => ({
   started: state.started, paused: state.paused, orientationBlocked,
   dead: state.dead, hidden: document.hidden, lastTs: last,
-  coarsePointer, portrait: portraitMQ.matches,
+  coarsePointer: coarseMQ.matches, portrait: portraitMQ.matches,
   night: state.night, phaseT: Math.round(state.phaseT),
   playerXY: [Math.round(state.player.x), Math.round(state.player.y)],
 });
