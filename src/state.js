@@ -30,7 +30,7 @@ export function createState(seed = DEFAULT_SEED) {
     ambients: [],
     enemies: [], projectiles: [], pickups: [], particles: [], floats: [], swings: [],
     acorns: [], squirrels: [],             // daytime critters
-    parkScore: 0, bestScore: 0, crittersActive: false, acornT: 0,
+    parkScore: 0, bestScore: 0, crittersActive: false, acornT: 0, sproutMet: false,
     drone: null, clouds: [], shocks: [],   // ultimate-ability entities
     zenT: 0,                               // yogi ultimate: global slow-motion
 

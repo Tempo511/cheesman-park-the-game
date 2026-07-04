@@ -449,6 +449,21 @@ nite.phase = 'night'; nite.spawnLeft = 10; nite.spawnTimer = 5; nite.phaseT = 50
 step(nite, NO_INPUT, 1 / 60);
 ok('squirrels & acorns clear at night', nite.squirrels.length === 0 && nite.acorns.length === 0);
 
+// Sprout interaction: stand with her, get a pet — +5 score, hearts, cooldown
+const spp = createState(); spp.started = true;
+const dpark = spp.ambients.find((a) => a.kind === 'dogpark');
+const sprout = dpark.dogs.find((d) => d.sprout);
+const sppScore = spp.parkScore;
+let petted = false;
+for (let i = 0; i < 300 && !petted; i++) {
+  spp.player.x = sprout.x; spp.player.y = sprout.y;   // stay right on her
+  step(spp, NO_INPUT, 1 / 60);
+  if (spp.parkScore > sppScore) petted = true;
+}
+ok('petting Sprout grants +5 Park Score', petted && spp.parkScore === sppScore + 5);
+ok('Sprout pets are rate-limited (cooldown set)', sprout.petCd > 0);
+ok('meeting Sprout toasts once', spp.events.some((e) => e.type === 'toast' && e.t.includes('Sprout')) && spp.sproutMet === true);
+
 const ks = createState(); ks.started = true; ks.player.weapon = 'paddle'; ks.player.owned.add('paddle');
 ks.enemies.push({ kind: 'zombie', x: ks.player.x + 12, y: ks.player.y, hp: 1, maxHp: 1, spd: 0, dmg: 0, xp: 0, coin: 0, rise: 1, phase: 0, hitT: 0, kx: 0, ky: 0, dir: 'left', lungeT: 0, lunging: 0, blinkT: 0 });
 const ksc0 = ks.parkScore;

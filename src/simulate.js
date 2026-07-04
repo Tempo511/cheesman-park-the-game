@@ -165,6 +165,23 @@ function updateAmbients(state, dt, rng) {
     if (a.kind === 'dance') a.beat += dt;
     if (a.kind === 'dogpark') {
       for (const d of a.dogs) {
+        // Sprout notices you: she runs over, accepts one (1) pet, then it's
+        // back to herding until the cooldown clears
+        if (d.sprout && (d.petCd = Math.max(0, (d.petCd || 0) - dt)) === 0) {
+          const pdx = player.x - d.x, pdy = player.y - d.y, pd = Math.hypot(pdx, pdy);
+          if (pd < 130 && pd > 12) { d.tx = player.x; d.ty = player.y; d.pause = 0; }
+          else if (pd <= 12) {
+            d.petCd = 9;
+            addScore(state, 5);
+            addFloat(state, d.x, d.y - 14, '❤ +5', '#d98aa6');
+            for (let k = 0; k < 5; k++) state.particles.push({ x: d.x, y: d.y - 8, vx: rng() * 30 - 15, vy: -12 - rng() * 18, ttl: .7, col: '#d98aa6', ng: 1 });
+            const ang = rng() * 6.283; d.tx = a.x + Math.cos(ang) * a.r * 0.6; d.ty = a.y + Math.sin(ang) * a.r * 0.6;
+            if (!state.sproutMet) {
+              state.sproutMet = true;
+              toast(state, '🐕 Sprout!', 'Corgi chassis, cattle-dog paint job. The unofficial mayor of the dog park has accepted your pet.', 5500);
+            }
+          }
+        }
         if (d.pause > 0) { d.pause -= dt; continue; }             // stopped to sniff
         const dx = d.tx - d.x, dy = d.ty - d.y, m = Math.hypot(dx, dy);
         if (m < 6) {                                              // reached target — pick a new one
