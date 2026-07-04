@@ -9,7 +9,7 @@ import { T, MW, MH, G, PAL, ZONES, SHOP_POS, ENEMY_TYPES } from './constants.js'
 import { gi, getG } from './tiles.js';
 import { ambientActive } from './simulate.js';
 import {
-  mkCanvas, px, drawPerson, drawPlayerChar, drawDog, drawSquirrel, drawZombie, drawGhostE, drawVampire, drawWerewolf, drawAlien, drawMcGovern, drawDancer, drawYogi,
+  mkCanvas, px, drawPerson, drawPlayerChar, drawDog, drawSprout, drawSquirrel, drawZombie, drawGhostE, drawVampire, drawWerewolf, drawAlien, drawMcGovern, drawDancer, drawYogi,
 } from './sprites.js';
 
 let cv, ctx, fxCv, fctx, miniCv, mctx, SPR;
@@ -279,7 +279,10 @@ export function render(state, t) {
     } });
     if (a.kind === 'dogpark') {
       for (const o of a.owners) ents.push({ y: o.y, draw: () => { drawPerson(ctx, (o.x | 0) - camX, (o.y | 0) - camY, o.dir, 0, o.pal, false); } });
-      for (const d of a.dogs) ents.push({ y: d.y, draw: () => { drawDog(ctx, (d.x | 0) - camX, (d.y | 0) - camY, d.dir, d.phase, d.col, d.dark); } });
+      for (const d of a.dogs) ents.push({ y: d.y, draw: () => {
+        if (d.sprout) drawSprout(ctx, (d.x | 0) - camX, (d.y | 0) - camY, d.dir, d.phase);
+        else drawDog(ctx, (d.x | 0) - camX, (d.y | 0) - camY, d.dir, d.phase, d.col, d.dark);
+      } });
     }
   }
   for (const e of state.enemies) ents.push({ y: e.y, draw: () => {

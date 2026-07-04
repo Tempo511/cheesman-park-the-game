@@ -145,9 +145,12 @@ function initEntities(state, rnd) {
         {x:29*T,   y:28*T,   col:'#e0c078', dark:'#b8944a'},  // golden
         {x:27*T,   y:27*T,   col:'#9a968e', dark:'#6f6b63'},  // grey
         {x:32*T,   y:25.5*T, col:'#c8743f', dark:'#9a5227'},  // ginger
+        {x:30*T,   y:26.5*T, col:'#f4efe2', dark:'#c8743f', sprout:true},  // SPROUT (corgi × cattle dog)
       ].map((d) => ({ ...d, tx:d.x, ty:d.y, sp:40 + rnd() * 22, phase:rnd() * 6, dir:'right', pause:rnd() * 0.6 })),
       lines:['Is he friendly?','They just LOVE each other.','Loki! Leave it!',
-        'He’s usually better than this.','Off-leash hours. Technically.','Oh, they’re fine — they’re playing.'] },
+        'He’s usually better than this.','Off-leash hours. Technically.','Oh, they’re fine — they’re playing.',
+        'Sprout! Leave the squirrels alone!','Sprout’s a corgi. Ish. The spots are a whole thing.',
+        'Sprout herds the other dogs. Nobody asked her to.'] },
   ];
 }
 

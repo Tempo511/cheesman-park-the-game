@@ -236,6 +236,23 @@ export function drawPlayerChar(x2, ax, ay, dir, phase, archId, style, flash) {
   }
 }
 
+// SPROUT — corgi × cattle dog: corgi-low and corgi-long, big ears,
+// white coat with brown-orange patches. A very good girl.
+export function drawSprout(x2, ax, ay, dir, phase) {
+  const b = Math.sin(phase) > 0 ? 1 : 0;
+  const white = '#f4efe2', spot = '#c8743f', spotD = '#a85a2f';
+  x2.fillStyle = 'rgba(0,0,0,.22)'; x2.fillRect(ax - 5, ay - 1, 11, 2);
+  px(x2, ax - 5, ay - 5, 11, 4, white);                                    // long, low body
+  px(x2, ax - 3, ay - 5, 3, 2, spot); px(x2, ax + 2, ay - 4, 3, 2, spot);  // saddle patches
+  px(x2, ax - 4, ay - 1, 2, 1 + b, white); px(x2, ax + 3, ay - 1, 2, 2 - b, white); // stubby legs
+  const hx = dir === 'left' ? ax - 8 : ax + 4;
+  px(x2, hx, ay - 9, 5, 5, white);                                         // head
+  px(x2, hx + (dir === 'left' ? 0 : 2), ay - 9, 3, 2, spot);               // orange eye-patch
+  px(x2, hx, ay - 11, 2, 2, spot); px(x2, hx + 3, ay - 11, 2, 2, spotD);   // the big ears
+  x2.fillStyle = '#101014'; x2.fillRect(hx + (dir === 'left' ? 1 : 3), ay - 7, 1, 1); // eye
+  px(x2, dir === 'left' ? ax + 5 : ax - 7, ay - 7 + b, 2, 2, white);       // fluffy tail nub
+}
+
 export function drawDog(x2, ax, ay, dir, phase, col = '#b98d5e', dark = '#8a6540') {
   const b = Math.sin(phase) > 0 ? 1 : 0;
   x2.fillStyle = 'rgba(0,0,0,.22)'; x2.fillRect(ax - 4, ay - 1, 9, 2);

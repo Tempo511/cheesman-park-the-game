@@ -31,6 +31,7 @@ ok('has paved figure-8 (PAVE tiles)', s.ground.some((v) => v === G.PAVE));
 ok('has a ranger cart object', s.objects.some((o) => o.type === 'cart'));
 ok('npcs initialized', s.npcs.length === 3);
 ok('ambients initialized', s.ambients.length >= 8);
+ok('Sprout is at the dog park', s.ambients.some((a) => a.kind === 'dogpark' && a.dogs.some((d) => d.sprout)));
 
 // --- 2. determinism (the co-op guarantee) ----------------------------------
 section('Determinism');
