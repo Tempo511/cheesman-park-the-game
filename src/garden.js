@@ -1,20 +1,21 @@
 // ============================================================================
 // garden.js — the Denver Botanic Gardens bonus map (the Garden Run scene).
 //
-// Layout follows the real York Street map (2024 tear-off), entering at the
-// Cheesman Gate on the WEST edge and reading east, loosely to scale:
-//   NW  — Monet Pool (the big horseshoe) wrapped in the Shofu-En Japanese
-//         Garden; tea-house peninsula inside the U; bridge across the south
-//   N   — Greenhouse complex + the Boettcher Conservatory dome on a plaza
-//   CTR — formal annual/cutting beds in stripes; Steppe waterway
-//   S   — Science Pyramid, Four Towers Pool, El Pomar Waterway channel
-//   SW  — Laura Porter Plains garden (dry grass), Dryland Mesa (sand +
-//         cactus stand-ins), Rock Alpine garden
-//   SE  — Romantic/lilac gardens; amphitheater ellipse; Waring House corner
-//   E   — visitor center, promenade, York Street + parking strip
+// Built from the York Street tear-off map + aerial photography. The design
+// truth of the real place, which this map tries to honor:
+//   * the WEST half is naturalistic — the Monet Pool's organic waterline
+//     (full of lilies), Shofu-En "Garden of Pine and Wind" with its character
+//     pines, winding gravel, steppe and mesa plantings, almost no straight
+//     lines
+//   * the EAST half is formal — the El Pomar Waterway runs as a straight
+//     tree-lined canal axis from the Four Towers Pool (the headwaters of all
+//     the Gardens' water) below the Science Pyramid, past fountain beds, to
+//     parterres, the amphitheater terraces and the Waring House
+//   * the NORTH is working glass — the sawtooth greenhouse ranges — beside
+//     the one showpiece: the Boettcher Conservatory's ribbed concrete dome
 //
-// Same array dimensions as the park (MW x MH) so every collision/camera
-// helper works untouched; only the top GH rows are used.
+// Enter at the Cheesman Gate (west edge) and read east, like the real thing.
+// Same array dimensions as the park (MW x MH); only the top GH rows are used.
 // ============================================================================
 import { T, MW, MH, GH, G, GARDEN } from './constants.js';
 import { gi, inMap } from './tiles.js';
@@ -23,106 +24,181 @@ export function buildGarden(state, rnd) {
   const ground = state.gardenGround, solid = state.gardenSolid, objects = state.gardenObjects;
 
   const setG = (x, y, v) => { if (inMap(x, y) && y < GH) ground[gi(x, y)] = v; };
+  const at = (x, y) => (inMap(x, y) && y < GH ? ground[gi(x, y)] : G.ROAD);
   const fillG = (x0, y0, x1, y1, v) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) setG(x, y, v); };
   const addObj = (type, x, y, isSolid = true) => {
     objects.push({ type, x, y });
     if (isSolid) { const tx = Math.round(x), ty = Math.round(y); if (inMap(tx, ty)) solid[gi(tx, ty)] = 1; }
   };
+  // organic shapes: filled ellipse + a wobbly-edged blob + curving path stamps
+  const ellipseFill = (cx, cy, rx, ry, v) => {
+    for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++)
+      for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++)
+        if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1) setG(x, y, v);
+  };
+  const blob = (cx, cy, rx, ry, v) => {
+    ellipseFill(cx, cy, rx, ry, v);
+    for (let i = 0; i < 5; i++) {                          // wobble the shoreline
+      const a = rnd() * Math.PI * 2;
+      ellipseFill(cx + Math.cos(a) * rx * 0.7, cy + Math.sin(a) * ry * 0.7, rx * 0.35 + rnd(), ry * 0.35 + rnd(), v);
+    }
+  };
+  const GRASSY = new Set([G.GRASS, G.GRASS2, G.DRY, G.SAND]);
+  const stampAt = (x, y, v, thick) => {
+    const x0 = Math.round(x - thick / 2), y0 = Math.round(y - thick / 2);
+    for (let dy = 0; dy < thick; dy++) for (let dx = 0; dx < thick; dx++)
+      if (GRASSY.has(at(x0 + dx, y0 + dy))) setG(x0 + dx, y0 + dy, v);
+  };
+  const curve = (pts, v = G.PATH, thick = 2) => {           // polyline gravel path
+    for (let s = 0; s < pts.length - 1; s++) {
+      const [x0, y0] = pts[s], [x1, y1] = pts[s + 1];
+      const steps = Math.ceil(Math.hypot(x1 - x0, y1 - y0) * 2) + 1;
+      for (let i = 0; i <= steps; i++) stampAt(x0 + (x1 - x0) * i / steps, y0 + (y1 - y0) * i / steps, v, thick);
+    }
+  };
 
-  // --- base: lawn everywhere, roads on the far edges ------------------------
+  // --- base: lawn; 11th Ave north, York St + parking east --------------------
   fillG(0, 0, MW - 1, GH - 1, G.GRASS);
-  fillG(0, 0, MW - 1, 1, G.ROAD);            // 11th Ave (north)
-  fillG(0, 2, MW - 1, 2, G.WALK);
-  fillG(68, 0, MW - 1, GH - 1, G.ROAD);      // York Street (east)
-  fillG(66, 2, 67, GH - 1, G.WALK);
-  for (let y = 4; y < GH - 4; y++) for (let x = 4; x < 64; x++) {
-    if (((x >> 3) + (y >> 3)) % 2 === 0 && ground[gi(x, y)] === G.GRASS) ground[gi(x, y)] = G.GRASS2;
+  fillG(0, 0, MW - 1, 1, G.ROAD); fillG(0, 2, MW - 1, 2, G.WALK);
+  fillG(68, 0, MW - 1, GH - 1, G.ROAD); fillG(66, 2, 67, GH - 1, G.WALK);
+  for (let y = 4; y < GH - 2; y++) for (let x = 4; x < 66; x++) {
+    if (((x >> 3) + (y >> 3)) % 2 === 0 && at(x, y) === G.GRASS) setG(x, y, G.GRASS2);
   }
 
-  // --- paths: main promenade east from the Cheesman Gate + loops ------------
-  fillG(4, 28, 62, 29, G.PAVE);              // gate promenade (west -> east)
-  fillG(56, 6, 57, 52, G.PAVE);              // north-south promenade (east side)
-  fillG(30, 6, 31, 28, G.PATH);              // up to the greenhouses
-  fillG(20, 44, 56, 45, G.PATH);             // southern loop
-  fillG(20, 24, 20, 44, G.PATH);             // west connector
-  fillG(38, 29, 39, 44, G.PATH);             // beds -> pyramid
-  fillG(6, 28, 6, 44, G.PATH); fillG(6, 44, 20, 45, G.PATH); // mesa loop
+  // ==========================================================================
+  // WEST — naturalistic
+  // ==========================================================================
+  // Monet Pool: organic waterline, lilies painted at render time
+  blob(15, 13, 8, 5.5, G.WATER);
+  blob(10, 17, 4, 3, G.WATER);
+  blob(21, 16, 4.5, 3, G.WATER);
+  ellipseFill(15, 10, 3.5, 2.6, G.GRASS2);                 // tea-house peninsula
+  addObj('teahouse', 15, 10);                              // Ella Mullen Weckbaugh Tea House
+  addObj('stone', 12.6, 10.5); addObj('stone', 17.6, 11.2);
+  curve([[15, 12], [15, 14.5], [14, 17], [12, 19]], G.PATH, 2);   // stepping path off the peninsula
+  curve([[12, 19], [8, 22], [7, 26], [6, 29]], G.PATH, 2);        // west shore stroll
+  curve([[12, 19], [18, 21], [24, 20], [27, 17], [26, 12], [22, 7], [16, 5], [10, 6], [7, 10], [7, 15]], G.PATH, 2); // full pond loop
 
-  // --- NW: Monet Pool horseshoe + Japanese garden ---------------------------
-  fillG(10, 8, 26, 22, G.WATER);
-  fillG(14, 8, 22, 16, G.GRASS2);            // tea-house peninsula (the U opens north)
-  fillG(10, 6, 26, 7, G.EDGE);               // stone pool rim, north
-  fillG(15, 19, 21, 20, G.PATH);             // bridge across the south lobe
-  fillG(14, 17, 22, 17, G.EDGE);             // peninsula shoreline
-  addObj('pine', 16, 12); addObj('pine', 20, 11);
-  addObj('stone', 17.5, 14); addObj('stone', 19, 13.5); addObj('bench', 18, 15.5);
-  for (const [x, y] of [[8, 5], [12, 4.6], [24, 4.8], [28, 6], [28.5, 12], [28, 18], [27.5, 23.5], [8.5, 24], [6, 18], [6.2, 10]]) addObj('pine', x, y);
-  addObj('stone', 9, 23); addObj('stone', 27, 9);
+  // Shofu-En, "Garden of Pine and Wind": character pines + stone lanterns
+  for (const [x, y] of [[7, 6.5], [11, 4.6], [19, 4.2], [24, 5.5], [27, 9], [28.5, 14], [27, 20.5],
+    [9, 20], [5.5, 13], [5.2, 8], [22, 21.5], [18, 3.4]]) addObj('pine', x, y);
+  addObj('stone', 8, 11); addObj('stone', 25, 7.5); addObj('stone', 26.5, 18); addObj('bench', 24.5, 12);
 
-  // --- N: greenhouse complex + THE Conservatory (there is exactly one) ------
-  fillG(32, 6, 42, 11, G.MARBLE);
-  addObj('greenhouse', 37, 10);              // working ranges, not a showpiece
-  fillG(44, 10, 54, 17, G.PAVE);
-  addObj('conservatory', 49, 15);            // the Boettcher dome, on its plaza
-  addObj('column', 44, 17.5); addObj('column', 54, 17.5);
+  // Laura Porter Plains garden: dry meadow with a mown line through it
+  blob(13, 34, 7, 5, G.DRY);
+  curve([[6, 29], [10, 32], [14, 36], [18, 38], [22, 40]], G.PATH, 2);
 
-  // --- CTR: formal annual & cutting beds in stripes -------------------------
-  for (const by of [24, 27, 30, 33, 36]) fillG(33, by, 47, by, G.BED);
-  fillG(44, 21, 50, 22, G.WATER);            // Steppe garden waterway
-  fillG(43, 21, 43, 22, G.EDGE); fillG(51, 21, 51, 22, G.EDGE);
+  // Dryland Mesa + the Cactus & Succulent House; Rock Alpine beyond
+  blob(11, 47, 7, 6, G.SAND);
+  addObj('glasshouse', 9, 44);
+  for (const [x, y] of [[7, 48], [12, 50], [15, 46.5], [9, 52.5], [14.5, 53]]) { addObj('gplant', x, y, false); addObj('stone', x + 1.1, y + 0.8, false); }
+  for (const [x, y] of [[21, 46], [24, 49], [27, 45.5], [22.5, 52], [26, 52.5]]) addObj('stone', x, y);
+  curve([[22, 40], [21, 44], [22, 48], [26, 51], [31, 53], [36, 54]], G.PATH, 2);  // Birds & Bees walk
+  curve([[6, 29], [6, 36], [6.5, 43], [8, 50], [12, 55], [20, 56]], G.PATH, 2);    // outer west loop
 
-  // --- S: Science Pyramid + Four Towers Pool + El Pomar Waterway ------------
-  fillG(31, 46, 35, 49, G.WATER);            // Four Towers Pool
-  fillG(30, 46, 30, 49, G.EDGE); fillG(36, 46, 36, 49, G.EDGE);
-  addObj('pyramid', 38.5, 45);               // the Science Pyramid
-  fillG(40, 47, 58, 48, G.WATER);            // El Pomar Waterway channel, running east
-  fillG(40, 46, 58, 46, G.EDGE); fillG(40, 49, 58, 49, G.EDGE);
-  fillG(48, 47, 49, 48, G.PATH);             // the crossing
+  // ==========================================================================
+  // NORTH — working glass + THE dome
+  // ==========================================================================
+  fillG(30, 5, 46, 11, G.MARBLE);                          // production yard
+  addObj('greenhouse', 34, 10); addObj('greenhouse', 42.5, 10);   // sawtooth ranges (they're BIG)
+  fillG(48, 9, 58, 17, G.PAVE);                            // conservatory plaza
+  addObj('dome', 53, 15);                                  // Boettcher Conservatory, 1966
+  addObj('column', 48, 17.6); addObj('column', 58, 17.6);
+  addObj('bench', 49.5, 13); addObj('bench', 56.5, 13);
 
-  // --- SW: plains garden, Dryland Mesa, Rock Alpine --------------------------
-  fillG(8, 26, 18, 38, G.DRY);               // Laura Porter Plains garden
-  fillG(6, 40, 18, 54, G.SAND);              // Dryland Mesa
-  for (const [x, y] of [[8, 43], [12, 46], [15, 43.5], [9, 50], [14, 51.5], [17, 47]]) { addObj('gplant', x, y, false); addObj('stone', x + 1.2, y + 1, false); }
-  for (const [x, y] of [[21, 47], [24, 50], [27, 46.5], [22.5, 52]]) addObj('stone', x, y);   // Rock Alpine
-
-  // --- SE: romantic gardens, lilacs, the amphitheater ellipse ---------------
-  for (let a = 0; a < 26; a++) {             // amphitheater lawn ring
-    const ang = a / 26 * Math.PI * 2;
-    setG(Math.round(58 + Math.cos(ang) * 7), Math.round(36 + Math.sin(ang) * 4.5), G.EDGE);
+  // the circular cutting-garden wheel (west of the greenhouses in the aerial)
+  for (let a = 0; a < 40; a++) {
+    const ang = a / 40 * Math.PI * 2;
+    setG(Math.round(31 + Math.cos(ang) * 4), Math.round(21 + Math.sin(ang) * 3.2), G.BED);
   }
-  fillG(53, 33, 63, 39, G.GRASS2);
-  for (const [x, y] of [[50, 52], [54, 54], [58, 52.5], [62, 54], [64, 50], [52, 56.5], [60, 56.8]]) addObj('bush', x, y, false);
-  fillG(48, 52, 49, 56, G.BED); fillG(63, 42, 64, 46, G.BED);
-  addObj('picnic', 66, 54); addObj('bench', 64.5, 56);                        // Waring House corner (stand-in)
+  fillG(30, 20, 32, 22, G.PAVE);                           // hub
+  curve([[31, 17], [31, 20]], G.PATH, 2); curve([[31, 24], [31, 28]], G.PATH, 2);  // spokes
+  curve([[27, 21], [26, 21]], G.PATH, 2); curve([[35, 21], [37, 21]], G.PATH, 2);
 
-  // --- E: visitor center + welcome garden -----------------------------------
-  fillG(59, 22, 64, 25, G.MARBLE);
-  addObj('column', 59, 26); addObj('column', 64, 26);
-  fillG(60, 30, 61, 31, G.BED); fillG(63, 30, 64, 31, G.BED);                 // welcome garden
-
-  // --- the Cheesman Gate (west edge) — where you come in --------------------
-  fillG(2, 27, 5, 31, G.PAVE);
+  // ==========================================================================
+  // the SPINE — gate promenade west->east, show promenade north->south
+  // ==========================================================================
+  fillG(4, 28, 60, 29, G.PAVE);                            // Cheesman Gate axis
+  fillG(60, 6, 61, 54, G.PAVE);                            // Colorado Show Promenade
+  fillG(2, 27, 5, 31, G.PAVE);                             // gate plaza
   addObj('column', 2, 26.5); addObj('column', 2, 31.8);
+  for (const [x, y] of [[10, 27.4], [22, 30.6], [34, 27.4], [46, 30.6], [56, 27.4]]) addObj('bench', x, y);
 
-  // --- flowering plants along everything (it IS a botanic garden) -----------
-  for (let i = 0; i < 60; i++) {
-    const x = 5 + rnd() * 60, y = 4 + rnd() * (GH - 9);
-    const g = inMap(Math.round(x), Math.round(y)) ? ground[gi(Math.round(x), Math.round(y))] : G.ROAD;
-    if (g === G.GRASS || g === G.GRASS2 || g === G.DRY) addObj(rnd() < 0.6 ? 'gplant' : 'bush', x, y, false);
+  // ==========================================================================
+  // EAST/SOUTH — formal
+  // ==========================================================================
+  // Science Pyramid + Four Towers Pool: the headwaters of all the water here
+  fillG(30, 36, 37, 43, G.PAVE);
+  addObj('pyramid', 33.5, 38);
+  fillG(31, 40, 34, 43, G.WATER);
+  fillG(30, 40, 30, 43, G.EDGE); fillG(35, 40, 35, 43, G.EDGE); fillG(31, 44, 34, 44, G.EDGE);
+
+  // El Pomar Waterway: straight canal flowing east, tree-lined allee both banks
+  fillG(38, 40, 60, 41, G.WATER);
+  fillG(38, 39, 60, 39, G.EDGE); fillG(38, 42, 60, 42, G.EDGE);
+  fillG(48, 40, 49, 41, G.PATH);                           // the crossing
+  for (let x = 39; x <= 59; x += 4) { addObj('tree', x, 38.2); addObj('tree', x + 2, 44.3); }
+  for (const bx of [41, 45, 53, 57]) { fillG(bx, 36, bx + 1, 36, G.BED); fillG(bx, 45, bx + 1, 45, G.BED); }  // fountain beds
+
+  // UMB Amphitheater: terraced lawn arcs facing the stage (the big green in the aerial)
+  for (const r of [5, 7]) {
+    for (let a = 0; a < 30; a++) {
+      const ang = Math.PI + a / 30 * Math.PI;              // north-facing half-arcs
+      setG(Math.round(50 + Math.cos(ang) * r * 1.4), Math.round(26 + Math.sin(ang) * r * 0.7), G.EDGE);
+    }
   }
-  for (const [x, y] of [[10, 28.6], [26, 30.5], [42, 30.6], [50, 28.6], [30, 45.8], [57, 20]]) addObj('bench', x, y);
+  fillG(46, 26, 54, 27, G.PAVE);                           // stage apron
+  fillG(44, 20, 56, 25, G.GRASS2);                         // the lawn
 
-  // --- perimeter trees (a solid ring, minus the gate mouth) ------------------
+  // formal parterre quarter (fragrance/herb/romantic), hedged with two entries
+  for (let by = 48; by <= 54; by += 3) for (let bx = 42; bx <= 54; bx += 4) fillG(bx, by, bx + 2, by, G.BED);
+  fillG(47, 50, 49, 52, G.PAVE); addObj('stone', 48, 51);  // Schlessman plaza + fountain
+  for (let x = 40; x <= 56; x++) { if (x !== 48) { setG(x, 46, G.GARDEN); setG(x, 56, G.GARDEN); } }  // hedges
+  for (let y = 47; y <= 55; y++) { if (y !== 51) { setG(40, y, G.GARDEN); setG(56, y, G.GARDEN); } }
+  curve([[48, 44], [48, 46]], G.PATH, 2);                  // north entry
+
+  // the Ellipse + Waring House + Victorian secret garden, SE corner
+  for (let a = 0; a < 22; a++) {
+    const ang = a / 22 * Math.PI * 2;
+    setG(Math.round(63 + Math.cos(ang) * 3), Math.round(44 + Math.sin(ang) * 2), G.BED);
+  }
+  addObj('waring', 64, 55);
+  addObj('bush', 61.5, 55.5, false); addObj('bush', 66.5, 55.8, false); addObj('bench', 61, 52.5);
+
+  // Woodland Mosaic: the shady grove, path dappling through
+  for (const [x, y] of [[33, 50], [36, 48], [38, 52], [34, 55], [38.5, 56.5], [30, 52.5], [36, 45.5]]) addObj('tree2', x, y);
+  curve([[36, 54], [40, 52], [44, 51]], G.PATH, 2);
+
+  // visitor center + welcome garden on the promenade; Freyer-Newman up north
+  fillG(62, 22, 66, 25, G.MARBLE);
+  addObj('column', 62, 26); addObj('column', 66, 26);
+  fillG(62, 31, 63, 32, G.BED); fillG(65, 31, 66, 32, G.BED);
+  fillG(60, 4, 66, 7, G.MARBLE); addObj('column', 60, 8); addObj('column', 66, 8);   // Freyer-Newman Center
+  for (const [x, y] of [[63, 12], [64.5, 16], [62.5, 19]]) addObj('pine', x, y);      // Ponderosa border
+
+  // flowering plants tucked along the paths, garden-wide
+  for (let i = 0; i < 46; i++) {
+    const x = 5 + rnd() * 60, y = 4 + rnd() * (GH - 9);
+    const g = at(Math.round(x), Math.round(y));
+    if (g === G.GRASS || g === G.GRASS2 || g === G.DRY) addObj(rnd() < 0.65 ? 'gplant' : 'bush', x, y, false);
+  }
+
+  // perimeter trees (solid ring, minus the gate mouth)
   for (let y = 4; y < GH - 2; y += 2) { if (y < 26 || y > 32) addObj('tree', 1.2, y + rnd() * .5); }
   for (let x = 2; x < 66; x += 2) { addObj('tree', x + rnd() * .5, 3.4); addObj('tree2', x + rnd() * .5, GH - 1.6); }
 
-  // --- flower candidate spots: every bed tile + the showpiece clusters ------
+  // --- flower candidate spots: every bed + the showpiece gardens -------------
   const spots = [];
   for (let y = 0; y < GH; y++) for (let x = 0; x < MW; x++) {
     if (ground[gi(x, y)] === G.BED) spots.push([x * T + 8, y * T + 8]);
   }
-  for (const [x, y] of [[17, 10], [19, 14], [12, 24], [24, 24],           // japanese garden
-    [10, 44], [14, 48], [8, 52],                                          // mesa
-    [52, 53], [58, 54], [62, 52], [55, 34], [60, 37]]) spots.push([x * T + 8, y * T + 8]);
+  for (const [x, y] of [[14, 8.6], [16.5, 11.5],                       // tea-house peninsula
+    [9, 12], [24, 9], [26, 16],                                        // Shofu-En shore
+    [12, 33], [15, 36],                                                // plains
+    [8, 47], [13, 51], [16, 45],                                       // mesa
+    [22, 48], [26, 51],                                                // rock alpine
+    [34, 51], [37, 54],                                                // woodland
+    [47, 22], [53, 23],                                                // amphitheater lawn
+    [32, 38.5], [50, 43.5]]) spots.push([x * T + 8, y * T + 8]);       // pyramid + canal bank
   state.gardenSpots = spots;
 }

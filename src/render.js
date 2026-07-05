@@ -126,12 +126,28 @@ export function renderGardenGround(state) {
   g.fillStyle = '#cfc9b6'; g.font = 'bold 9px ui-monospace,monospace'; g.textBaseline = 'middle';
   g.fillText('1 1 T H   A V E', 26 * T, 1 * T);
   g.save(); g.translate(69.5 * T, 34 * T); g.rotate(-Math.PI / 2); g.fillText('Y O R K   S T', 0, 0); g.restore();
+  // waterlilies on the Monet Pool (that's why it's named that) — deterministic
+  // pad placement from tile coords, pink blooms on some
+  for (let ty = 6; ty < 22; ty++) for (let tx = 5; tx < 28; tx++) {
+    if (state.gardenGround[gi(tx, ty)] !== G.WATER) continue;
+    const h = (tx * 37 + ty * 61) % 17;
+    if (h < 5) {
+      const X = tx * T + (h * 3) % 9, Y = ty * T + (h * 5) % 9;
+      px(g, X, Y + 1, 5, 3, '#5f9a4e'); px(g, X + 1, Y, 3, 5, '#5f9a4e');   // pad
+      px(g, X + 3, Y + 3, 2, 2, PAL.water);                                  // the notch
+      if (h === 2 || h === 4) { px(g, X + 1, Y + 1, 2, 2, '#d98aa6'); px(g, X + 1, Y + 1, 1, 1, '#f2d7e0'); } // bloom
+    }
+  }
   g.fillStyle = 'rgba(20,40,20,.6)'; g.font = 'bold 8px ui-monospace,monospace';
-  g.fillText('MONET POOL', 13.5 * T, 21.2 * T);
-  g.fillText('SCIENCE PYRAMID', 34 * T, 51 * T);
-  g.fillText('CHEESMAN GATE', 2.2 * T, 25.6 * T);
+  g.fillText('MONET POOL', 11 * T, 22.6 * T);
+  g.fillText('SHOFU-EN', 20 * T, 2.6 * T);
+  g.fillText('EL POMAR WATERWAY', 42 * T, 43.8 * T);
+  g.fillText('SCIENCE PYRAMID', 28 * T, 46 * T);
+  g.fillText('AMPHITHEATER', 45.5 * T, 19 * T);
+  g.fillText('WARING HOUSE', 60 * T, 58 * T);
+  g.fillText('CHEESMAN GATE', 1.4 * T, 25.4 * T);
   g.fillStyle = 'rgba(20,40,20,.5)';
-  g.fillText('DENVER BOTANIC GARDENS', 24 * T, 4 * T);
+  g.fillText('DENVER BOTANIC GARDENS · EST. 1951', 20 * T, 4.4 * T);
 }
 
 export function buildMini() {

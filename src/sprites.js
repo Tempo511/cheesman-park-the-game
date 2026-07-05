@@ -130,6 +130,49 @@ export function buildSprites(rnd) {
   px(x, 0, 30, 72, 4, '#b8b2a0'); px(x, 0, 32, 72, 2, '#9a947f');       // service apron
   px(x, 33, 26, 6, 6, '#4a5a58');                       // door
   SPR.greenhouse = { c, ax: 36, ay: 32 };
+  // Boettcher Conservatory (1966) — faceted glass between interlaced concrete
+  // arches; a pointed ribbed dome, Denver Landmark
+  c = mkCanvas(44, 40); x = c.getContext('2d');
+  for (let r = 0; r < 30; r++) {                        // pointed dome profile
+    const w = Math.round(40 * Math.sin((r / 30) * Math.PI / 2));
+    px(x, 22 - w / 2 | 0, r + 2, w, 1, '#9fc4c0');      // glass
+    px(x, 22 - w / 2 | 0, r + 2, Math.max(1, w / 4 | 0), 1, '#c4e0dc');  // sheen
+  }
+  for (let k = -2; k <= 2; k++) {                       // concrete ribs, interlaced
+    for (let r = 2; r < 32; r++) {
+      const w = Math.round(40 * Math.sin(((r - 2) / 30) * Math.PI / 2));
+      const rx = 22 + Math.round(k * w / 5);
+      if (rx > 22 - w / 2 - 1 && rx < 22 + w / 2 + 1) px(x, rx, r, 1, 1, '#cfc9b6');
+    }
+  }
+  px(x, 21, 0, 2, 3, '#cfc9b6');                        // apex
+  px(x, 2, 32, 40, 5, '#b8b2a0'); px(x, 2, 35, 40, 2, '#9a947f');  // base
+  px(x, 19, 30, 6, 7, '#4a5a58');                       // entry
+  SPR.dome = { c, ax: 22, ay: 38 };
+  // Ella Mullen Weckbaugh Tea House — open pavilion on the Monet Pool peninsula
+  c = mkCanvas(20, 18); x = c.getContext('2d');
+  px(x, 0, 4, 20, 3, '#3a2f26'); px(x, 2, 2, 16, 3, '#4a3b2e');    // wide hip roof
+  px(x, 1, 6, 18, 1, '#2a2119');                                    // eave
+  px(x, 3, 7, 2, 9, '#6b4a2e'); px(x, 15, 7, 2, 9, '#6b4a2e');     // posts (open sides)
+  px(x, 5, 12, 10, 4, '#8a6d4b');                                   // raised floor
+  px(x, 0, 16, 20, 2, '#9a947f');                                   // stone base
+  SPR.teahouse = { c, ax: 10, ay: 17 };
+  // Waring House — the brick mansion on the SE corner of the gardens
+  c = mkCanvas(24, 26); x = c.getContext('2d');
+  px(x, 2, 10, 20, 14, '#8a4a3a'); px(x, 2, 10, 20, 2, '#9a5a46');  // brick body
+  for (let j = 13; j < 22; j += 4) for (let i = 4; i < 20; i += 5) px(x, i, j, 2, 3, '#e8dcc8'); // windows
+  for (let r = 0; r < 8; r++) px(x, 12 - r | 0, 2 + r, r * 2, 1, '#5a4a3a');  // gable roof
+  px(x, 4, 9, 16, 2, '#5a4a3a');
+  px(x, 9, 19, 5, 5, '#3a2f26'); px(x, 10, 20, 3, 4, '#e8dcc8');   // porch + door
+  px(x, 0, 24, 24, 2, '#9a947f');
+  SPR.waring = { c, ax: 12, ay: 25 };
+  // Cactus & Succulent House — small white glasshouse on the Dryland Mesa
+  c = mkCanvas(18, 14); x = c.getContext('2d');
+  for (let r = 0; r < 6; r++) px(x, 9 - r - 3 | 0, 1 + r, (r + 3) * 2, 1, '#e8ecea'); // ridge roof
+  px(x, 1, 7, 16, 5, '#dfe8ea');
+  for (let i = 3; i < 16; i += 4) px(x, i, 7, 1, 5, '#aab4b0');     // glazing
+  px(x, 0, 12, 18, 2, '#b8a888');
+  SPR.glasshouse = { c, ax: 9, ay: 13 };
   // the Science Pyramid (DBG) — dark faceted glass triangle
   c = mkCanvas(34, 26); x = c.getContext('2d');
   for (let r = 0; r < 22; r++) {
