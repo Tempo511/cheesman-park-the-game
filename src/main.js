@@ -10,7 +10,7 @@ import { createState } from './state.js';
 import { step, respawn, nearShop } from './simulate.js';
 import { makeRng } from './rng.js';
 import { buildSprites } from './sprites.js';
-import { initRender, renderGround, buildMini, render, renderFx, renderMini, resize, resizeFx } from './render.js';
+import { initRender, renderGround, renderGardenGround, buildMini, render, renderFx, renderMini, resize, resizeFx } from './render.js';
 import { initUI, updateHud, drainEvents, hideDeath, openShop, closeShop, isShopOpen, toast as drainToast } from './ui.js';
 import { initInput, getInputs } from './input.js';
 import { unlock as unlockAudio, updateAudio, setMuted, isMuted } from './audio.js';
@@ -43,6 +43,7 @@ const refs = {
 const SPR = buildSprites(makeRng(state.worldSeed ^ 0x5bd1e995)); // cosmetic stream (client-local)
 initRender(refs, SPR);
 renderGround(state);
+renderGardenGround(state);
 buildMini();
 resize();
 resizeFx();

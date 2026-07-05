@@ -5,10 +5,23 @@
 
 // Bump whenever a change affects the SIMULATION (balance, mechanics, scoring):
 // leaderboard replays are only valid against the version that recorded them.
-export const GAME_VERSION = '1.0.0';
+export const GAME_VERSION = '1.1.0';
 
 export const T = 16;                 // tile size in pixels
 export const MW = 72, MH = 92;       // map width/height in tiles
+export const GH = 60;                // garden scene height in tiles (width = MW)
+
+// Garden Run (bonus round after each boss kill) — all tuning knobs here
+export const GARDEN = {
+  ENTRY_WINDOW: 30,   // seconds to reach the gate after dawn breaks
+  RUN_TIME: 40,       // seconds inside the gardens
+  FLOWERS: 30,        // flowers scattered across the beds
+  PTS: 15,            // Park Score per flower
+  BUCKS: 2,           // coins per flower
+  PERFECT: 100,       // bonus for collecting every flower
+  GATE: { x: 63, y: 18 },      // park-side gate tile (on the DBG fence)
+  SPAWN: { x: 4, y: 29 },      // garden-side spawn tile (the Cheesman Gate, west edge)
+};
 
 // Ground tile ids
 export const G = {

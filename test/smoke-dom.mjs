@@ -81,6 +81,7 @@ try {
 
   render.initRender(refs, SPR);
   render.renderGround(state);
+  render.renderGardenGround(state);
   render.buildMini();
   render.resize();
   render.resizeFx();
@@ -176,6 +177,16 @@ try {
   render.render(state, 11);
   ui.updateHud(state);
   ok('renders drone + smoke cloud + shockwave and the ultimate HUD', true);
+  // the garden scene renders (ground swap, flowers, gate beacon, garden minimap)
+  state.gardenGateT = 10; render.render(state, 12);              // park side: gate beacon
+  state.scene = 'garden';
+  state.flowers = [{ x: 100, y: 100, c: '#d98aa6', got: false, bob: 1 }];
+  state.gardenT = 20;
+  render.render(state, 12.5);
+  render.renderMini(state, 12.5);
+  ui.updateHud(state);
+  state.scene = 'park'; state.flowers = []; state.gardenGateT = 0;
+  ok('renders the garden scene + gate beacon + garden minimap', true);
 } catch (e) { err = e; failed++; console.error('  ✗ THREW:', e && e.stack || e); }
 
 console.log(`\n${failed === 0 ? '✓ ALL PASSED' : '✗ FAILURES'} — ${passed} passed, ${failed} failed`);

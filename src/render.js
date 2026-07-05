@@ -5,7 +5,7 @@
 // the same authoritative world independently (each with its own camera on its
 // own player). Nothing here feeds back into the simulation.
 // ============================================================================
-import { T, MW, MH, G, PAL, ZONES, SHOP_POS, ENEMY_TYPES } from './constants.js';
+import { T, MW, MH, GH, G, PAL, ZONES, GARDEN, SHOP_POS, ENEMY_TYPES } from './constants.js';
 import { gi, getG } from './tiles.js';
 import { ambientActive } from './simulate.js';
 import {
@@ -13,7 +13,7 @@ import {
 } from './sprites.js';
 
 let cv, ctx, fxCv, fctx, miniCv, mctx, SPR;
-let groundCv, miniBase;
+let groundCv, gardenCv, miniBase;
 let SCALE = 3, VW = 0, VH = 0, CAMX = 0, CAMY = 0;
 let fxW = 0, fxH = 0;
 
@@ -21,6 +21,7 @@ export function initRender(refs, spr) {
   ({ cv, ctx, fxCv, fctx, miniCv, mctx } = refs);
   SPR = spr;
   groundCv = mkCanvas(MW * T, MH * T);
+  gardenCv = mkCanvas(MW * T, GH * T);
   miniBase = mkCanvas(72, 92);
 }
 
@@ -45,11 +46,12 @@ export function resizeFx() {
 }
 
 // pre-render the static ground once to an offscreen canvas
-export function renderGround(state) {
-  const { ground, cars } = state;
-  const g = groundCv.getContext('2d');
+// shared tile painter — used by both the park and the garden pre-renders
+function paintTiles(g, groundArr, rows) {
+  const state = { ground: groundArr };   // getG only reads .ground
   const isG = (x, y, t) => getG(state, x, y) === t;
-  for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) {
+  const ground = groundArr;
+  for (let ty = 0; ty < rows; ty++) for (let tx = 0; tx < MW; tx++) {
     const v = ground[gi(tx, ty)], X = tx * T, Y = ty * T;
     switch (v) {
       case G.GRASS: px(g, X, Y, T, T, PAL.grass);
@@ -88,6 +90,12 @@ export function renderGround(state) {
       case G.EDGE: px(g, X, Y, T, T, '#b8b2a0'); px(g, X, Y, T, 2, '#cdc7b5'); px(g, X, Y + T - 2, T, 2, '#9a947f'); break;
     }
   }
+}
+
+export function renderGround(state) {
+  const { cars } = state;
+  const g = groundCv.getContext('2d');
+  paintTiles(g, state.ground, MH);
   for (let x = 4; x < MW * T - 4; x += 24) { px(g, x, 1 * T + 7, 12, 2, PAL.dash); px(g, x, (MH - 2) * T + 7, 12, 2, PAL.dash); }
   for (let y = 4; y < MH * T - 4; y += 24) { px(g, 1 * T + 7, y, 2, 12, PAL.dash); }
   for (let y = 34 * T + 4; y < MH * T - 4; y += 24) { px(g, (MW - 2) * T + 7, y, 2, 12, PAL.dash); }
@@ -109,6 +117,21 @@ export function renderGround(state) {
   g.fillText('F R A N K L I N   S T', 0, 0); g.restore();
   g.fillStyle = 'rgba(20,40,20,.55)'; g.font = 'bold 8px ui-monospace,monospace';
   g.fillText('DENVER BOTANIC GARDENS', 64.3 * T, 25 * T);
+}
+
+export function renderGardenGround(state) {
+  const g = gardenCv.getContext('2d');
+  paintTiles(g, state.gardenGround, GH);
+  for (let y = 4; y < GH * T - 4; y += 24) px(g, 69 * T + 7, y, 2, 12, PAL.dash);   // York St dashes
+  g.fillStyle = '#cfc9b6'; g.font = 'bold 9px ui-monospace,monospace'; g.textBaseline = 'middle';
+  g.fillText('1 1 T H   A V E', 26 * T, 1 * T);
+  g.save(); g.translate(69.5 * T, 34 * T); g.rotate(-Math.PI / 2); g.fillText('Y O R K   S T', 0, 0); g.restore();
+  g.fillStyle = 'rgba(20,40,20,.6)'; g.font = 'bold 8px ui-monospace,monospace';
+  g.fillText('MONET POOL', 13.5 * T, 21.2 * T);
+  g.fillText('SCIENCE PYRAMID', 34 * T, 51 * T);
+  g.fillText('CHEESMAN GATE', 2.2 * T, 25.6 * T);
+  g.fillStyle = 'rgba(20,40,20,.5)';
+  g.fillText('DENVER BOTANIC GARDENS', 24 * T, 4 * T);
 }
 
 export function buildMini() {
@@ -138,15 +161,19 @@ function nightAlpha(state, t) {
 
 export function render(state, t) {
   const player = state.player;
+  const inGarden = state.scene === 'garden';
+  const worldH = (inGarden ? GH : MH) * T;
   let camX = Math.max(0, Math.min(MW * T - VW, player.x - VW / 2)) | 0;
-  let camY = Math.max(0, Math.min(MH * T - VH, player.y - VH / 2)) | 0;
+  let camY = Math.max(0, Math.min(Math.max(0, worldH - VH), player.y - VH / 2)) | 0;
   if (player.boulderT > 0) {               // Bolder Boulder: the ground rumbles
     camX += Math.round(Math.sin(t * 43) * 1.5);
     camY += Math.round(Math.cos(t * 37) * 1.5);
   }
   CAMX = camX; CAMY = camY;
-  ctx.drawImage(groundCv, camX, camY, VW, VH, 0, 0, VW, VH);
-  // water shimmer + jets
+  ctx.fillStyle = '#151a12'; ctx.fillRect(0, 0, VW, VH);   // letterbox if world shorter than view
+  ctx.drawImage(inGarden ? gardenCv : groundCv, camX, camY, VW, VH, 0, 0, VW, VH);
+  // water shimmer + jets (park scene only — these are park coordinates)
+  if (!inGarden) {
   ctx.fillStyle = PAL.waterHi;
   for (let i = 0; i < 26; i++) {
     const wx = (30 * T + ((i * 97 + ((t * 20) | 0)) % (15 * T))) | 0, wy = (43 * T + ((i * 61) % (7 * T))) | 0;
@@ -160,12 +187,29 @@ export function render(state, t) {
       ctx.fillRect(jx - 2 + k, (jy - h) | 0, 1, h | 0);
     }
   }
+  }
   // pickups (ground layer)
   for (const p of state.pickups) {
     const ax = (p.x | 0) - camX, ay = ((p.y + Math.sin(p.bob) * 2) | 0) - camY;
     if (p.t === 'coin') { px(ctx, ax - 2, ay - 4, 5, 5, '#e5c04b'); px(ctx, ax - 1, ay - 3, 1, 3, '#fff3c4'); px(ctx, ax - 2, ay, 5, 1, '#b8952f'); }
     else { ctx.fillStyle = '#4c9a3f'; ctx.beginPath(); ctx.ellipse(ax, ay - 2, 3, 5, 0.5, 0, 7); ctx.fill();
       px(ctx, ax, ay - 8, 2, 3, '#2c5a28'); }
+  }
+  // garden flowers (bobbing, colored) — the whole point of the trip
+  for (const f of state.flowers) {
+    if (f.got) continue;
+    const ax = (f.x | 0) - camX, ay = ((f.y + Math.sin(f.bob) * 1.5) | 0) - camY;
+    px(ctx, ax, ay - 2, 1, 4, '#2c5a28');                          // stem
+    px(ctx, ax - 1, ay - 5, 3, 3, f.c);                            // bloom
+    px(ctx, ax, ay - 4, 1, 1, '#fff7e4');                          // center
+  }
+  // the open Cheesman Gate on the park side: pulsing beacon while the window lasts
+  if (!inGarden && state.gardenGateT > 0) {
+    const gx = (GARDEN.GATE.x + 0.5) * T - camX, gy = (GARDEN.GATE.y + 0.5) * T - camY;
+    ctx.strokeStyle = 'rgba(229,192,75,' + (0.5 + Math.sin(t * 6) * 0.3) + ')'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(gx, gy, 14 + Math.sin(t * 4) * 3, 0, 7); ctx.stroke();
+    ctx.fillStyle = '#e5c04b'; ctx.font = '8px ui-monospace,monospace';
+    ctx.fillText('GATE ' + Math.ceil(state.gardenGateT) + 's', gx - 20, gy - 20);
   }
   // acorns on the ground (daytime)
   for (const a of state.acorns) {
@@ -219,14 +263,14 @@ export function render(state, t) {
     drawPlayerChar(ctx, ax, ay, player.dir, player.moving ? player.phase : 0, player.archetype, player.style, flash);
     ctx.globalAlpha = 1;
   } });
-  if (state.phase === 'day') for (const n of state.npcs) ents.push({ y: n.y, draw: () => {
+  if (!inGarden && state.phase === 'day') for (const n of state.npcs) ents.push({ y: n.y, draw: () => {
     drawPerson(ctx, (n.x | 0) - camX, (n.y | 0) - camY, n.dir, n.phase, n.pal, false);
     if (n.dog) drawDog(ctx, (n.x | 0) - camX + (n.dir === 'left' ? 12 : -12), (n.y | 0) - camY, n.dir === 'left' ? 'left' : 'right', n.phase);
   } });
-  if (state.phase === 'day') for (const s of state.squirrels) ents.push({ y: s.y, draw: () => {
+  if (!inGarden && state.phase === 'day') for (const s of state.squirrels) ents.push({ y: s.y, draw: () => {
     drawSquirrel(ctx, (s.x | 0) - camX, (s.y | 0) - camY, s.dir, s.moving ? s.phase : 0);
   } });
-  for (const a of state.ambients) {
+  if (!inGarden) for (const a of state.ambients) {
     if (!ambientActive(state, a)) continue;
     if (a.kind === 'slack') ents.push({ y: 40.2 * T + 2, draw: () => {
       const ly = (40.2 * T - 12) | 0, fx = (a.x | 0) - camX;
@@ -455,6 +499,14 @@ export function renderFx(state) {
 
 export function renderMini(state, t) {
   mctx.imageSmoothingEnabled = false;
+  if (state.scene === 'garden') {                     // garden minimap: layout + flowers + you
+    mctx.fillStyle = '#151a12'; mctx.fillRect(0, 0, 72, 92);
+    mctx.drawImage(gardenCv, 0, 0, MW * T, GH * T, 0, 0, 72, GH);
+    for (const f of state.flowers) { if (!f.got) { mctx.fillStyle = f.c; mctx.fillRect((f.x / T | 0), (f.y / T | 0), 1, 1); } }
+    mctx.fillStyle = '#fff'; mctx.fillRect((state.player.x / T | 0) - 1, (state.player.y / T | 0) - 1, 3, 3);
+    mctx.fillStyle = '#c94f43'; mctx.fillRect(state.player.x / T | 0, state.player.y / T | 0, 1, 1);
+    return;
+  }
   mctx.drawImage(miniBase, 0, 0);
   if (NA > 0.1) { mctx.fillStyle = 'rgba(18,24,58,.45)'; mctx.fillRect(0, 0, 72, 92); } // NA: smoothed in render()
   const camX = Math.max(0, Math.min(MW * T - VW, state.player.x - VW / 2));

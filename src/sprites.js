@@ -117,6 +117,18 @@ export function buildSprites(rnd) {
   px(x, 2, 3, 20, 5, '#b8864a'); px(x, 2, 3, 20, 1, '#d1a266');
   px(x, 0, 0, 24, 2, '#a7773f');
   SPR.picnic = { c, ax: 12, ay: 15 };
+  // the Science Pyramid (DBG) — dark faceted glass triangle
+  c = mkCanvas(34, 26); x = c.getContext('2d');
+  for (let r = 0; r < 22; r++) {
+    const w = (r * 34 / 22) | 0;
+    px(x, 17 - w / 2 | 0, r + 2, w, 1, '#3a3f4a');
+    px(x, 17 - w / 2 | 0, r + 2, Math.max(1, w / 3 | 0), 1, '#4c5566');
+  }
+  px(x, 16, 2, 2, 22, '#2a2e38');                       // center seam
+  for (let r = 6; r < 22; r += 5) px(x, 17 - (r * 34 / 22) / 2 | 0, r + 2, (r * 34 / 22) | 0, 1, '#2a2e38'); // panel lines
+  px(x, 8, 20, 6, 4, '#7fd0ff');                        // glowing pane
+  px(x, 1, 24, 32, 2, '#9a947f');                       // base
+  SPR.pyramid = { c, ax: 17, ay: 25 };
   return SPR;
 }
 

@@ -197,9 +197,16 @@ export function updateHud(state) {
   scoreEl.textContent = state.parkScore;
   acornEl.textContent = p.acorns;
   livesEl.textContent = '♥'.repeat(Math.max(0, state.lives)) + '♡'.repeat(Math.max(0, MAX_LIVES - state.lives));
-  if (state.phase === 'day') { phaseTxt.innerHTML = '☀ Day'; }
-  else { phaseTxt.innerHTML = '<span class="night">🌙 Night ' + state.night + '</span>'; }
-  phaseTimer.textContent = Math.ceil(state.phaseT) + 's';
+  if (state.scene === 'garden') {
+    phaseTxt.innerHTML = '🌷 Gardens';
+    phaseTimer.textContent = Math.ceil(state.gardenT) + 's';
+  } else {
+    if (state.phase === 'day') { phaseTxt.innerHTML = '☀ Day'; }
+    else { phaseTxt.innerHTML = '<span class="night">🌙 Night ' + state.night + '</span>'; }
+    phaseTimer.textContent = state.gardenGateT > 0
+      ? '🌷 ' + Math.ceil(state.gardenGateT) + 's'
+      : Math.ceil(state.phaseT) + 's';
+  }
   btnShop.style.display = (state.started && !state.paused && nearShop(state)) ? 'block' : 'none';
 
   // abilities: desktop chips + mobile buttons (with cooldown drain)

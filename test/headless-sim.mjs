@@ -186,6 +186,81 @@ ok('the boss can be killed', bossDead);
 ok('boss death breaks dawn immediately', bk.phase === 'day');
 ok('boss death awards a big score bonus (150 x night)', bk.parkScore >= scoreB + 150 * 5);
 
+// --- 5e. Garden Runs (bonus scene) -------------------------------------------
+section('Garden Runs');
+{
+  const { GARDEN, G: GT } = await import('../src/constants.js');
+  // world generation: the garden map exists and is a garden
+  const gs = createState();
+  ok('garden map has water (Monet Pool)', gs.gardenGround.some((v) => v === GT.WATER));
+  ok('garden map has flower beds', gs.gardenGround.some((v) => v === GT.BED));
+  ok('garden has flower candidate spots', gs.gardenSpots.length >= GARDEN.FLOWERS);
+  const gs2 = createState();
+  ok('garden generation is deterministic', gs.gardenGround.every((v, i) => v === gs2.gardenGround[i]));
+
+  // kill the boss -> the gate opens
+  const g = createState(); g.started = true; g.night = 4; g.phaseT = 0.001;
+  step(g, NO_INPUT, 1 / 60);                                    // night 5 begins, McGovern rises
+  const mg = g.enemies.find((e) => e.kind === 'mcgovern');
+  g.spawnLeft = 0; mg.rise = 1; mg.hp = 1; mg.spd = 0;
+  g.player.weapon = 'paddle'; g.player.owned.add('paddle');
+  for (let i = 0; i < 240 && g.enemies.includes(mg); i++) {
+    g.player.x = mg.x - 22; g.player.y = mg.y + 8; g.player.fx = 1; g.player.fy = 0; g.player.atkCd = 0;
+    step(g, { move: { x: 0, y: 0 }, attack: true }, 1 / 60);
+  }
+  ok('boss kill opens the garden gate', g.phase === 'day' && g.gardenGateT > 0);
+  ok('gate window announced', g.events.some((e) => e.type === 'toast' && String(e.t).includes('Gardens are open')));
+
+  // day clock is frozen while the gate window runs
+  const ptBefore = g.phaseT;
+  step(g, NO_INPUT, 1 / 60);
+  ok('day clock holds while the gate is open', g.phaseT === ptBefore);
+
+  // walk to the gate -> scene swap + flowers
+  g.player.x = (GARDEN.GATE.x + 0.2) * T; g.player.y = (GARDEN.GATE.y + 0.5) * T;
+  step(g, NO_INPUT, 1 / 60);
+  ok('entering the gate swaps to the garden scene', g.scene === 'garden');
+  ok('active world is now the garden', g.ground === g.gardenGround && g.solid === g.gardenSolid);
+  ok('flowers spawned', g.flowers.length === GARDEN.FLOWERS);
+  ok('run timer started', g.gardenT > 0 && g.gardenT <= GARDEN.RUN_TIME);
+  ok('player stands at the Cheesman Gate spawn', Math.abs(g.player.x - GARDEN.SPAWN.x * T) < T);
+
+  // collect a flower
+  const fl = g.flowers[0];
+  const sBefore = g.parkScore, cBefore = g.player.coins;
+  g.player.x = fl.x; g.player.y = fl.y;
+  step(g, NO_INPUT, 1 / 60);
+  ok('collecting a flower scores + pays', fl.got && g.parkScore === sBefore + GARDEN.PTS && g.player.coins > cBefore);
+
+  // collect ALL remaining -> perfect bonus + auto-exit back to the park
+  const s2 = g.parkScore;
+  let flowersLeft = g.flowers.filter((f) => !f.got).length;
+  for (let i = 0; i < 200 && g.scene === 'garden'; i++) {
+    const nxt = g.flowers.find((f) => !f.got);
+    if (nxt) { g.player.x = nxt.x; g.player.y = nxt.y; }
+    step(g, NO_INPUT, 1 / 60);
+  }
+  ok('collecting everything ends the run early', g.scene === 'park');
+  ok('perfect run pays the Green Thumb bonus', g.parkScore === s2 + flowersLeft * GARDEN.PTS + GARDEN.PERFECT);
+  ok('park world restored', g.ground !== g.gardenGround && g.parkGround === null);
+  ok('player returned to the gate', Math.abs(g.player.x - (GARDEN.GATE.x + 0.2) * T) < 2);
+  ok('day clock resumes after the run', (() => { const p = g.phaseT; step(g, NO_INPUT, 1 / 60); return g.phaseT < p; })());
+
+  // ignoring the gate: the window expires and closes
+  const gx = createState(); gx.started = true; gx.gardenGateT = 0.01;
+  step(gx, NO_INPUT, 1 / 60);
+  ok('unused gate window closes', gx.gardenGateT === 0 && gx.scene === 'park');
+  ok('gate-shut toast fires', gx.events.some((e) => e.type === 'toast' && String(e.t).includes('gate swings shut')));
+
+  // timer expiry ejects you even with flowers left
+  const gt = createState(); gt.started = true; gt.gardenGateT = 10;
+  gt.player.x = (GARDEN.GATE.x + 0.2) * T; gt.player.y = (GARDEN.GATE.y + 0.5) * T;
+  step(gt, NO_INPUT, 1 / 60);
+  gt.gardenT = 0.01;
+  step(gt, NO_INPUT, 1 / 60);
+  ok('run timer expiry returns you to the park', gt.scene === 'park' && gt.flowers.length === 0);
+}
+
 // --- 6. XP / leveling -------------------------------------------------------
 section('Leveling');
 const lv = createState(); lv.started = true;

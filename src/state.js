@@ -10,6 +10,7 @@
 import { T, MW, MH, G, MAX_LIVES, NLOBE, SLOBE, ellipseWp } from './constants.js';
 import { makeRng } from './rng.js';
 import { buildMap } from './map.js';
+import { buildGarden } from './garden.js';
 
 export const DEFAULT_SEED = 20260701;
 
@@ -33,6 +34,18 @@ export function createState(seed = DEFAULT_SEED) {
     parkScore: 0, bestScore: 0, crittersActive: false, acornT: 0, sproutMet: false,
     drone: null, clouds: [], shocks: [],   // ultimate-ability entities
     zenT: 0,                               // yogi ultimate: global slow-motion
+
+    // Garden Run (bonus scene) — the active grids swap on enter/exit so every
+    // collision/camera helper keeps reading state.ground/solid/objects
+    scene: 'park',
+    gardenGround: new Uint8Array(MW * MH), gardenSolid: new Uint8Array(MW * MH),
+    gardenObjects: [], gardenSpots: [],
+    parkGround: null, parkSolid: null, parkObjects: null,  // stash while in the gardens
+    gardenGateT: 0,      // seconds left to reach the gate (0 = closed)
+    gardenT: 0,          // seconds left inside the gardens
+    flowers: [],         // this run's flowers
+    flowersGot: 0,
+    savedPos: null,      // park position to restore on exit
 
     player: {
       x: 6 * T + 8, y: 45.5 * T, dir: 'right', fx: 1, fy: 0, phase: 0, moving: false, speed: 76,
@@ -71,6 +84,8 @@ export function createState(seed = DEFAULT_SEED) {
   const wr = makeRng(state.worldSeed);
   buildMap(state, wr);
   initEntities(state, wr);
+  // the garden uses its own seeded stream so park generation stays byte-identical
+  buildGarden(state, makeRng(state.worldSeed ^ 0x47a2c1));
   return state;
 }
 

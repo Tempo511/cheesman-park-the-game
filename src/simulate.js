@@ -8,7 +8,7 @@
 // broadcast the resulting state — no gameplay code changes. Randomness flows
 // through state.simSeed so outcomes are reproducible.
 // ============================================================================
-import { WEAPONS, ZONES, ENEMY_TYPES, ENEMY_ORDER, ARCHETYPES, ARCHETYPE_LEVEL, archName, xpNeed, T, MW, MH, G, SOLID_GROUND, SHOP_POS } from './constants.js';
+import { WEAPONS, ZONES, ENEMY_TYPES, ENEMY_ORDER, ARCHETYPES, ARCHETYPE_LEVEL, archName, xpNeed, T, MW, MH, G, GARDEN, SOLID_GROUND, SHOP_POS } from './constants.js';
 import { gi, inMap, getG } from './tiles.js';
 import { makeRng } from './rng.js';
 
@@ -409,6 +409,73 @@ function killEnemy(state, e, drops, rng) {
     addScore(state, 150 * state.night);
     toast(state, '🌅 McGovern is fired. Again.', 'Back under the lawn with the rest of his handiwork. Dawn breaks early.', 6000);
     startDay(state, rng);
+    // your reward: the Botanic Gardens open their Cheesman Gate
+    state.gardenGateT = GARDEN.ENTRY_WINDOW;
+    toast(state, '🌷 The Botanic Gardens are open!', 'The Cheesman Gate is on the east fence — you have ' + GARDEN.ENTRY_WINDOW + ' seconds to get there.', 8000);
+  }
+}
+
+// --- the Garden Run (bonus scene) -------------------------------------------
+function enterGarden(state, rng) {
+  const p = state.player;
+  state.savedPos = { x: p.x, y: p.y };
+  // swap the active world for the garden; every helper reads state.ground/etc.
+  state.parkGround = state.ground; state.parkSolid = state.solid; state.parkObjects = state.objects;
+  state.ground = state.gardenGround; state.solid = state.gardenSolid; state.objects = state.gardenObjects;
+  state.scene = 'garden';
+  p.x = GARDEN.SPAWN.x * T; p.y = GARDEN.SPAWN.y * T;
+  p.dashT = 0;                                    // no carrying a dash through the gate
+  state.gardenGateT = 0;
+  state.gardenT = GARDEN.RUN_TIME;
+  state.flowersGot = 0;
+  const pool = state.gardenSpots.slice();         // seeded pick, no repeats
+  const colors = ['#e5c04b', '#d98aa6', '#c94f43', '#8e6fb8', '#f2ead6'];
+  state.flowers = [];
+  for (let i = 0; i < GARDEN.FLOWERS && pool.length; i++) {
+    const j = (rng() * pool.length) | 0;
+    const [x, y] = pool.splice(j, 1)[0];
+    state.flowers.push({ x: x + (rng() * 8 - 4), y: y + (rng() * 8 - 4), c: colors[i % colors.length], got: false, bob: rng() * 6 });
+  }
+  toast(state, '🌷 GO!', GARDEN.RUN_TIME + ' seconds. ' + state.flowers.length + ' flowers. The plants are NOT safe today.', 4000);
+}
+
+function exitGarden(state) {
+  const total = state.flowers.length, got = state.flowersGot;
+  let msg = 'You gathered ' + got + '/' + total + ' flowers.';
+  if (got === total && total > 0) { addScore(state, GARDEN.PERFECT); msg += ' GREEN THUMB — +' + GARDEN.PERFECT + ' bonus!'; }
+  toast(state, '🌷 Garden run over', msg + ' Back to the park.', 6000);
+  state.ground = state.parkGround; state.solid = state.parkSolid; state.objects = state.parkObjects;
+  state.parkGround = state.parkSolid = state.parkObjects = null;
+  state.scene = 'park';
+  state.flowers = []; state.gardenT = 0;
+  if (state.savedPos) { state.player.x = state.savedPos.x; state.player.y = state.savedPos.y; state.savedPos = null; }
+}
+
+function updateGarden(state, dt, rng) {
+  const p = state.player;
+  if (state.scene === 'park' && state.gardenGateT > 0) {
+    state.gardenGateT -= dt;
+    if (state.gardenGateT <= 0) {
+      state.gardenGateT = 0;
+      toast(state, '🌷 The gate swings shut', 'The gardener waits for no one. Next boss, next chance.', 4500);
+      return;
+    }
+    const gx = (GARDEN.GATE.x + 0.5) * T, gy = (GARDEN.GATE.y + 0.5) * T;
+    if (Math.hypot(p.x - gx, p.y - gy) < 30) enterGarden(state, rng);
+  } else if (state.scene === 'garden') {
+    state.gardenT -= dt;
+    for (const f of state.flowers) {
+      if (f.got) continue;
+      f.bob += dt * 4;
+      if (Math.hypot(f.x - p.x, f.y - p.y) < 14) {
+        f.got = true; state.flowersGot++;
+        addScore(state, GARDEN.PTS);
+        const got = addCoins(state, GARDEN.BUCKS);
+        addFloat(state, f.x, f.y - 12, '+' + GARDEN.PTS + ' · $' + got, f.c);
+        for (let k = 0; k < 5; k++) state.particles.push({ x: f.x, y: f.y - 4, vx: rng() * 40 - 20, vy: -14 - rng() * 22, ttl: .5, col: f.c });
+      }
+    }
+    if (state.gardenT <= 0 || state.flowersGot === state.flowers.length) exitGarden(state);
   }
 }
 
@@ -750,14 +817,17 @@ export function step(state, inputs, dt) {
 
   handleAbilities(state, inputs, rng);
   movePlayer(state, inputs, dt, rng);
-  updateNpcs(state, dt, rng);
-  updateAmbients(state, dt, rng);
-  updateEnemies(state, dt, rng);
-  updateDrone(state, dt);
-  updateProjectiles(state, dt, rng);
-  updatePickups(state, dt);
-  updateDaytime(state, dt, rng);
-  checkZones(state);
+  if (state.scene === 'park') {                 // park life pauses while you're in the gardens
+    updateNpcs(state, dt, rng);
+    updateAmbients(state, dt, rng);
+    updateEnemies(state, dt, rng);
+    updateDrone(state, dt);
+    updateProjectiles(state, dt, rng);
+    updatePickups(state, dt);
+    updateDaytime(state, dt, rng);
+    checkZones(state);
+  }
+  updateGarden(state, dt, rng);
 
   p.atkCd -= dt; p.hurtCd -= dt; p.flashT -= dt;
   p.ab1Cd = Math.max(0, p.ab1Cd - dt);
@@ -785,6 +855,9 @@ export function step(state, inputs, dt) {
   for (const f of [...state.floats]) { f.ttl -= dt; f.y -= 18 * dt; if (f.ttl <= 0) state.floats.splice(state.floats.indexOf(f), 1); }
 
   // day/night clock
+  // the day/night clock holds while the garden gate is open or you're inside —
+  // a garden run never costs you shopping time
+  if (state.gardenGateT > 0 || state.scene === 'garden') { state.simSeed = rng.getSeed(); state.frame++; return; }
   state.phaseT -= dt;
   if (state.phase === 'night') {
     if (state.spawnLeft > 0) {
