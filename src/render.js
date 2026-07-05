@@ -144,7 +144,8 @@ export function renderGardenGround(state) {
   g.fillText('EL POMAR WATERWAY', 42 * T, 43.8 * T);
   g.fillText('SCIENCE PYRAMID', 28 * T, 46 * T);
   g.fillText('AMPHITHEATER', 45.5 * T, 19 * T);
-  g.fillText('WARING HOUSE', 60 * T, 58 * T);
+  g.fillText('WARING HOUSE', 57.5 * T, 58.6 * T);
+  g.fillText('CHIHULY', 61.8 * T, 47.4 * T);
   g.fillText('CHEESMAN GATE', 1.4 * T, 25.4 * T);
   g.fillStyle = 'rgba(20,40,20,.5)';
   g.fillText('DENVER BOTANIC GARDENS · EST. 1951', 20 * T, 4.4 * T);
