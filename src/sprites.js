@@ -117,6 +117,19 @@ export function buildSprites(rnd) {
   px(x, 2, 3, 20, 5, '#b8864a'); px(x, 2, 3, 20, 1, '#d1a266');
   px(x, 0, 0, 24, 2, '#a7773f');
   SPR.picnic = { c, ax: 12, ay: 15 };
+  // DBG greenhouse complex — long parallel growing ranges (the striped white
+  // roofs in the aerial), deliberately utilitarian next to the showpiece dome
+  c = mkCanvas(72, 34); x = c.getContext('2d');
+  for (let range = 0; range < 3; range++) {
+    const ry = range * 10;
+    px(x, 2, ry + 4, 68, 7, '#c8ccc9');                 // range body
+    px(x, 2, ry + 2, 68, 3, '#e8ecea');                 // ridge highlight
+    px(x, 2, ry + 9, 68, 2, '#9aa09d');                 // eave shadow
+    for (let i = 6; i < 68; i += 7) px(x, i, ry + 3, 1, 7, '#aab4b0');  // glazing bars
+  }
+  px(x, 0, 30, 72, 4, '#b8b2a0'); px(x, 0, 32, 72, 2, '#9a947f');       // service apron
+  px(x, 33, 26, 6, 6, '#4a5a58');                       // door
+  SPR.greenhouse = { c, ax: 36, ay: 32 };
   // the Science Pyramid (DBG) — dark faceted glass triangle
   c = mkCanvas(34, 26); x = c.getContext('2d');
   for (let r = 0; r < 22; r++) {

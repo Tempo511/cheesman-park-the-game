@@ -59,11 +59,11 @@ export function buildGarden(state, rnd) {
   for (const [x, y] of [[8, 5], [12, 4.6], [24, 4.8], [28, 6], [28.5, 12], [28, 18], [27.5, 23.5], [8.5, 24], [6, 18], [6.2, 10]]) addObj('pine', x, y);
   addObj('stone', 9, 23); addObj('stone', 27, 9);
 
-  // --- N: greenhouse complex + the Conservatory dome ------------------------
+  // --- N: greenhouse complex + THE Conservatory (there is exactly one) ------
   fillG(32, 6, 42, 11, G.MARBLE);
-  addObj('conservatory', 37, 10);            // greenhouse complex
+  addObj('greenhouse', 37, 10);              // working ranges, not a showpiece
   fillG(44, 10, 54, 17, G.PAVE);
-  addObj('conservatory', 49, 15);            // Boettcher dome, on its plaza
+  addObj('conservatory', 49, 15);            // the Boettcher dome, on its plaza
   addObj('column', 44, 17.5); addObj('column', 54, 17.5);
 
   // --- CTR: formal annual & cutting beds in stripes -------------------------
