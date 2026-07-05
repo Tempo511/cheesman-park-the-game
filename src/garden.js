@@ -23,7 +23,9 @@ export function buildGarden(state, rnd) {
   const fillG = (x0, y0, x1, y1, v) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) setG(x, y, v); };
   const addObj = (type, x, y, isSolid = true) => {
     objects.push({ type, x, y });
-    if (isSolid) { const tx = Math.round(x), ty = Math.round(y); if (inMap(tx, ty)) solid[gi(tx, ty)] = 1; }
+    // floor, not round: the sprite's base stands in tile floor(x,y) — rounding
+    // used to place invisible collision one tile south/east of the graphic
+    if (isSolid) { const tx = Math.floor(x), ty = Math.floor(y); if (inMap(tx, ty)) solid[gi(tx, ty)] = 1; }
   };
   // natural things (plants, rocks, benches) never sit on hardscape or water:
   // nudge to the nearest natural tile, or skip entirely
@@ -31,7 +33,7 @@ export function buildGarden(state, rnd) {
   const NUDGE = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1], [2, 0], [-2, 0], [0, 2], [0, -2]];
   const addNat = (type, x, y, isSolid = true) => {
     for (const [ox, oy] of NUDGE) {
-      const tx = Math.round(x) + ox, ty = Math.round(y) + oy;
+      const tx = Math.floor(x) + ox, ty = Math.floor(y) + oy;   // floor: match where the base stands
       if (inMap(tx, ty) && ty < GH && NATURAL_OK.has(ground[gi(tx, ty)])) { addObj(type, x + ox, y + oy, isSolid); return; }
     }
   };
@@ -192,7 +194,7 @@ export function buildGarden(state, rnd) {
   for (const [x, y] of [[39.5, 36.2], [47, 35.8], [55, 36.3], [43, 45.6], [51.5, 45.9], [59, 45.4]]) addNat('tallgrass', x, y, false);
 
   // the El Pomar allee — trees lining both banks
-  for (let x = 39; x <= 55; x += 4) { addNat('tree', x, 37.6); addNat('tree', x + 2, 44.6); }
+  for (let x = 39; x <= 55; x += 4) { addNat('tree', x, 37.7); addNat('tree', x + 2, 44.2); }
 
   // Chihuly's crown garden — the sculpture pond wrapped in the densest
   // planting in the gardens (this corner is the showpiece)
