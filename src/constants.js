@@ -14,7 +14,7 @@ export const GH = 60;                // garden scene height in tiles (width = MW
 // Garden Run (bonus round after each boss kill) — all tuning knobs here
 export const GARDEN = {
   ENTRY_WINDOW: 30,   // seconds to reach the gate after dawn breaks
-  RUN_TIME: 45,       // tuned: base class ~20/30 flowers, Jogger can sweep
+  RUN_TIME: 35,       // calibrated from live playtest: base ~20/30, Volleyball ~26, Jogger sweeps
   FLOWERS: 30,        // flowers scattered across the beds
   PTS: 15,            // Park Score per flower
   BUCKS: 2,           // coins per flower
