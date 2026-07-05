@@ -14,12 +14,14 @@ import { initRender, renderGround, buildMini, render, renderFx, renderMini, resi
 import { initUI, updateHud, drainEvents, hideDeath, openShop, closeShop, isShopOpen, toast as drainToast } from './ui.js';
 import { initInput, getInputs } from './input.js';
 import { unlock as unlockAudio, updateAudio, setMuted, isMuted } from './audio.js';
+import { createRecorder, recordFrame, finishRecording, quantizeInputs, quantizeDtMs } from './replay.js';
 
 const SAVE_KEY = 'cheesman.save.v1';
 const MUTE_KEY = 'cheesman.muted';
 
 // --- state -----------------------------------------------------------------
 const state = createState();
+const recorder = createRecorder(state.worldSeed);   // every run is recorded for leaderboard replay
 
 // Each visit starts a FRESH run (level 1, frisbee). Only a meta high-score —
 // the best night you've survived — persists across sessions.
@@ -64,6 +66,7 @@ initUI(state, {
   },
   onRespawn: () => { respawn(state); drainEvents(state); hideDeath(); },
   onNewRun: () => { save(); location.reload(); },   // fresh-run-per-load model
+  getRecording: () => finishRecording(recorder, state),   // for leaderboard submission
 });
 
 initInput({
@@ -98,7 +101,12 @@ function frame(ts) {
 
   const active = state.started && !state.paused && !orientationBlocked;
   if (active && dt > 0) {
-    step(state, getInputs(), dt);
+    // quantize inputs + dt, and feed the sim EXACTLY what we record — that
+    // equality is what makes leaderboard replays reproduce the run
+    const qi = quantizeInputs(getInputs());
+    const dtMs = quantizeDtMs(dt);
+    recordFrame(recorder, dtMs, qi);
+    step(state, qi, dtMs / 1000);
     drainEvents(state);
     updateHud(state);
     // haptic feedback on meaningful moments
@@ -121,15 +129,20 @@ function frame(ts) {
 }
 requestAnimationFrame(frame);
 
-// --- debug hook: run __diag() in the console to see why the sim may be idle ---
-window.__state = state;
-window.__diag = () => ({
-  started: state.started, paused: state.paused, orientationBlocked,
-  dead: state.dead, hidden: document.hidden, lastTs: last,
-  coarsePointer: coarseMQ.matches, portrait: portraitMQ.matches,
-  night: state.night, phaseT: Math.round(state.phaseT),
-  playerXY: [Math.round(state.player.x), Math.round(state.player.y)],
-});
+// --- debug hooks: DEV HOSTS ONLY (localhost / LAN) — with a public
+// leaderboard, the console cheats stay out of production ---
+const DEV_HOST = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)
+  || /^(10\.|192\.168\.)/.test(location.hostname);
+if (DEV_HOST) {
+  window.__state = state;
+  window.__diag = () => ({
+    started: state.started, paused: state.paused, orientationBlocked,
+    dead: state.dead, hidden: document.hidden, lastTs: last,
+    coarsePointer: coarseMQ.matches, portrait: portraitMQ.matches,
+    night: state.night, phaseT: Math.round(state.phaseT),
+    playerXY: [Math.round(state.player.x), Math.round(state.player.y)],
+  });
+}
 
 // save on the way out
 addEventListener('beforeunload', save);

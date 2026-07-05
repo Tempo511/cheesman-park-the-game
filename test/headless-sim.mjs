@@ -558,6 +558,38 @@ ok('found set persisted', dst.found.has('pav') && dst.found.has('pool'));
 ok('bestNight persisted', dst.bestNight === 3);
 ok('style persisted', dst.player.style === 'f');
 
+// --- 10b. record -> replay: the leaderboard anti-cheat guarantee ------------
+section('Replay recording');
+{
+  const { createRecorder, recordFrame, finishRecording, quantizeInputs, quantizeDtMs, replay } =
+    await import('../src/replay.js');
+  const live = createState(); live.started = true;
+  const rec = createRecorder(live.worldSeed);
+  // drive a run exactly the way main.js does: quantize, record, step —
+  // and, like main, never record paused frames (the sim doesn't run them)
+  for (let i = 0; i < 3200; i++) {                  // ~54s: through dusk into night 1
+    if (i === 120) chooseArchetype(live, 'jogger'); // mid-run action (logged)
+    if (i === 600) buyWeapon(live, 'leash');        // action even if unaffordable (no-op both sides)
+    if (live.paused) continue;
+    const seg = (i / 25) | 0;                       // inputs held for 25-frame stretches (RLE-friendly)
+    const raw = { move: { x: Math.sin(seg) * 0.83, y: Math.cos(seg * 1.3) * 0.61 }, attack: (i % 120) < 60, ability1: i % 400 === 0, ability2: false };
+    const qi = quantizeInputs(raw);
+    const dtMs = quantizeDtMs(1 / 60);
+    recordFrame(rec, dtMs, qi);
+    step(live, qi, dtMs / 1000);
+  }
+  const recording = JSON.parse(JSON.stringify(finishRecording(rec, live))); // must survive JSON (it's uploaded)
+  const rep = replay(recording);
+  ok('replay reproduces the exact Park Score', rep.score === live.parkScore);
+  ok('replay reproduces night reached', rep.night === live.night);
+  ok('replay reproduces kill count', rep.kills === live.player.kills);
+  ok('replay reproduces level', rep.level === live.player.level);
+  ok('replay consumed the same number of frames', rep.frames === live.frame);
+  ok('recording is compact (RLE)', recording.frames.length < 3200 / 4);
+  ok('the run reached night (combat was replayed too)', rep.night >= 1);
+  ok('live run actually did something (score > 0)', live.parkScore > 0);
+}
+
 // --- 11. soak: a full night with no crashes --------------------------------
 section('Soak test');
 let crashed = null;

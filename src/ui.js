@@ -8,6 +8,8 @@
 import { WEAPONS, WEAPON_ORDER, xpNeed, ARCHETYPES, ARCHETYPE_ORDER, MAX_LIVES, archName, ENEMY_TYPES } from './constants.js';
 import { nearShop, buyWeapon, buyChile, chooseArchetype, setStyle, weaponPrice, effectivePrice, ability1State, ability2State } from './simulate.js';
 import { mkCanvas, px, drawPlayerChar } from './sprites.js';
+import { leaderboardEnabled, submitScore, fetchTop, fetchRank, cleanName } from './leaderboard.js';
+import { GAME_VERSION } from './constants.js';
 
 let S = null;
 const $ = (id) => document.getElementById(id);
@@ -17,8 +19,11 @@ let ability2El, ab2Btn, ab2Lbl, ab2Fill, bossbarEl, bossFillEl;
 let shopEl, shopItemsEl;
 let toastEl, toastH, toastP, toastTO = null;
 
-export function initUI(state, { onStart, onRespawn, onNewRun } = {}) {
+let getRecording = null;   // provided by main; packages the run for submission
+
+export function initUI(state, { onStart, onRespawn, onNewRun, getRecording: getRec } = {}) {
   S = state;
+  getRecording = getRec || null;
   hpTxt = $('hpTxt'); hpBar = document.querySelector('#hpbar>i');
   xpBar = document.querySelector('#xpbar>i'); lvTxt = $('lvTxt');
   coinTxt = $('coinTxt'); wepEl = $('wep');
@@ -51,6 +56,51 @@ export function initUI(state, { onStart, onRespawn, onNewRun } = {}) {
   const styleM = $('styleM'), styleF = $('styleF');
   styleM.addEventListener('click', () => { setStyle(S, 'm'); styleM.classList.add('sel'); styleF.classList.remove('sel'); });
   styleF.addEventListener('click', () => { setStyle(S, 'f'); styleF.classList.add('sel'); styleM.classList.remove('sel'); });
+
+  // leaderboard: intro browser + game-over submission
+  if (leaderboardEnabled()) $('lbOpen').style.display = '';
+  $('lbOpen').addEventListener('click', async () => {
+    $('lbOverlay').style.display = 'flex';
+    $('lbListTop').innerHTML = '<div class="lbmsg">Fetching scores…</div>';
+    renderRows($('lbListTop'), await fetchTop(10));
+  });
+  $('lbClose').addEventListener('click', () => { $('lbOverlay').style.display = 'none'; });
+  try { $('lbName').value = localStorage.getItem('cheesman.name') || ''; } catch (e) { /* fine */ }
+  $('lbSubmit').addEventListener('click', postScore);
+}
+
+// --- leaderboard helpers -----------------------------------------------------
+function renderRows(el, rows, meName) {
+  if (!rows) { el.innerHTML = '<div class="lbmsg">Couldn’t reach the leaderboard. (No signal at the park?)</div>'; return; }
+  if (!rows.length) { el.innerHTML = '<div class="lbmsg">No scores yet — be the first ranger on the board.</div>'; return; }
+  el.innerHTML = rows.map((r, i) =>
+    `<div class="lbrow${meName && r.name === meName ? ' me' : ''}">
+      <span class="r">${i + 1}.</span><span class="n">${escapeHtml(r.name)}</span>
+      <span class="s">${r.score}</span><span class="d">night ${r.night} · ${r.kills} kills</span>
+    </div>`).join('');
+}
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+async function postScore() {
+  const btn = $('lbSubmit');
+  const name = cleanName($('lbName').value);
+  $('lbName').value = name;
+  try { localStorage.setItem('cheesman.name', name); } catch (e) { /* fine */ }
+  btn.disabled = true; btn.textContent = 'Posting…';
+  const res = await submitScore({
+    name, score: S.parkScore, night: S.night, kills: S.player.kills,
+    archetype: S.player.archetype, style: S.player.style,
+    seed: S.worldSeed, version: GAME_VERSION,
+    replay: getRecording ? getRecording() : null,
+  });
+  if (res.ok) {
+    const rank = await fetchRank(S.parkScore);
+    btn.textContent = rank ? 'Posted — #' + rank + '!' : 'Posted!';
+    renderRows($('lbList'), await fetchTop(10), name);
+  } else {
+    btn.textContent = res.error === 'offline' ? 'No signal — try again' : 'Not accepted';
+    btn.disabled = false;
+  }
 }
 
 export function toast(t, p, ms) {
@@ -114,6 +164,7 @@ function showDeath(ev) {
       + ev.lives + (ev.lives === 1 ? ' rescue' : ' rescues') + ' left.';
     $('respawn').style.display = '';
     $('newRun').style.display = 'none';
+    $('lbPost').style.display = 'none'; $('lbList').innerHTML = '';   // only finished runs post
   } else {                                         // out of rescues: run over
     $('deathTitle').textContent = 'Game Over';
     $('deathSub').textContent = stats;
@@ -122,6 +173,12 @@ function showDeath(ev) {
       : 'The rangers are out of patience — and you are out of rescues. Best score: ' + ev.bestScore + '.';
     $('respawn').style.display = 'none';
     $('newRun').style.display = '';
+    if (leaderboardEnabled()) {                    // offer to post the finished run
+      $('lbPost').style.display = 'flex';
+      $('lbSubmit').disabled = false; $('lbSubmit').textContent = 'Post score';
+      $('lbList').innerHTML = '<div class="lbmsg">Fetching scores…</div>';
+      fetchTop(10).then((rows) => renderRows($('lbList'), rows));
+    }
   }
   $('death').style.display = 'flex';
 }

@@ -61,6 +61,11 @@ export function createState(seed = DEFAULT_SEED) {
 
     // sim -> UI message queue (toasts, death, future: sounds). Drained each frame.
     events: [],
+
+    // replay bookkeeping: completed step count + player actions (shop buys,
+    // tribe picks, respawns) stamped with the frame they happened at. Together
+    // with the recorded input stream this makes a run fully reproducible.
+    frame: 0, actionLog: [],
   };
 
   const wr = makeRng(state.worldSeed);

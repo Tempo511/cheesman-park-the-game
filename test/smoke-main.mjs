@@ -50,6 +50,7 @@ globalThis.innerHeight = 600;
 globalThis.devicePixelRatio = 2;
 globalThis.localStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 globalThis.matchMedia = () => ({ matches: false, addEventListener() {}, addListener() {} });
+globalThis.location = { hostname: 'localhost', reload() {} };
 const globalHandlers = {};
 globalThis.addEventListener = (type, fn) => { (globalHandlers[type] || (globalHandlers[type] = [])).push(fn); };
 let rafCb = null;

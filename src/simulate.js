@@ -32,6 +32,10 @@ export function weaponPrice(state, id) { return effectivePrice(state, WEAPONS[id
 // Park Score — the unified score (squirrels fed, landmarks, kills, nights)
 function addScore(state, n) { state.parkScore += n; if (state.parkScore > state.bestScore) state.bestScore = state.parkScore; }
 
+// player actions are logged with the frame they happened at so a recorded run
+// can be replayed exactly (see replay.js)
+const logAction = (state, a, v) => state.actionLog.push({ f: state.frame, a, v });
+
 export const nearShop = (state) =>
   Math.hypot(state.player.x - SHOP_POS.x, state.player.y - SHOP_POS.y) < 46;
 
@@ -432,11 +436,12 @@ function gainXp(state, n) {
 
 // cosmetic look choice ('m' | 'f') — no gameplay effect
 export function setStyle(state, s) {
-  if (s === 'm' || s === 'f') state.player.style = s;
+  if (s === 'm' || s === 'f') { state.player.style = s; logAction(state, 'setStyle', s); }
 }
 
 export function chooseArchetype(state, id) {
   if (!ARCHETYPES[id]) return;
+  logAction(state, 'chooseArchetype', id);
   state.player.archetype = id;
   state.choosing = false; state.paused = false;
   toast(state, archName(ARCHETYPES[id], state.player.style), ARCHETYPES[id].flavor, 4500);
@@ -628,6 +633,7 @@ function die(state) {
 }
 export function respawn(state) {
   if (state.lives <= 0) return;   // out of rescues — the run is over
+  logAction(state, 'respawn');
   const p = state.player;
   p.coins = Math.floor(p.coins * 0.75);
   p.hp = p.maxHp;
@@ -646,12 +652,14 @@ export function respawn(state) {
 // --- shop actions (invoked by UI now; routed through inputs for co-op later) -
 export function buyWeapon(state, id) {
   const w = WEAPONS[id]; if (!w) return;
+  logAction(state, 'buyWeapon', id);
   const price = weaponPrice(state, id);
   if (state.player.owned.has(id)) { state.player.weapon = id; }
   else if (state.player.coins >= price) { state.player.coins -= price; state.player.owned.add(id); state.player.weapon = id; }
 }
 export function buyChile(state) {
-  if (state.phase !== 'day') return;   // the kitchen closes at night — no mid-horde heal spam
+  if (state.phase !== 'day') return;
+  logAction(state, 'buyChile');   // the kitchen closes at night — no mid-horde heal spam
   const price = effectivePrice(state, 25);
   if (state.player.coins >= price && state.player.hp < state.player.maxHp) {
     state.player.coins -= price; state.player.hp = Math.min(state.player.maxHp, state.player.hp + 35);
@@ -789,4 +797,5 @@ export function step(state, inputs, dt) {
   } else if (state.phaseT <= 0) startNight(state, rng);
 
   state.simSeed = rng.getSeed();
+  state.frame++;   // completed-step count: the clock replays are stamped against
 }

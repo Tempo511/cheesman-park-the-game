@@ -65,6 +65,16 @@
       <button class="pick" id="styleF" type="button" aria-label="Second park-goer"><canvas id="portraitF" width="26" height="28"></canvas></button>
     </div>
     <button class="btn" id="start">Clock in</button>
+    <button class="btn" id="lbOpen" type="button" style="display:none">🏆 Top Rangers</button>
+  </div>
+</div>
+
+<div class="overlay" id="lbOverlay" style="display:none">
+  <div class="card">
+    <h1>🏆 Top Rangers</h1>
+    <div class="sub">Park-wide high scores</div>
+    <div id="lbListTop"></div>
+    <button class="btn" id="lbClose" type="button">Back to the park</button>
   </div>
 </div>
 
@@ -84,6 +94,11 @@
     <h1 id="deathTitle">You Got Got</h1>
     <div class="sub" id="deathSub">The lawn reclaims another one</div>
     <p id="deathTxt">A ranger drags you back to the pavilion at dawn. You dropped some Bucks on the way.</p>
+    <div id="lbPost" style="display:none">
+      <input id="lbName" maxlength="16" placeholder="Your ranger name" autocomplete="off">
+      <button class="btn gold" id="lbSubmit" type="button">Post score</button>
+    </div>
+    <div id="lbList"></div>
     <button class="btn red" id="respawn">Respawn at the pavilion</button>
     <button class="btn" id="newRun" style="display:none">Start a new run</button>
   </div>
