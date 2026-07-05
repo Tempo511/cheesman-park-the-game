@@ -37,6 +37,7 @@ function addScore(state, n) { state.parkScore += n; if (state.parkScore > state.
 const logAction = (state, a, v) => state.actionLog.push({ f: state.frame, a, v });
 
 export const nearShop = (state) =>
+  state.scene === 'park' &&   // the cart is in the park (garden coords overlap!)
   Math.hypot(state.player.x - SHOP_POS.x, state.player.y - SHOP_POS.y) < 46;
 
 export const ambientActive = (state, a) => state.phase === 'day' || a.kind === 'stoner';

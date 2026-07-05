@@ -166,7 +166,10 @@ export function buildGarden(state, rnd) {
     setG(Math.round(63 + Math.cos(ang) * 3), Math.round(44 + Math.sin(ang) * 2), G.BED);
   }
   addObj('waring', 64, 55);
-  addObj('bush', 61.5, 55.5, false); addObj('bush', 66.5, 55.8, false); addObj('bench', 61, 52.5);
+  addObj('bush', 66.5, 55.8, false); addObj('bench', 58.5, 53.5);
+  fillG(62, 50, 64, 52, G.WATER);                          // the sculpture pond
+  fillG(61, 49, 61, 52, G.EDGE); fillG(65, 49, 65, 52, G.EDGE); fillG(62, 49, 64, 49, G.EDGE); fillG(62, 53, 64, 53, G.EDGE);
+  addObj('chihuly', 63, 51.6);                             // Chihuly's "Colorado", rising from the water
 
   // Woodland Mosaic: the shady grove, path dappling through
   for (const [x, y] of [[33, 50], [36, 48], [38, 52], [34, 55], [38.5, 56.5], [30, 52.5], [36, 45.5]]) addObj('tree2', x, y);

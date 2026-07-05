@@ -117,6 +117,21 @@ export function buildSprites(rnd) {
   px(x, 2, 3, 20, 5, '#b8864a'); px(x, 2, 3, 20, 1, '#d1a266');
   px(x, 0, 0, 24, 2, '#a7773f');
   SPR.picnic = { c, ax: 12, ay: 15 };
+  // Chihuly's "Colorado" — the glass spear burst by the Waring House:
+  // a frozen firework, yellow-hot heart out to red tips, on a dark base
+  c = mkCanvas(30, 34); x = c.getContext('2d');
+  px(x, 12, 28, 6, 4, '#2a2a2e'); px(x, 13, 26, 4, 2, '#3a3a40');   // dark base
+  for (let a = 0; a < 72; a++) {
+    const ang = (a / 72) * Math.PI * 2;
+    const len = 7 + ((a * 5) % 7);
+    for (let r = 2; r < len; r++) {
+      const X = 15 + Math.cos(ang) * r * 0.95, Y = 14 + Math.sin(ang) * r * 0.8;
+      px(x, X | 0, Y | 0, 1, 1, r < 4 ? '#ffd75a' : r < len - 2 ? '#e07a3f' : '#c92f2f');
+    }
+  }
+  px(x, 13, 12, 4, 4, '#ffe27a'); px(x, 14, 13, 2, 2, '#fff3b0');   // hot core
+  SPR.chihuly = { c, ax: 15, ay: 32 };
+
   // --- garden flora & rocks kit (NOT gravestones — those stay in the cemetery) ---
   // boulder — rounded granite for Rock Alpine / the mesa
   c = mkCanvas(13, 10); x = c.getContext('2d');
@@ -174,22 +189,21 @@ export function buildSprites(rnd) {
   px(x, 4, 9, 1, 2, PAL.waterHi); px(x, 11, 9, 1, 2, PAL.waterHi);
   SPR.fountain = { c, ax: 8, ay: 13 };
 
-  // the Cheesman Gate — stone pillars + wrought-iron arch between the park and
-  // the Botanic Gardens (bars drawn dynamically: shut normally, open on boss win)
-  c = mkCanvas(24, 44); x = c.getContext('2d');
+  // the Cheesman Gate — stone pillars + wrought-iron span, sized to seam
+  // cleanly into the fence line above and below (no gaps)
+  c = mkCanvas(24, 84); x = c.getContext('2d');
   const pillar = (py) => {
     px(x, 8, py, 8, 3, '#b8b2a0');                       // cap
-    px(x, 9, py + 3, 6, 10, '#9a947f');                  // shaft
-    px(x, 9, py + 3, 2, 10, '#aaa495');                  // highlight
-    px(x, 8, py + 12, 8, 2, '#8a8475');                  // base
+    px(x, 9, py + 3, 6, 12, '#9a947f');                  // shaft
+    px(x, 9, py + 3, 2, 12, '#aaa495');                  // highlight
+    px(x, 8, py + 15, 8, 2, '#8a8475');                  // base
   };
-  pillar(2); pillar(30);                                  // north + south pillars
-  px(x, 11, 6, 2, 32, '#2c2c30');                        // iron spine between (the fence line)
-  for (let i = 8; i < 38; i += 4) px(x, 10, i, 4, 1, '#3a3a40');   // scrollwork rungs
-  px(x, 6, 18, 12, 8, '#8a6d3b'); px(x, 7, 19, 10, 6, '#a8874c');  // hanging sign
-  x.fillStyle = '#3a2f26'; x.font = '5px monospace';
-  px(x, 8, 21, 8, 1, '#6f5730'); px(x, 8, 23, 6, 1, '#6f5730');    // "lettering"
-  SPR.gardengate = { c, ax: 12, ay: 42 };
+  pillar(0); pillar(66);                                  // pillars seam to the fence ends
+  px(x, 11, 15, 2, 53, '#2c2c30');                       // iron spine spanning the gap
+  for (let i = 18; i < 66; i += 4) px(x, 10, i, 4, 1, '#3a3a40');   // scrollwork rungs
+  px(x, 6, 34, 12, 10, '#8a6d3b'); px(x, 7, 35, 10, 8, '#a8874c'); // hanging sign
+  px(x, 8, 37, 8, 1, '#6f5730'); px(x, 8, 39, 6, 1, '#6f5730'); px(x, 8, 41, 7, 1, '#6f5730');
+  SPR.gardengate = { c, ax: 12, ay: 82 };
   // DBG greenhouse complex — long parallel growing ranges (the striped white
   // roofs in the aerial), deliberately utilitarian next to the showpiece dome
   c = mkCanvas(72, 34); x = c.getContext('2d');
@@ -246,18 +260,20 @@ export function buildSprites(rnd) {
   for (let i = 3; i < 16; i += 4) px(x, i, 7, 1, 5, '#aab4b0');     // glazing
   px(x, 0, 12, 18, 2, '#b8a888');
   SPR.glasshouse = { c, ax: 9, ay: 13 };
-  // the Science Pyramid (DBG) — dark faceted glass triangle
-  c = mkCanvas(34, 26); x = c.getContext('2d');
-  for (let r = 0; r < 22; r++) {
-    const w = (r * 34 / 22) | 0;
-    px(x, 17 - w / 2 | 0, r + 2, w, 1, '#3a3f4a');
-    px(x, 17 - w / 2 | 0, r + 2, Math.max(1, w / 3 | 0), 1, '#4c5566');
+  // the Science Pyramid (DBG) — big dark faceted building, honeycomb panels
+  c = mkCanvas(52, 42); x = c.getContext('2d');
+  for (let r = 0; r < 36; r++) {
+    const w = (r * 52 / 36) | 0;
+    px(x, 26 - w / 2 | 0, r + 2, w, 1, '#3a3f4a');
+    px(x, 26 - w / 2 | 0, r + 2, Math.max(1, w / 3 | 0), 1, '#4c5566');
   }
-  px(x, 16, 2, 2, 22, '#2a2e38');                       // center seam
-  for (let r = 6; r < 22; r += 5) px(x, 17 - (r * 34 / 22) / 2 | 0, r + 2, (r * 34 / 22) | 0, 1, '#2a2e38'); // panel lines
-  px(x, 8, 20, 6, 4, '#7fd0ff');                        // glowing pane
-  px(x, 1, 24, 32, 2, '#9a947f');                       // base
-  SPR.pyramid = { c, ax: 17, ay: 25 };
+  px(x, 25, 2, 2, 36, '#2a2e38');                       // center seam
+  for (let r = 8; r < 36; r += 6) px(x, 26 - (r * 52 / 36) / 2 | 0, r + 2, (r * 52 / 36) | 0, 1, '#2a2e38'); // panel courses
+  for (let r = 10; r < 34; r += 8) { px(x, 20, r, 1, 4, '#2a2e38'); px(x, 32, r + 3, 1, 4, '#2a2e38'); }     // facet joints
+  px(x, 10, 32, 9, 6, '#7fd0ff'); px(x, 11, 33, 7, 4, '#a8e0ff');  // glowing entry pane
+  px(x, 34, 30, 6, 5, '#5f7d8a');                       // second pane
+  px(x, 0, 38, 52, 3, '#9a947f'); px(x, 0, 40, 52, 2, '#8a8475'); // plinth
+  SPR.pyramid = { c, ax: 26, ay: 40 };
   return SPR;
 }
 

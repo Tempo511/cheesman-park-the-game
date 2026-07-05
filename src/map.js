@@ -90,7 +90,7 @@ export function buildMap(state, rnd) {
   };
 
   for (let y = 3; y <= 33; y += 1) { if (y < 17 || y > 20) addObj('fence', 63, y); }
-  addObj('gardengate', 63.5, 20.2);          // the Cheesman Gate into the Botanic Gardens
+  addObj('gardengate', 63.5, 21.15);         // the Cheesman Gate into the Botanic Gardens
   for (let y = 17; y <= 20; y++) if (inMap(63, y)) solid[gi(63, y)] = 1;   // gateway itself stays solid (entry is by proximity)
   for (let x = 64; x < MW; x += 1) addObj('fence', x, 33.4, false);
   addObj('conservatory', 67.5, 14);

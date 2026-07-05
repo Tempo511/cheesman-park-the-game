@@ -224,6 +224,10 @@ section('Garden Runs');
   ok('flowers spawned', g.flowers.length === GARDEN.FLOWERS);
   ok('run timer started', g.gardenT > 0 && g.gardenT <= GARDEN.RUN_TIME);
   ok('player stands at the Cheesman Gate spawn', Math.abs(g.player.x - GARDEN.SPAWN.x * T) < T);
+  const gpx = g.player.x, gpy = g.player.y;
+  g.player.x = 44 * T; g.player.y = 54.6 * T;              // the cart's coords — but we're in the gardens
+  ok('the Ranger Cart is not reachable from inside the gardens', nearShop(g) === false);
+  g.player.x = gpx; g.player.y = gpy;
 
   // collect a flower
   const fl = g.flowers[0];
