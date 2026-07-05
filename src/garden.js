@@ -74,7 +74,7 @@ export function buildGarden(state, rnd) {
   blob(21, 16, 4.5, 3, G.WATER);
   ellipseFill(15, 10, 3.5, 2.6, G.GRASS2);                 // tea-house peninsula
   addObj('teahouse', 15, 10);                              // Ella Mullen Weckbaugh Tea House
-  addObj('stone', 12.6, 10.5); addObj('stone', 17.6, 11.2);
+  addObj('lantern', 12.6, 10.5); addObj('lantern', 17.6, 11.2);
   curve([[15, 12], [15, 14.5], [14, 17], [12, 19]], G.PATH, 2);   // stepping path off the peninsula
   curve([[12, 19], [8, 22], [7, 26], [6, 29]], G.PATH, 2);        // west shore stroll
   curve([[12, 19], [18, 21], [24, 20], [27, 17], [26, 12], [22, 7], [16, 5], [10, 6], [7, 10], [7, 15]], G.PATH, 2); // full pond loop
@@ -82,7 +82,8 @@ export function buildGarden(state, rnd) {
   // Shofu-En, "Garden of Pine and Wind": character pines + stone lanterns
   for (const [x, y] of [[7, 6.5], [11, 4.6], [19, 4.2], [24, 5.5], [27, 9], [28.5, 14], [27, 20.5],
     [9, 20], [5.5, 13], [5.2, 8], [22, 21.5], [18, 3.4]]) addObj('pine', x, y);
-  addObj('stone', 8, 11); addObj('stone', 25, 7.5); addObj('stone', 26.5, 18); addObj('bench', 24.5, 12);
+  addObj('lantern', 8, 11); addObj('lantern', 25, 7.5); addObj('rock', 26.5, 18); addObj('bench', 24.5, 12);
+  addObj('willow', 7.5, 20); addObj('willow', 23.5, 22.5);   // Willow Glade, weeping over the pool
 
   // Laura Porter Plains garden: dry meadow with a mown line through it
   blob(13, 34, 7, 5, G.DRY);
@@ -91,8 +92,10 @@ export function buildGarden(state, rnd) {
   // Dryland Mesa + the Cactus & Succulent House; Rock Alpine beyond
   blob(11, 47, 7, 6, G.SAND);
   addObj('glasshouse', 9, 44);
-  for (const [x, y] of [[7, 48], [12, 50], [15, 46.5], [9, 52.5], [14.5, 53]]) { addObj('gplant', x, y, false); addObj('stone', x + 1.1, y + 0.8, false); }
-  for (const [x, y] of [[21, 46], [24, 49], [27, 45.5], [22.5, 52], [26, 52.5]]) addObj('stone', x, y);
+  for (const [x, y] of [[7, 48], [12, 50], [15, 46.5], [9, 52.5], [14.5, 53]]) { addObj('cactus', x, y); addObj('rock', x + 1.3, y + 0.9, false); }
+  addObj('cactus', 11, 46); addObj('tallgrass', 16.5, 50.5, false); addObj('tallgrass', 6.5, 45.5, false);
+  for (const [x, y] of [[21, 46], [24, 49], [27, 45.5], [22.5, 52], [26, 52.5]]) addObj('rock', x, y);
+  addObj('gplant', 23, 47.5, false); addObj('gplant', 25.5, 50.8, false); addObj('tallgrass', 21.5, 50, false);
   curve([[22, 40], [21, 44], [22, 48], [26, 51], [31, 53], [36, 54]], G.PATH, 2);  // Birds & Bees walk
   curve([[6, 29], [6, 36], [6.5, 43], [8, 50], [12, 55], [20, 56]], G.PATH, 2);    // outer west loop
 
@@ -152,7 +155,7 @@ export function buildGarden(state, rnd) {
 
   // formal parterre quarter (fragrance/herb/romantic), hedged with two entries
   for (let by = 48; by <= 54; by += 3) for (let bx = 42; bx <= 54; bx += 4) fillG(bx, by, bx + 2, by, G.BED);
-  fillG(47, 50, 49, 52, G.PAVE); addObj('stone', 48, 51);  // Schlessman plaza + fountain
+  fillG(47, 50, 49, 52, G.PAVE); addObj('fountain', 48, 51);  // Schlessman plaza fountain
   for (let x = 40; x <= 56; x++) { if (x !== 48) { setG(x, 46, G.GARDEN); setG(x, 56, G.GARDEN); } }  // hedges
   for (let y = 47; y <= 55; y++) { if (y !== 51) { setG(40, y, G.GARDEN); setG(56, y, G.GARDEN); } }
   curve([[48, 44], [48, 46]], G.PATH, 2);                  // north entry
@@ -176,11 +179,22 @@ export function buildGarden(state, rnd) {
   fillG(60, 4, 66, 7, G.MARBLE); addObj('column', 60, 8); addObj('column', 66, 8);   // Freyer-Newman Center
   for (const [x, y] of [[63, 12], [64.5, 16], [62.5, 19]]) addObj('pine', x, y);      // Ponderosa border
 
+  // the Lilac Garden — a fragrant row where the south loop bends
+  for (const [x, y] of [[24.5, 41.5], [27, 42.8], [29.5, 41.8], [26, 44.2], [31, 43.5]]) addObj('lilac', x, y);
+  // Ornamental Grasses along the canal banks
+  for (const [x, y] of [[39.5, 36.2], [47, 35.8], [55, 36.3], [43, 45.6], [51.5, 45.9], [59, 45.4]]) addObj('tallgrass', x, y, false);
+  // flowerbushes at the showpiece corners
+  for (const [x, y] of [[5.5, 26.2], [5.8, 32.5], [30, 26.6], [44.5, 18.6], [58, 18.4],
+    [61.5, 30.2], [66.5, 30.5], [45, 22.5], [55.5, 22.8], [14, 8]]) addObj('flowerbush', x, y, false);
+
   // flowering plants tucked along the paths, garden-wide
-  for (let i = 0; i < 46; i++) {
+  for (let i = 0; i < 78; i++) {
     const x = 5 + rnd() * 60, y = 4 + rnd() * (GH - 9);
     const g = at(Math.round(x), Math.round(y));
-    if (g === G.GRASS || g === G.GRASS2 || g === G.DRY) addObj(rnd() < 0.65 ? 'gplant' : 'bush', x, y, false);
+    if (g === G.GRASS || g === G.GRASS2 || g === G.DRY) {
+      const r = rnd();
+      addObj(r < 0.4 ? 'gplant' : r < 0.62 ? 'flowerbush' : r < 0.78 ? 'bush' : r < 0.92 ? 'tallgrass' : 'lilac', x, y, false);
+    }
   }
 
   // perimeter trees (solid ring, minus the gate mouth)

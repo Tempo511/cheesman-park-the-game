@@ -117,6 +117,63 @@ export function buildSprites(rnd) {
   px(x, 2, 3, 20, 5, '#b8864a'); px(x, 2, 3, 20, 1, '#d1a266');
   px(x, 0, 0, 24, 2, '#a7773f');
   SPR.picnic = { c, ax: 12, ay: 15 };
+  // --- garden flora & rocks kit (NOT gravestones — those stay in the cemetery) ---
+  // boulder — rounded granite for Rock Alpine / the mesa
+  c = mkCanvas(13, 10); x = c.getContext('2d');
+  px(x, 2, 3, 9, 6, '#8a8a84'); px(x, 3, 2, 7, 2, '#8a8a84'); px(x, 1, 5, 11, 3, '#8a8a84');
+  px(x, 3, 3, 4, 2, '#a5a59e'); px(x, 2, 7, 9, 2, '#6f6f68');
+  SPR.rock = { c, ax: 6, ay: 9 };
+  // Japanese stone lantern (Shofu-En)
+  c = mkCanvas(10, 15); x = c.getContext('2d');
+  px(x, 2, 13, 6, 2, '#8a8a84');                        // base
+  px(x, 4, 9, 2, 4, '#9a9a92');                         // post
+  px(x, 2, 6, 6, 3, '#9a9a92'); px(x, 3, 7, 4, 1, '#ffe9a8'); // light box, warm glow
+  px(x, 1, 4, 8, 2, '#8a8a84'); px(x, 3, 2, 4, 2, '#8a8a84'); px(x, 4, 1, 2, 1, '#6f6f68'); // cap
+  SPR.lantern = { c, ax: 5, ay: 14 };
+  // saguaro-style cactus (Dryland Mesa)
+  c = mkCanvas(13, 17); x = c.getContext('2d');
+  px(x, 5, 3, 3, 14, '#4c8a3f'); px(x, 5, 3, 1, 14, '#63a852');   // trunk
+  px(x, 1, 6, 2, 5, '#4c8a3f'); px(x, 1, 5, 3, 2, '#4c8a3f');     // left arm
+  px(x, 10, 8, 2, 4, '#4c8a3f'); px(x, 9, 7, 3, 2, '#4c8a3f');    // right arm
+  for (let i = 4; i < 16; i += 3) { px(x, 4, i, 1, 1, '#d9e8b8'); px(x, 8, i + 1, 1, 1, '#d9e8b8'); } // spines
+  px(x, 5, 2, 3, 1, '#d98aa6');                          // crown bloom
+  SPR.cactus = { c, ax: 6, ay: 16 };
+  // weeping willow (Willow Glade / pool shore) — draped strands
+  c = mkCanvas(40, 40); x = c.getContext('2d');
+  px(x, 18, 28, 4, 11, PAL.trunk); px(x, 18, 28, 2, 11, PAL.trunkHi);
+  for (let a = 0; a < 120; a++) { const t2 = rnd() * 6.283, rr = Math.sqrt(rnd()) * 15;
+    px(x, (20 + Math.cos(t2) * rr) | 0, (12 + Math.sin(t2) * rr * 0.5) | 0, 2, 2, '#6fa85a'); }
+  for (let i = 0; i < 12; i++) {                          // hanging strands
+    const sx = 5 + i * 2.6 | 0, len = 10 + ((i * 7) % 9);
+    for (let j = 0; j < len; j += 2) px(x, sx, 14 + j, 1, 2, j % 4 ? '#7db868' : '#5f9a4e');
+  }
+  SPR.willow = { c, ax: 20, ay: 39 };
+  // lilac shrub — heavy purple panicles
+  c = mkCanvas(16, 17); x = c.getContext('2d');
+  for (let a = 0; a < 34; a++) px(x, (2 + rnd() * 12) | 0, (6 + rnd() * 9) | 0, 2, 2, PAL.leaf);
+  for (let a = 0; a < 16; a++) px(x, (2 + rnd() * 12) | 0, (1 + rnd() * 7) | 0, 2, 2, a % 3 ? '#b78fd0' : '#8e6fb8');
+  SPR.lilac = { c, ax: 8, ay: 16 };
+  // ornamental grasses — fountain of tan blades
+  c = mkCanvas(14, 13); x = c.getContext('2d');
+  for (let i = 0; i < 9; i++) {
+    const bx = 2 + i * 1.2 | 0, lean = (i - 4) / 2;
+    for (let j = 0; j < 9 - Math.abs(i - 4); j++) px(x, (6 + lean * j / 3) | 0, 12 - j, 1, 1, j > 5 ? '#d8c890' : '#b8a86a');
+  }
+  SPR.tallgrass = { c, ax: 7, ay: 12 };
+  // flowerbush — green mound absolutely covered in mixed blooms
+  c = mkCanvas(18, 13); x = c.getContext('2d');
+  for (let a = 0; a < 40; a++) px(x, (2 + rnd() * 13) | 0, (3 + rnd() * 8) | 0, 2, 2, PAL.leaf);
+  ['#c94f43', '#e5c04b', '#d98aa6', '#f2ead6', '#e07a3f'].forEach((col) => {
+    for (let a = 0; a < 4; a++) px(x, (2 + rnd() * 13) | 0, (2 + rnd() * 8) | 0, 2, 2, col); });
+  SPR.flowerbush = { c, ax: 9, ay: 12 };
+  // small stone fountain (Schlessman plaza)
+  c = mkCanvas(16, 14); x = c.getContext('2d');
+  px(x, 1, 9, 14, 4, '#9a9a92'); px(x, 2, 10, 12, 2, PAL.water);  // basin
+  px(x, 7, 4, 2, 6, '#9a9a92');                                    // column
+  px(x, 5, 3, 6, 2, '#9a9a92'); px(x, 6, 2, 4, 1, PAL.waterHi);   // bowl + spray
+  px(x, 4, 9, 1, 2, PAL.waterHi); px(x, 11, 9, 1, 2, PAL.waterHi);
+  SPR.fountain = { c, ax: 8, ay: 13 };
+
   // the Cheesman Gate — stone pillars + wrought-iron arch between the park and
   // the Botanic Gardens (bars drawn dynamically: shut normally, open on boss win)
   c = mkCanvas(24, 44); x = c.getContext('2d');
