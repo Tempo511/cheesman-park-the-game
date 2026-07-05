@@ -244,15 +244,30 @@ export function buildSprites(rnd) {
   px(x, 5, 12, 10, 4, '#8a6d4b');                                   // raised floor
   px(x, 0, 16, 20, 2, '#9a947f');                                   // stone base
   SPR.teahouse = { c, ax: 10, ay: 17 };
-  // Waring House — the brick mansion on the SE corner of the gardens
-  c = mkCanvas(24, 26); x = c.getContext('2d');
-  px(x, 2, 10, 20, 14, '#8a4a3a'); px(x, 2, 10, 20, 2, '#9a5a46');  // brick body
-  for (let j = 13; j < 22; j += 4) for (let i = 4; i < 20; i += 5) px(x, i, j, 2, 3, '#e8dcc8'); // windows
-  for (let r = 0; r < 8; r++) px(x, 12 - r | 0, 2 + r, r * 2, 1, '#5a4a3a');  // gable roof
-  px(x, 4, 9, 16, 2, '#5a4a3a');
-  px(x, 9, 19, 5, 5, '#3a2f26'); px(x, 10, 20, 3, 4, '#e8dcc8');   // porch + door
-  px(x, 0, 24, 24, 2, '#9a947f');
-  SPR.waring = { c, ax: 12, ay: 25 };
+  // Waring House — the brick MANSION on the SE corner: two stories, twin
+  // gables, chimneys, porte-cochere porch (it's a Denver landmark, be big)
+  c = mkCanvas(60, 68); x = c.getContext('2d');
+  px(x, 2, 24, 56, 40, '#8a4a3a');                                  // brick mass
+  px(x, 2, 24, 56, 3, '#9a5a46'); px(x, 2, 43, 56, 2, '#7a3f32');   // string courses
+  // twin gables + connecting roof
+  for (let r = 0; r < 12; r++) { px(x, 15 - r, 12 + r, r * 2 + 2, 1, '#5a4a3a'); px(x, 45 - r, 12 + r, r * 2 + 2, 1, '#5a4a3a'); }
+  px(x, 4, 22, 52, 4, '#5a4a3a'); px(x, 4, 22, 52, 1, '#6b5a48');
+  px(x, 13, 14, 4, 6, '#e8dcc8'); px(x, 43, 14, 4, 6, '#e8dcc8');   // gable windows
+  px(x, 8, 4, 5, 10, '#6f3a2e'); px(x, 47, 6, 5, 8, '#6f3a2e');     // chimneys
+  px(x, 8, 4, 5, 2, '#9a947f'); px(x, 47, 6, 5, 2, '#9a947f');
+  // two floors of tall windows with stone lintels
+  for (const wy of [28, 46]) for (let wx = 6; wx < 54; wx += 9) {
+    if (wy === 46 && wx >= 24 && wx <= 33) continue;                // door bay
+    px(x, wx, wy - 1, 6, 1, '#c8bca8'); px(x, wx, wy, 6, 10, '#e8dcc8');
+    px(x, wx + 2, wy, 1, 10, '#8a4a3a'); px(x, wx, wy + 5, 6, 1, '#8a4a3a');
+  }
+  // porch: steps, columns, little roof, front door
+  px(x, 22, 40, 16, 3, '#5a4a3a'); px(x, 22, 40, 16, 1, '#6b5a48'); // porch roof
+  px(x, 23, 43, 2, 18, '#e8dcc8'); px(x, 35, 43, 2, 18, '#e8dcc8'); // columns
+  px(x, 26, 46, 8, 15, '#3a2f26'); px(x, 27, 48, 6, 13, '#e8dcc8'); px(x, 28, 49, 4, 11, '#6f3a2e'); // door
+  px(x, 20, 61, 20, 3, '#9a947f');                                  // steps
+  px(x, 0, 64, 60, 4, '#9a947f'); px(x, 0, 66, 60, 2, '#8a8475');   // foundation
+  SPR.waring = { c, ax: 30, ay: 66 };
   // Cactus & Succulent House — small white glasshouse on the Dryland Mesa
   c = mkCanvas(18, 14); x = c.getContext('2d');
   for (let r = 0; r < 6; r++) px(x, 9 - r - 3 | 0, 1 + r, (r + 3) * 2, 1, '#e8ecea'); // ridge roof

@@ -101,8 +101,9 @@ export function buildGarden(state, rnd) {
   fillG(30, 36, 37, 43, G.PAVE);
   fillG(31, 40, 34, 43, G.WATER);
   fillG(30, 40, 30, 43, G.EDGE); fillG(35, 40, 35, 43, G.EDGE); fillG(31, 44, 34, 44, G.EDGE);
-  fillG(38, 40, 60, 41, G.WATER);
-  fillG(38, 39, 60, 39, G.EDGE); fillG(38, 42, 60, 42, G.EDGE);
+  fillG(38, 40, 58, 41, G.WATER);
+  fillG(38, 39, 58, 39, G.EDGE); fillG(38, 42, 58, 42, G.EDGE);
+  fillG(59, 39, 59, 42, G.EDGE);                           // terminus basin wall at the promenade
   fillG(48, 40, 49, 41, G.PATH);
   for (const bx of [41, 45, 53, 57]) { fillG(bx, 36, bx + 1, 36, G.BED); fillG(bx, 45, bx + 1, 45, G.BED); }
 
@@ -110,7 +111,8 @@ export function buildGarden(state, rnd) {
   for (const r of [5, 7]) {
     for (let a = 0; a < 30; a++) {
       const ang = Math.PI + a / 30 * Math.PI;
-      setG(Math.round(50 + Math.cos(ang) * r * 1.4), Math.round(26 + Math.sin(ang) * r * 0.7), G.EDGE);
+      const tx2 = Math.round(50 + Math.cos(ang) * r * 1.4);
+      if (tx2 < 60) setG(tx2, Math.round(26 + Math.sin(ang) * r * 0.7), G.EDGE);
     }
   }
   fillG(46, 26, 54, 27, G.PAVE);
@@ -125,12 +127,12 @@ export function buildGarden(state, rnd) {
   // the Ellipse + Chihuly's pond garden + visitor center + Freyer-Newman pads
   for (let a = 0; a < 22; a++) {
     const ang = a / 22 * Math.PI * 2;
-    setG(Math.round(63 + Math.cos(ang) * 3), Math.round(44 + Math.sin(ang) * 2), G.BED);
+    const ex = Math.round(63 + Math.cos(ang) * 3), ey = Math.round(44 + Math.sin(ang) * 2);
+    if (GRASSY.has(at(ex, ey))) setG(ex, ey, G.BED);   // never stamp over the promenade
   }
   fillG(62, 50, 64, 52, G.WATER);                          // the sculpture pond
   fillG(61, 49, 61, 52, G.EDGE); fillG(65, 49, 65, 52, G.EDGE); fillG(62, 49, 64, 49, G.EDGE); fillG(62, 53, 64, 53, G.EDGE);
-  fillG(62, 48, 64, 48, G.BED);                            // beds hugging the pond
-  fillG(62, 54, 63, 54, G.BED);
+  fillG(62, 47, 64, 48, G.BED);                            // double bed rows crowning the pond
   fillG(62, 22, 66, 25, G.MARBLE);
   fillG(62, 31, 63, 32, G.BED); fillG(65, 31, 66, 32, G.BED);
   fillG(60, 4, 66, 7, G.MARBLE);
@@ -157,7 +159,8 @@ export function buildGarden(state, rnd) {
   addObj('glasshouse', 9, 44);                             // Cactus & Succulent House
   addObj('pyramid', 33.5, 38);                             // Science Pyramid
   addObj('fountain', 48, 51);                              // Schlessman plaza fountain
-  addObj('waring', 64, 56.5);                              // Waring House
+  addObj('waring', 61.8, 58.6);                            // Waring House (the mansion)
+  for (let sy = 56; sy <= 58; sy++) for (let sx = 60; sx <= 63; sx++) if (inMap(sx, sy)) solid[gi(sx, sy)] = 1;
   addObj('chihuly', 63, 51.8);                             // "Colorado", rising from its pond
   addObj('column', 62, 26); addObj('column', 66, 26);      // visitor center
   addObj('column', 60, 8); addObj('column', 66, 8);        // Freyer-Newman
@@ -186,12 +189,16 @@ export function buildGarden(state, rnd) {
   for (const [x, y] of [[39.5, 36.2], [47, 35.8], [55, 36.3], [43, 45.6], [51.5, 45.9], [59, 45.4]]) addNat('tallgrass', x, y, false);
 
   // the El Pomar allee — trees lining both banks
-  for (let x = 39; x <= 59; x += 4) { addNat('tree', x, 37.6); addNat('tree', x + 2, 44.6); }
+  for (let x = 39; x <= 55; x += 4) { addNat('tree', x, 37.6); addNat('tree', x + 2, 44.6); }
 
-  // Chihuly's garden: the sculpture pond ringed with blooms
-  addNat('flowerbush', 61, 47.6, false); addNat('flowerbush', 65.4, 47.7, false);
-  addNat('lilac', 61, 54.3); addNat('gplant', 65.5, 54.2, false);
-  addNat('flowerbush', 66.2, 50.8, false); addNat('tallgrass', 60.8, 53.5, false);
+  // Chihuly's crown garden — the sculpture pond wrapped in the densest
+  // planting in the gardens (this corner is the showpiece)
+  addNat('flowerbush', 61, 46.4, false); addNat('flowerbush', 65.6, 46.5, false);
+  addNat('lilac', 60.6, 47.8); addNat('lilac', 66, 48.2);
+  addNat('flowerbush', 65.8, 50.6, false); addNat('flowerbush', 65.9, 52.8, false);
+  addNat('gplant', 61.2, 48.9, false); addNat('gplant', 64.9, 47.9, false);
+  addNat('tallgrass', 60.9, 52.9, false); addNat('tallgrass', 66.1, 53.6, false);
+  addNat('gplant', 62.2, 54.3, false); addNat('flowerbush', 64.3, 54.4, false);
 
   // flowerbushes at the showpiece corners
   for (const [x, y] of [[5.5, 26.2], [5.8, 32.5], [30, 26.6], [44.5, 18.6], [58, 18.4],
@@ -203,7 +210,7 @@ export function buildGarden(state, rnd) {
 
   // woodland mosaic grove + Waring corner planting
   for (const [x, y] of [[33, 50], [36, 48], [38, 52], [34, 55], [38.5, 56.5], [30, 52.5], [36, 45.5]]) addNat('tree2', x, y);
-  addNat('bush', 66.5, 56.5, false); addNat('bench', 58.5, 53.5);
+  addNat('bush', 57.8, 56.8, false); addNat('bench', 57, 52.8);
 
   // Ponderosa border down the east side
   for (const [x, y] of [[63, 12], [64.5, 16], [62.5, 19]]) addNat('pine', x, y);

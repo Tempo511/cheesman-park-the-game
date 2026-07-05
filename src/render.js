@@ -126,9 +126,10 @@ export function renderGardenGround(state) {
   g.fillStyle = '#cfc9b6'; g.font = 'bold 9px ui-monospace,monospace'; g.textBaseline = 'middle';
   g.fillText('1 1 T H   A V E', 26 * T, 1 * T);
   g.save(); g.translate(69.5 * T, 34 * T); g.rotate(-Math.PI / 2); g.fillText('Y O R K   S T', 0, 0); g.restore();
-  // waterlilies on the Monet Pool (that's why it's named that) — deterministic
-  // pad placement from tile coords, pink blooms on some
-  for (let ty = 6; ty < 22; ty++) for (let tx = 5; tx < 28; tx++) {
+  // waterlilies on the Monet Pool (that's why it's named that) AND in the
+  // Chihuly sculpture pond — deterministic pad placement, pink blooms on some
+  for (const [x0, x1, y0, y1] of [[5, 28, 6, 22], [61, 66, 49, 54]])
+  for (let ty = y0; ty < y1; ty++) for (let tx = x0; tx < x1; tx++) {
     if (state.gardenGround[gi(tx, ty)] !== G.WATER) continue;
     const h = (tx * 37 + ty * 61) % 17;
     if (h < 5) {
@@ -144,7 +145,7 @@ export function renderGardenGround(state) {
   g.fillText('EL POMAR WATERWAY', 42 * T, 43.8 * T);
   g.fillText('SCIENCE PYRAMID', 28 * T, 46 * T);
   g.fillText('AMPHITHEATER', 45.5 * T, 19 * T);
-  g.fillText('WARING HOUSE', 57.5 * T, 58.6 * T);
+  g.fillText('WARING HOUSE', 52.5 * T, 55.4 * T);
   g.fillText('CHIHULY', 61.8 * T, 47.4 * T);
   g.fillText('CHEESMAN GATE', 1.4 * T, 25.4 * T);
   g.fillStyle = 'rgba(20,40,20,.5)';
