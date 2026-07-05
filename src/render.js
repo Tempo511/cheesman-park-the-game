@@ -454,8 +454,14 @@ export function render(state, t) {
     if (gx < 8 || gx > VW - 8 || gy < 8 || gy > VH - 8) {
       const cx = VW / 2, cy = VH / 2;
       const dx = gx - cx, dy = gy - cy;
-      const m = Math.max(Math.abs(dx) / (VW / 2 - 16), Math.abs(dy) / (VH / 2 - 16), 0.001);
-      const ax = cx + dx / m, ay = cy + dy / m;
+      const m = Math.max(Math.abs(dx) / (VW / 2 - 18), Math.abs(dy) / (VH / 2 - 18), 0.001);
+      const ax = cx + dx / m;
+      let ay = cy + dy / m;
+      // never hide under the HUD: push below the right column (chips+minimap)
+      // or the left stats chip if the arrow lands in their zones
+      const rightW = 150 / SCALE, rightH = 310 / SCALE, leftW = 210 / SCALE, leftH = 170 / SCALE;
+      if (ax > VW - rightW && ay < rightH) ay = rightH;
+      if (ax < leftW && ay < leftH) ay = leftH;
       ctx.save(); ctx.translate(ax, ay); ctx.rotate(Math.atan2(dy, dx));
       ctx.fillStyle = 'rgba(229,192,75,' + (0.75 + Math.sin(t * 6) * 0.25) + ')';
       ctx.beginPath(); ctx.moveTo(11, 0); ctx.lineTo(-5, -7); ctx.lineTo(-5, 7); ctx.closePath(); ctx.fill();

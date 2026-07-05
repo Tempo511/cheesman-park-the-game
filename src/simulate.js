@@ -412,8 +412,8 @@ function killEnemy(state, e, drops, rng) {
     startDay(state, rng);
     // your reward: the Botanic Gardens open their Cheesman Gate
     state.gardenGateT = GARDEN.ENTRY_WINDOW;
-    toast(state, '🌷 GARDEN GATE OPEN — ' + GARDEN.ENTRY_WINDOW + ' SECONDS',
-      'Your boss reward: a flower run in the Botanic Gardens! Follow the golden 🌷 marker to the Cheesman Gate on the east fence.', 9000);
+    emit(state, { type: 'banner', t: '🌷 THE GARDENS ARE OPEN 🌷',
+      p: 'Boss reward: follow the golden marker to the Cheesman Gate — ' + GARDEN.ENTRY_WINDOW + ' seconds!', ms: 6000 });
   }
 }
 

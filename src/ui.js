@@ -103,6 +103,13 @@ async function postScore() {
   }
 }
 
+let bannerTO = null;
+export function banner(t, p, ms) {
+  $('bannerT').textContent = t; $('bannerP').textContent = p;
+  $('banner').classList.add('show');
+  clearTimeout(bannerTO); bannerTO = setTimeout(() => $('banner').classList.remove('show'), ms || 6000);
+}
+
 export function toast(t, p, ms) {
   toastH.textContent = t; toastP.textContent = p; toastEl.classList.add('show');
   clearTimeout(toastTO); toastTO = setTimeout(() => toastEl.classList.remove('show'), ms || 6000);
@@ -113,6 +120,7 @@ export function drainEvents(state) {
   if (!state.events.length) return;
   for (const ev of state.events) {
     if (ev.type === 'toast') toast(ev.t, ev.p, ev.ms);
+    else if (ev.type === 'banner') banner(ev.t, ev.p, ev.ms);
     else if (ev.type === 'death') showDeath(ev);
     else if (ev.type === 'archetypeChoice') showArchetypeChoice();
     else if (ev.type === 'abilityUnlock') {

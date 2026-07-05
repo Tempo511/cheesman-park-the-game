@@ -112,6 +112,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:#151a12;touch-action
 #bossbar .bnm{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#e8d8b0;text-shadow:1px 1px 0 #000}
 #bossbar .bbar{height:8px;border:2px solid var(--paper);background:#141a10;margin-top:3px;box-shadow:2px 2px 0 rgba(0,0,0,.4)}
 #bossbar .bbar>i{display:block;height:100%;width:100%;background:#c94f43;transition:width .15s}
+/* the big event banner — for moments that outrank a toast (garden opening) */
+#banner{position:fixed;left:50%;top:22%;transform:translate(-50%,-50%) scale(.7);
+  min-width:min(440px,80vw);text-align:center;z-index:7;pointer-events:none;
+  background:var(--paper);color:var(--ink);border:4px solid var(--brass);
+  box-shadow:0 0 0 3px var(--ink),0 0 24px rgba(229,192,75,.55),8px 10px 0 rgba(0,0,0,.45);
+  padding:14px 22px 12px;opacity:0;transition:opacity .25s,transform .3s cubic-bezier(.2,1.6,.4,1)}
+#banner.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#banner .bt{font-size:17px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brass);
+  border-bottom:2px solid var(--brass);padding-bottom:6px;margin-bottom:6px}
+#banner .bp{font-size:12px;line-height:1.5}
+@media (orientation:landscape) and (pointer:coarse){
+  #banner{top:26%;padding:8px 14px 8px;min-width:min(380px,70vw)}
+  #banner .bt{font-size:12px}
+  #banner .bp{font-size:9.5px}
+}
 /* mute toggle — bottom-left corner, out of the HUD and the thumb's arc */
 #muteBtn{position:fixed;z-index:7;
   left:calc(10px + env(safe-area-inset-left));
