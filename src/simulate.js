@@ -508,8 +508,8 @@ function gainXp(state, n) {
     // announce newly unlocked tribe abilities (UI adds the device-specific key/button hint)
     const arch = ARCHETYPES[player.archetype];
     if (arch) {
-      if (arch.ability1 && player.level === arch.ability1.level) emit(state, { type: 'abilityUnlock', slot: 1, name: arch.ability1.name, icon: arch.ability1.icon });
-      if (arch.ability2 && player.level === arch.ability2.level) emit(state, { type: 'abilityUnlock', slot: 2, name: arch.ability2.name, icon: arch.ability2.icon });
+      if (arch.ability1 && player.level === arch.ability1.level) emit(state, { type: 'abilityUnlock', slot: 1, name: arch.ability1.name, icon: arch.ability1.icon, desc: arch.ability1.desc });
+      if (arch.ability2 && player.level === arch.ability2.level) emit(state, { type: 'abilityUnlock', slot: 2, name: arch.ability2.name, icon: arch.ability2.icon, desc: arch.ability2.desc });
     }
     if (player.level >= ARCHETYPE_LEVEL && !player.archetype && !state.choosing) {
       state.choosing = true; state.paused = true;                 // freeze for the tribe pick

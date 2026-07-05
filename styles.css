@@ -197,6 +197,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#151a12;touch-action
 .item .nm{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .item .ds{font-size:10.5px;color:#4a4436;line-height:1.35}
 .item .st{font-size:10px;color:var(--brass)}
+.item .kit{font-size:9px;color:#5a5346;line-height:1.4;margin-top:3px;border-top:1px dashed #cfc4a8;padding-top:3px}
 .item .buy{margin-left:auto;flex:none;font:inherit;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
   cursor:pointer;border:2px solid var(--ink);padding:7px 10px;background:var(--gold);box-shadow:2px 2px 0 var(--ink)}
 .item .buy.equipped{background:#4f7d3a;color:#fff}

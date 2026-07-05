@@ -136,9 +136,9 @@ export function drainEvents(state) {
     else if (ev.type === 'abilityUnlock') {
       const touch = document.body.classList.contains('touch');
       const how = touch
-        ? 'Tap the new ' + (ev.slot === 1 ? 'blue' : 'orange') + ' button by Fire to use it.'
-        : 'Press ' + (ev.slot === 1 ? 'Q' : 'R') + ' to use it.';
-      toast(ev.icon + ' ' + ev.name + ' unlocked!', how, 6000);
+        ? 'Tap the new ' + (ev.slot === 1 ? 'blue' : 'orange') + ' button by Fire.'
+        : 'Press ' + (ev.slot === 1 ? 'Q' : 'R') + '.';
+      toast(ev.icon + ' ' + ev.name + ' unlocked!', (ev.desc ? ev.desc + ' ' : '') + how, 8000);
     }
   }
   state.events.length = 0;
@@ -161,7 +161,8 @@ function showArchetypeChoice() {
     const div = document.createElement('div'); div.className = 'item';
     div.appendChild(archPortrait(id, S.player.style));
     const mid = document.createElement('div');
-    mid.innerHTML = `<div class="nm">${archName(a, S.player.style)}</div><div class="ds">${a.flavor}</div><div class="st">${a.perkText}</div>`;
+    mid.innerHTML = `<div class="nm">${archName(a, S.player.style)}</div><div class="ds">${a.flavor}</div><div class="st">${a.perkText}</div>`
+      + `<div class="kit">Lv ${a.ability1.level} · <b>${a.ability1.name}</b>: ${a.ability1.desc}<br>Lv ${a.ability2.level} · <b>${a.ability2.name}</b>: ${a.ability2.desc}</div>`;
     div.appendChild(mid);
     const b = document.createElement('button'); b.className = 'buy'; b.textContent = 'Choose';
     b.addEventListener('click', () => { chooseArchetype(S, id); $('archetype').style.display = 'none'; });
