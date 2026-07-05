@@ -155,8 +155,8 @@ export function buildGarden(state, rnd) {
   addObj('teahouse', 15, 10);                              // Ella Mullen Weckbaugh Tea House
   addObj('greenhouse', 38, 10);                            // the production ranges, one facility
   for (let sy = 8; sy <= 10; sy++) for (let sx = 35; sx <= 41; sx++) if (inMap(sx, sy)) solid[gi(sx, sy)] = 1;
-  addObj('dome', 53, 16);                                  // Boettcher Conservatory, 1966
-  for (let sy = 13; sy <= 16; sy++) for (let sx = 51; sx <= 55; sx++) if (inMap(sx, sy)) solid[gi(sx, sy)] = 1;
+  addObj('dome', 53, 16.5);                                // Boettcher Conservatory, 1966
+  for (let sy = 12; sy <= 16; sy++) for (let sx = 50; sx <= 56; sx++) if (inMap(sx, sy)) solid[gi(sx, sy)] = 1;
   addObj('column', 46, 18.6); addObj('column', 60, 18.6);
   addObj('glasshouse', 9, 44);                             // Cactus & Succulent House
   addObj('pyramid', 33.5, 38.5);                           // Science Pyramid (full size)

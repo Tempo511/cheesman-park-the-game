@@ -219,24 +219,26 @@ export function buildSprites(rnd) {
   px(x, 10, 42, 6, 6, '#4a5a58'); px(x, 100, 42, 6, 6, '#4a5a58');
   SPR.greenhouse = { c, ax: 58, ay: 48 };
   // Boettcher Conservatory (1966) — faceted glass between interlaced concrete
-  // arches; the pointed ribbed dome, Denver Landmark, and it is BIG
-  c = mkCanvas(84, 78); x = c.getContext('2d');
-  for (let r = 0; r < 60; r++) {                        // pointed dome profile
-    const w = Math.round(78 * Math.sin((r / 60) * Math.PI / 2));
-    px(x, 42 - w / 2 | 0, r + 4, w, 1, '#9fc4c0');      // glass
-    px(x, 42 - w / 2 | 0, r + 4, Math.max(1, w / 4 | 0), 1, '#c4e0dc');  // sheen
+  // arches. The icon of the entire gardens; scaled like it means it.
+  c = mkCanvas(120, 112); x = c.getContext('2d');
+  for (let r = 0; r < 88; r++) {                        // pointed dome profile
+    const w = Math.round(112 * Math.sin((r / 88) * Math.PI / 2));
+    px(x, 60 - w / 2 | 0, r + 6, w, 1, '#9fc4c0');      // glass
+    px(x, 60 - w / 2 | 0, r + 6, Math.max(1, w / 4 | 0), 1, '#c4e0dc');  // sheen
+    px(x, (60 + w / 2 - Math.max(1, w / 8)) | 0, r + 6, Math.max(1, w / 8 | 0), 1, '#84a8a4'); // shade side
   }
-  for (let k = -3; k <= 3; k++) {                       // concrete ribs, interlaced
-    for (let r = 4; r < 64; r++) {
-      const w = Math.round(78 * Math.sin(((r - 4) / 60) * Math.PI / 2));
-      const rx = 42 + Math.round(k * w / 7);
-      if (rx > 42 - w / 2 - 1 && rx < 42 + w / 2 + 1) px(x, rx, r, 2, 1, '#cfc9b6');
+  for (let k = -4; k <= 4; k++) {                       // concrete ribs, interlaced
+    for (let r = 6; r < 94; r++) {
+      const w = Math.round(112 * Math.sin(((r - 6) / 88) * Math.PI / 2));
+      const rx = 60 + Math.round(k * w / 9);
+      if (rx > 60 - w / 2 - 1 && rx < 60 + w / 2 + 1) px(x, rx, r, 2, 1, '#cfc9b6');
     }
   }
-  px(x, 40, 0, 4, 5, '#cfc9b6');                        // apex
-  px(x, 3, 64, 78, 6, '#b8b2a0'); px(x, 3, 68, 78, 2, '#9a947f');  // base
-  px(x, 36, 58, 12, 12, '#4a5a58'); px(x, 39, 61, 6, 9, '#2e3a38'); // grand entry
-  SPR.dome = { c, ax: 42, ay: 74 };
+  px(x, 58, 0, 4, 7, '#cfc9b6'); px(x, 59, 0, 2, 3, '#e8e2d0');   // apex finial
+  px(x, 4, 94, 112, 8, '#b8b2a0'); px(x, 4, 100, 112, 4, '#9a947f');  // base ring
+  px(x, 50, 84, 20, 18, '#4a5a58'); px(x, 54, 88, 12, 14, '#2e3a38'); // grand entry
+  px(x, 58, 90, 4, 12, '#7fd0ff');                      // light through the doors
+  SPR.dome = { c, ax: 60, ay: 106 };
   // Ella Mullen Weckbaugh Tea House — open pavilion on the Monet Pool peninsula
   c = mkCanvas(20, 18); x = c.getContext('2d');
   px(x, 0, 4, 20, 3, '#3a2f26'); px(x, 2, 2, 16, 3, '#4a3b2e');    // wide hip roof
