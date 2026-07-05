@@ -201,10 +201,11 @@ export function updateHud(state) {
     phaseTxt.innerHTML = '🌷 ' + state.flowersGot + '/' + state.flowers.length;
     phaseTimer.textContent = Math.ceil(state.gardenT) + 's';
   } else {
-    if (state.phase === 'day') { phaseTxt.innerHTML = '☀ Day'; }
+    if (state.gardenGateT > 0) { phaseTxt.innerHTML = '🌷 GATE OPEN'; }
+    else if (state.phase === 'day') { phaseTxt.innerHTML = '☀ Day'; }
     else { phaseTxt.innerHTML = '<span class="night">🌙 Night ' + state.night + '</span>'; }
     phaseTimer.textContent = state.gardenGateT > 0
-      ? '🌷 ' + Math.ceil(state.gardenGateT) + 's'
+      ? Math.ceil(state.gardenGateT) + 's'
       : Math.ceil(state.phaseT) + 's';
   }
   btnShop.style.display = (state.started && !state.paused && nearShop(state)) ? 'block' : 'none';

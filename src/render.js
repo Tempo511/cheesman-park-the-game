@@ -450,6 +450,20 @@ export function render(state, t) {
     ctx.globalAlpha = 1;
     ctx.fillStyle = '#f6e39a'; ctx.font = 'bold 8px ui-monospace,monospace';
     ctx.fillText('🌷 ' + Math.ceil(state.gardenGateT) + 's', gx - 12, gy - 34);
+    // gate off-screen? pulsing golden pointer at the screen edge shows the way
+    if (gx < 8 || gx > VW - 8 || gy < 8 || gy > VH - 8) {
+      const cx = VW / 2, cy = VH / 2;
+      const dx = gx - cx, dy = gy - cy;
+      const m = Math.max(Math.abs(dx) / (VW / 2 - 16), Math.abs(dy) / (VH / 2 - 16), 0.001);
+      const ax = cx + dx / m, ay = cy + dy / m;
+      ctx.save(); ctx.translate(ax, ay); ctx.rotate(Math.atan2(dy, dx));
+      ctx.fillStyle = 'rgba(229,192,75,' + (0.75 + Math.sin(t * 6) * 0.25) + ')';
+      ctx.beginPath(); ctx.moveTo(11, 0); ctx.lineTo(-5, -7); ctx.lineTo(-5, 7); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#8a6d3b'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = '#f6e39a'; ctx.font = 'bold 8px ui-monospace,monospace';
+      ctx.fillText('🌷' + Math.ceil(state.gardenGateT), Math.min(Math.max(ax - 12, 4), VW - 28), Math.min(Math.max(ay - 12, 10), VH - 6));
+    }
   }
   // ultimate effects: smoke clouds, Ace shockwaves, the tech drone
   for (const c of state.clouds) {
@@ -560,6 +574,10 @@ export function renderMini(state, t) {
       mctx.fillRect(z.m[0] - 1, z.m[1] - 1, 3, 3); mctx.fillStyle = '#8a6d3b'; mctx.fillRect(z.m[0], z.m[1], 1, 1); }
   }
   mctx.fillStyle = '#7fb4b4'; mctx.fillRect(44, 54, 2, 2); // ranger cart
+  if (state.gardenGateT > 0) {                              // the open gate blinks
+    mctx.fillStyle = ((t * 3 | 0) % 2) ? '#e5c04b' : '#fff';
+    mctx.fillRect(62, 17, 3, 3);
+  }
   const MINI_COL = { zombie: '#c94f43', ghost: '#9db4e0', vampire: '#b83a6a', werewolf: '#c79a4a', alien: '#7ef05a' };
   for (const e of state.enemies) {
     if (ENEMY_TYPES[e.kind].boss) { mctx.fillStyle = ((t * 3 | 0) % 2) ? '#e5c04b' : '#c94f43'; mctx.fillRect((e.x / T | 0) - 1, (e.y / T | 0) - 1, 3, 3); }

@@ -209,7 +209,7 @@ section('Garden Runs');
     step(g, { move: { x: 0, y: 0 }, attack: true }, 1 / 60);
   }
   ok('boss kill opens the garden gate', g.phase === 'day' && g.gardenGateT > 0);
-  ok('gate window announced', g.events.some((e) => e.type === 'toast' && String(e.t).includes('Gardens are open')));
+  ok('gate window announced', g.events.some((e) => e.type === 'toast' && String(e.t).includes('GARDEN GATE OPEN')));
 
   // day clock is frozen while the gate window runs
   const ptBefore = g.phaseT;
