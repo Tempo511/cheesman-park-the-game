@@ -14,7 +14,7 @@ export const GH = 60;                // garden scene height in tiles (width = MW
 // Garden Run (bonus round after each boss kill) — all tuning knobs here
 export const GARDEN = {
   ENTRY_WINDOW: 30,   // seconds to reach the gate after dawn breaks
-  RUN_TIME: 40,       // seconds inside the gardens
+  RUN_TIME: 99999,    // ⚠️ TESTING ONLY — restore to 40 before shipping ⚠️
   FLOWERS: 30,        // flowers scattered across the beds
   PTS: 15,            // Park Score per flower
   BUCKS: 2,           // coins per flower

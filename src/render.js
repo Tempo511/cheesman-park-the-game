@@ -219,14 +219,6 @@ export function render(state, t) {
     px(ctx, ax - 1, ay - 5, 3, 3, f.c);                            // bloom
     px(ctx, ax, ay - 4, 1, 1, '#fff7e4');                          // center
   }
-  // the open Cheesman Gate on the park side: pulsing beacon while the window lasts
-  if (!inGarden && state.gardenGateT > 0) {
-    const gx = (GARDEN.GATE.x + 0.5) * T - camX, gy = (GARDEN.GATE.y + 0.5) * T - camY;
-    ctx.strokeStyle = 'rgba(229,192,75,' + (0.5 + Math.sin(t * 6) * 0.3) + ')'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(gx, gy, 14 + Math.sin(t * 4) * 3, 0, 7); ctx.stroke();
-    ctx.fillStyle = '#e5c04b'; ctx.font = '8px ui-monospace,monospace';
-    ctx.fillText('GATE ' + Math.ceil(state.gardenGateT) + 's', gx - 20, gy - 20);
-  }
   // acorns on the ground (daytime)
   for (const a of state.acorns) {
     const ax = (a.x | 0) - camX, ay = ((a.y + Math.sin(a.bob)) | 0) - camY;
@@ -426,6 +418,22 @@ export function render(state, t) {
       ctx.strokeStyle = 'rgba(242,234,214,' + (sw.t / 0.12 * 0.9) + ')'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(sx, sy, sw.range, sw.ang - 0.9, sw.ang + 0.9); ctx.stroke();
     }
+  }
+  // the Cheesman Gate, open: warm garden light spills through the gateway
+  if (!inGarden && state.gardenGateT > 0) {
+    const gx = (GARDEN.GATE.x + 0.5) * T - camX, gy = (GARDEN.GATE.y + 0.3) * T - camY;
+    const glow = ctx.createRadialGradient(gx, gy, 2, gx, gy, 26);
+    glow.addColorStop(0, 'rgba(255,236,170,' + (0.32 + Math.sin(t * 5) * 0.08) + ')');
+    glow.addColorStop(1, 'rgba(255,236,170,0)');
+    ctx.fillStyle = glow; ctx.fillRect(gx - 26, gy - 26, 52, 52);
+    for (let k = 0; k < 4; k++) {                     // drifting petals in the light
+      const pt = (t * 0.7 + k * 0.25) % 1;
+      ctx.globalAlpha = 1 - pt;
+      px(ctx, (gx - 8 + k * 5 + Math.sin(t * 3 + k) * 3) | 0, (gy - pt * 22) | 0, 2, 2, k % 2 ? '#d98aa6' : '#e5c04b');
+    }
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#f6e39a'; ctx.font = 'bold 8px ui-monospace,monospace';
+    ctx.fillText('🌷 ' + Math.ceil(state.gardenGateT) + 's', gx - 12, gy - 34);
   }
   // ultimate effects: smoke clouds, Ace shockwaves, the tech drone
   for (const c of state.clouds) {

@@ -117,6 +117,22 @@ export function buildSprites(rnd) {
   px(x, 2, 3, 20, 5, '#b8864a'); px(x, 2, 3, 20, 1, '#d1a266');
   px(x, 0, 0, 24, 2, '#a7773f');
   SPR.picnic = { c, ax: 12, ay: 15 };
+  // the Cheesman Gate — stone pillars + wrought-iron arch between the park and
+  // the Botanic Gardens (bars drawn dynamically: shut normally, open on boss win)
+  c = mkCanvas(24, 44); x = c.getContext('2d');
+  const pillar = (py) => {
+    px(x, 8, py, 8, 3, '#b8b2a0');                       // cap
+    px(x, 9, py + 3, 6, 10, '#9a947f');                  // shaft
+    px(x, 9, py + 3, 2, 10, '#aaa495');                  // highlight
+    px(x, 8, py + 12, 8, 2, '#8a8475');                  // base
+  };
+  pillar(2); pillar(30);                                  // north + south pillars
+  px(x, 11, 6, 2, 32, '#2c2c30');                        // iron spine between (the fence line)
+  for (let i = 8; i < 38; i += 4) px(x, 10, i, 4, 1, '#3a3a40');   // scrollwork rungs
+  px(x, 6, 18, 12, 8, '#8a6d3b'); px(x, 7, 19, 10, 6, '#a8874c');  // hanging sign
+  x.fillStyle = '#3a2f26'; x.font = '5px monospace';
+  px(x, 8, 21, 8, 1, '#6f5730'); px(x, 8, 23, 6, 1, '#6f5730');    // "lettering"
+  SPR.gardengate = { c, ax: 12, ay: 42 };
   // DBG greenhouse complex — long parallel growing ranges (the striped white
   // roofs in the aerial), deliberately utilitarian next to the showpiece dome
   c = mkCanvas(72, 34); x = c.getContext('2d');
