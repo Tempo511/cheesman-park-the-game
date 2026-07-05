@@ -86,7 +86,10 @@ export function buildMap(state, rnd) {
   // --- objects -------------------------------------------------------------
   const addObj = (type, x, y, isSolid = true) => {
     objects.push({ type, x, y });
-    if (isSolid) { const tx = Math.round(x), ty = Math.round(y); if (inMap(tx, ty)) solid[gi(tx, ty)] = 1; }
+    // floor, not round: the sprite's base stands in tile floor(x,y) — rounding
+    // placed invisible collision one tile south/east of anything with a .5+
+    // fractional coordinate (cart, benches, half the trees...)
+    if (isSolid) { const tx = Math.floor(x), ty = Math.floor(y); if (inMap(tx, ty)) solid[gi(tx, ty)] = 1; }
   };
 
   for (let y = 3; y <= 33; y += 1) { if (y < 17 || y > 20) addObj('fence', 63, y); }
