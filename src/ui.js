@@ -198,7 +198,7 @@ export function updateHud(state) {
   acornEl.textContent = p.acorns;
   livesEl.textContent = '♥'.repeat(Math.max(0, state.lives)) + '♡'.repeat(Math.max(0, MAX_LIVES - state.lives));
   if (state.scene === 'garden') {
-    phaseTxt.innerHTML = '🌷 Gardens';
+    phaseTxt.innerHTML = '🌷 ' + state.flowersGot + '/' + state.flowers.length;
     phaseTimer.textContent = Math.ceil(state.gardenT) + 's';
   } else {
     if (state.phase === 'day') { phaseTxt.innerHTML = '☀ Day'; }
