@@ -147,8 +147,8 @@ export function renderGardenGround(state) {
   g.fillText('AMPHITHEATER', 45.5 * T, 21.6 * T);
   g.fillText('GREENHOUSES', 34 * T, 12.4 * T);
   g.fillText('BOETTCHER CONSERVATORY', 46.5 * T, 19.4 * T);
-  g.fillText('WARING HOUSE', 52.5 * T, 55.4 * T);
-  g.fillText('CHIHULY', 61.8 * T, 47.4 * T);
+  g.fillText('WARING HOUSE', 59.4 * T, 59.3 * T);   // directly under the mansion
+  g.fillText('CHIHULY →', 57.6 * T, 50.7 * T);      // on the promenade, pointing at the glass
   g.fillText('CHEESMAN GATE', 1.4 * T, 25.4 * T);
   g.fillStyle = 'rgba(20,40,20,.5)';
   g.fillText('DENVER BOTANIC GARDENS · EST. 1951', 20 * T, 4.4 * T);
