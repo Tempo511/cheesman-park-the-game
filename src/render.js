@@ -215,13 +215,25 @@ export function render(state, t) {
     else { ctx.fillStyle = '#4c9a3f'; ctx.beginPath(); ctx.ellipse(ax, ay - 2, 3, 5, 0.5, 0, 7); ctx.fill();
       px(ctx, ax, ay - 8, 2, 3, '#2c5a28'); }
   }
-  // garden flowers (bobbing, colored) — the whole point of the trip
+  // prize flowers — big glowing blooms so they pop against the busy beds
   for (const f of state.flowers) {
     if (f.got) continue;
-    const ax = (f.x | 0) - camX, ay = ((f.y + Math.sin(f.bob) * 1.5) | 0) - camY;
-    px(ctx, ax, ay - 2, 1, 4, '#2c5a28');                          // stem
-    px(ctx, ax - 1, ay - 5, 3, 3, f.c);                            // bloom
-    px(ctx, ax, ay - 4, 1, 1, '#fff7e4');                          // center
+    const ax = (f.x | 0) - camX, ay = ((f.y + Math.sin(f.bob) * 1.8) | 0) - camY;
+    if (ax < -12 || ax > VW + 12 || ay < -14 || ay > VH + 14) continue;
+    // pulsing halo
+    const gl = ctx.createRadialGradient(ax, ay - 6, 1, ax, ay - 6, 9);
+    gl.addColorStop(0, 'rgba(255,246,200,' + (0.4 + Math.sin(t * 4 + f.bob) * 0.18) + ')');
+    gl.addColorStop(1, 'rgba(255,246,200,0)');
+    ctx.fillStyle = gl; ctx.fillRect(ax - 9, ay - 15, 18, 18);
+    px(ctx, ax, ay - 3, 1, 5, '#2c5a28');                          // stem
+    px(ctx, ax - 2, ay - 1, 2, 1, '#3f7a35'); px(ctx, ax + 1, ay - 2, 2, 1, '#3f7a35'); // leaves
+    // white-rimmed bloom, twice the old size
+    px(ctx, ax - 1, ay - 10, 3, 7, '#f7f3e8'); px(ctx, ax - 3, ay - 8, 7, 3, '#f7f3e8');
+    px(ctx, ax - 1, ay - 9, 3, 5, f.c); px(ctx, ax - 2, ay - 8, 5, 3, f.c);
+    px(ctx, ax, ay - 7, 1, 1, '#fff7c8');                          // bright heart
+    if (((t * 3 + f.bob) | 0) % 3 === 0) {                          // twinkle
+      px(ctx, ax + 4, ay - 12, 1, 1, '#ffffff'); px(ctx, ax - 5, ay - 5, 1, 1, '#ffffff');
+    }
   }
   // acorns on the ground (daytime)
   for (const a of state.acorns) {
@@ -502,6 +514,7 @@ export function render(state, t) {
 // crisp speech bubbles on the full-res overlay canvas
 export function renderFx(state) {
   fctx.clearRect(0, 0, fxW, fxH);
+  if (state.scene === 'garden') return;   // park chatter does not follow you into the gardens
   const items = [];
   if (state.phase === 'day') for (const n of state.npcs) if (n.b) items.push([n.x, n.y, n.b.txt]);
   for (const a of state.ambients) {
@@ -530,7 +543,7 @@ export function renderMini(state, t) {
   if (state.scene === 'garden') {                     // garden minimap: layout + flowers + you
     mctx.fillStyle = '#151a12'; mctx.fillRect(0, 0, 72, 92);
     mctx.drawImage(gardenCv, 0, 0, MW * T, GH * T, 0, 0, 72, GH);
-    for (const f of state.flowers) { if (!f.got) { mctx.fillStyle = f.c; mctx.fillRect((f.x / T | 0), (f.y / T | 0), 1, 1); } }
+    for (const f of state.flowers) { if (!f.got) { mctx.fillStyle = ((t * 2 | 0) % 2) ? '#fff' : f.c; mctx.fillRect((f.x / T | 0), (f.y / T | 0), 1, 1); } }
     mctx.fillStyle = '#fff'; mctx.fillRect((state.player.x / T | 0) - 1, (state.player.y / T | 0) - 1, 3, 3);
     mctx.fillStyle = '#c94f43'; mctx.fillRect(state.player.x / T | 0, state.player.y / T | 0, 1, 1);
     return;
