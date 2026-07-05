@@ -450,25 +450,18 @@ export function render(state, t) {
     ctx.globalAlpha = 1;
     ctx.fillStyle = '#f6e39a'; ctx.font = 'bold 8px ui-monospace,monospace';
     ctx.fillText('🌷 ' + Math.ceil(state.gardenGateT) + 's', gx - 12, gy - 34);
-    // gate off-screen? pulsing golden pointer at the screen edge shows the way
+    // gate off-screen? a fixed compass at top-center rotates to point the way
     if (gx < 8 || gx > VW - 8 || gy < 8 || gy > VH - 8) {
-      const cx = VW / 2, cy = VH / 2;
-      const dx = gx - cx, dy = gy - cy;
-      const m = Math.max(Math.abs(dx) / (VW / 2 - 18), Math.abs(dy) / (VH / 2 - 18), 0.001);
-      const ax = cx + dx / m;
-      let ay = cy + dy / m;
-      // never hide under the HUD: push below the right column (chips+minimap)
-      // or the left stats chip if the arrow lands in their zones
-      const rightW = 150 / SCALE, rightH = 310 / SCALE, leftW = 210 / SCALE, leftH = 170 / SCALE;
-      if (ax > VW - rightW && ay < rightH) ay = rightH;
-      if (ax < leftW && ay < leftH) ay = leftH;
-      ctx.save(); ctx.translate(ax, ay); ctx.rotate(Math.atan2(dy, dx));
+      const ax = VW / 2, ay = 15;
+      const ang = Math.atan2(gy - ay, gx - ax);
+      ctx.save(); ctx.translate(ax, ay); ctx.rotate(ang);
       ctx.fillStyle = 'rgba(229,192,75,' + (0.75 + Math.sin(t * 6) * 0.25) + ')';
-      ctx.beginPath(); ctx.moveTo(11, 0); ctx.lineTo(-5, -7); ctx.lineTo(-5, 7); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(12, 0); ctx.lineTo(-5, -7); ctx.lineTo(-5, 7); ctx.closePath(); ctx.fill();
       ctx.strokeStyle = '#8a6d3b'; ctx.lineWidth = 1; ctx.stroke();
       ctx.restore();
       ctx.fillStyle = '#f6e39a'; ctx.font = 'bold 8px ui-monospace,monospace';
-      ctx.fillText('🌷' + Math.ceil(state.gardenGateT), Math.min(Math.max(ax - 12, 4), VW - 28), Math.min(Math.max(ay - 12, 10), VH - 6));
+      const lbl = '🌷 ' + Math.ceil(state.gardenGateT) + 's';
+      ctx.fillText(lbl, ax - 14, ay + 16);
     }
   }
   // ultimate effects: smoke clouds, Ace shockwaves, the tech drone
