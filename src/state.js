@@ -41,6 +41,7 @@ export function createState(seed = DEFAULT_SEED) {
     gardenGround: new Uint8Array(MW * MH), gardenSolid: new Uint8Array(MW * MH),
     gardenObjects: [], gardenSpots: [],
     parkGround: null, parkSolid: null, parkObjects: null,  // stash while in the gardens
+    gardenBriefed: false, // first garden entry shows the rules card (timer holds)
     gardenGateT: 0,      // seconds left to reach the gate (0 = closed)
     gardenT: 0,          // seconds left inside the gardens
     flowers: [],         // this run's flowers

@@ -438,7 +438,22 @@ function enterGarden(state, rng) {
     const [x, y] = pool.splice(j, 1)[0];
     state.flowers.push({ x: x + (rng() * 8 - 4), y: y + (rng() * 8 - 4), c: colors[i % colors.length], got: false, bob: rng() * 6 });
   }
-  toast(state, '🌷 GO!', GARDEN.RUN_TIME + ' seconds. ' + state.flowers.length + ' flowers. The plants are NOT safe today.', 4000);
+  if (!state.gardenBriefed) {
+    // first visit this run: hold the clock and show the briefing card —
+    // the paused sim means gardenT doesn't tick until the player starts
+    state.gardenBriefed = true;
+    state.paused = true;
+    emit(state, { type: 'gardenBriefing' });
+  } else {
+    toast(state, '🌷 GO!', GARDEN.RUN_TIME + ' seconds. ' + state.flowers.length + ' flowers. The plants are NOT safe today.', 4000);
+  }
+}
+
+// the briefing's Start button: releases the pause, the run clock begins
+export function startGardenRun(state) {
+  if (state.scene !== 'garden') return;
+  state.paused = false;
+  toast(state, '🌷 GO!', GARDEN.RUN_TIME + ' seconds. ' + state.flowers.length + ' flowers. Good luck, ranger.', 3500);
 }
 
 function exitGarden(state) {

@@ -6,10 +6,11 @@
 // authoritative sim functions so the same rules apply everywhere.
 // ============================================================================
 import { WEAPONS, WEAPON_ORDER, xpNeed, ARCHETYPES, ARCHETYPE_ORDER, MAX_LIVES, archName, ENEMY_TYPES } from './constants.js';
-import { nearShop, buyWeapon, buyChile, chooseArchetype, setStyle, weaponPrice, effectivePrice, ability1State, ability2State } from './simulate.js';
+import { nearShop, buyWeapon, buyChile, chooseArchetype, setStyle, weaponPrice, effectivePrice, ability1State, ability2State, startGardenRun } from './simulate.js';
 import { mkCanvas, px, drawPlayerChar } from './sprites.js';
 import { leaderboardEnabled, submitScore, fetchTop, fetchRank, cleanName } from './leaderboard.js';
 import { GAME_VERSION } from './constants.js';
+import * as CONSTS from './constants.js';
 
 let S = null;
 const $ = (id) => document.getElementById(id);
@@ -67,6 +68,7 @@ export function initUI(state, { onStart, onRespawn, onNewRun, getRecording: getR
   $('lbClose').addEventListener('click', () => { $('lbOverlay').style.display = 'none'; });
   try { $('lbName').value = localStorage.getItem('cheesman.name') || ''; } catch (e) { /* fine */ }
   $('lbSubmit').addEventListener('click', postScore);
+  $('gardenGo').addEventListener('click', () => { $('gardenIntro').style.display = 'none'; startGardenRun(S); });
 }
 
 // --- leaderboard helpers -----------------------------------------------------
@@ -123,6 +125,14 @@ export function drainEvents(state) {
     else if (ev.type === 'banner') banner(ev.t, ev.p, ev.ms);
     else if (ev.type === 'death') showDeath(ev);
     else if (ev.type === 'archetypeChoice') showArchetypeChoice();
+    else if (ev.type === 'gardenBriefing') {
+      const { GARDEN } = CONSTS;
+      $('gardenRules').innerHTML = '<b>The run:</b> ' + GARDEN.RUN_TIME + ' seconds, ' + GARDEN.FLOWERS
+        + ' flowers. Each is worth +' + GARDEN.PTS + ' points and $' + GARDEN.BUCKS
+        + ' — gather <b>all ' + GARDEN.FLOWERS + '</b> for the Green Thumb bonus (+' + GARDEN.PERFECT
+        + '). The clock starts when you do. Speed and abilities are everything.';
+      $('gardenIntro').style.display = 'flex';
+    }
     else if (ev.type === 'abilityUnlock') {
       const touch = document.body.classList.contains('touch');
       const how = touch

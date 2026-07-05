@@ -8,7 +8,7 @@
 //   node test/headless-sim.mjs
 // ============================================================================
 import { createState, toSaveData, applySaveData, DEFAULT_SEED } from '../src/state.js';
-import { step, respawn, buyWeapon, buyChile, nearShop, chooseArchetype, setStyle, weaponPrice, ability1State, ability2State } from '../src/simulate.js';
+import { step, respawn, buyWeapon, buyChile, nearShop, chooseArchetype, setStyle, weaponPrice, ability1State, ability2State, startGardenRun } from '../src/simulate.js';
 import { G, T, WEAPONS, ENEMY_TYPES, xpNeed } from '../src/constants.js';
 import { gi } from '../src/tiles.js';
 
@@ -220,6 +220,12 @@ section('Garden Runs');
   g.player.x = (GARDEN.GATE.x + 0.2) * T; g.player.y = (GARDEN.GATE.y + 0.5) * T;
   step(g, NO_INPUT, 1 / 60);
   ok('entering the gate swaps to the garden scene', g.scene === 'garden');
+  ok('first entry pauses on the briefing card', g.paused === true && g.events.some((e) => e.type === 'gardenBriefing'));
+  const gtBefore = g.gardenT;
+  step(g, NO_INPUT, 1 / 60);
+  ok('the run clock holds during the briefing', g.gardenT === gtBefore);
+  startGardenRun(g);
+  ok('Start begins the run', g.paused === false);
   ok('active world is now the garden', g.ground === g.gardenGround && g.solid === g.gardenSolid);
   ok('flowers spawned', g.flowers.length === GARDEN.FLOWERS);
   ok('run timer started', g.gardenT > 0 && g.gardenT <= GARDEN.RUN_TIME);
@@ -260,6 +266,7 @@ section('Garden Runs');
   const gt = createState(); gt.started = true; gt.gardenGateT = 10;
   gt.player.x = (GARDEN.GATE.x + 0.2) * T; gt.player.y = (GARDEN.GATE.y + 0.5) * T;
   step(gt, NO_INPUT, 1 / 60);
+  startGardenRun(gt);                                      // dismiss the briefing
   gt.gardenT = 0.01;
   step(gt, NO_INPUT, 1 / 60);
   ok('run timer expiry returns you to the park', gt.scene === 'park' && gt.flowers.length === 0);
