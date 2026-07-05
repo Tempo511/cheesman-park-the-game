@@ -83,7 +83,7 @@ export function buildGarden(state, rnd) {
 
   // NORTH pads
   fillG(30, 5, 46, 11, G.MARBLE);                          // greenhouse yard
-  fillG(48, 9, 58, 17, G.PAVE);                            // conservatory plaza
+  fillG(46, 7, 60, 18, G.PAVE);                            // conservatory plaza (the dome deserves room)
 
   // the SPINE
   fillG(4, 28, 60, 29, G.PAVE);                            // Cheesman Gate axis
@@ -153,11 +153,14 @@ export function buildGarden(state, rnd) {
   // PHASE B — exact structures (buildings, plaza furniture, gate columns)
   // ==========================================================================
   addObj('teahouse', 15, 10);                              // Ella Mullen Weckbaugh Tea House
-  addObj('greenhouse', 34, 10); addObj('greenhouse', 42.5, 10);
-  addObj('dome', 53, 15);                                  // Boettcher Conservatory, 1966
-  addObj('column', 48, 17.6); addObj('column', 58, 17.6);
+  addObj('greenhouse', 38, 10);                            // the production ranges, one facility
+  for (let sy = 8; sy <= 10; sy++) for (let sx = 35; sx <= 41; sx++) if (inMap(sx, sy)) solid[gi(sx, sy)] = 1;
+  addObj('dome', 53, 16);                                  // Boettcher Conservatory, 1966
+  for (let sy = 13; sy <= 16; sy++) for (let sx = 51; sx <= 55; sx++) if (inMap(sx, sy)) solid[gi(sx, sy)] = 1;
+  addObj('column', 46, 18.6); addObj('column', 60, 18.6);
   addObj('glasshouse', 9, 44);                             // Cactus & Succulent House
-  addObj('pyramid', 33.5, 38);                             // Science Pyramid
+  addObj('pyramid', 33.5, 38.5);                           // Science Pyramid (full size)
+  for (let sy = 36; sy <= 38; sy++) for (let sx = 31; sx <= 36; sx++) if (inMap(sx, sy)) solid[gi(sx, sy)] = 1;
   addObj('fountain', 48, 51);                              // Schlessman plaza fountain
   addObj('waring', 61.8, 58.6);                            // Waring House (the mansion)
   for (let sy = 56; sy <= 58; sy++) for (let sx = 60; sx <= 63; sx++) if (inMap(sx, sy)) solid[gi(sx, sy)] = 1;
@@ -206,7 +209,7 @@ export function buildGarden(state, rnd) {
 
   // benches: alongside (never on) the promenades; two on the plaza edge by the dome
   for (const [x, y] of [[10, 26.8], [22, 31.2], [34, 26.8], [46, 31.2], [56, 26.8], [57, 20]]) addNat('bench', x, y);
-  addObj('bench', 49.5, 16.6); addObj('bench', 56.5, 16.6);   // plaza furniture (intentional)
+  addObj('bench', 47.5, 17.6); addObj('bench', 58.5, 17.6);   // plaza furniture (intentional)
 
   // woodland mosaic grove + Waring corner planting
   for (const [x, y] of [[33, 50], [36, 48], [38, 52], [34, 55], [38.5, 56.5], [30, 52.5], [36, 45.5]]) addNat('tree2', x, y);

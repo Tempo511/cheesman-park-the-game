@@ -144,7 +144,9 @@ export function renderGardenGround(state) {
   g.fillText('SHOFU-EN', 20 * T, 2.6 * T);
   g.fillText('EL POMAR WATERWAY', 42 * T, 43.8 * T);
   g.fillText('SCIENCE PYRAMID', 28 * T, 46 * T);
-  g.fillText('AMPHITHEATER', 45.5 * T, 19 * T);
+  g.fillText('AMPHITHEATER', 45.5 * T, 21.6 * T);
+  g.fillText('GREENHOUSES', 34 * T, 12.4 * T);
+  g.fillText('BOETTCHER CONSERVATORY', 46.5 * T, 19.4 * T);
   g.fillText('WARING HOUSE', 52.5 * T, 55.4 * T);
   g.fillText('CHIHULY', 61.8 * T, 47.4 * T);
   g.fillText('CHEESMAN GATE', 1.4 * T, 25.4 * T);

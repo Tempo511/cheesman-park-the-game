@@ -204,38 +204,39 @@ export function buildSprites(rnd) {
   px(x, 6, 34, 12, 10, '#8a6d3b'); px(x, 7, 35, 10, 8, '#a8874c'); // hanging sign
   px(x, 8, 37, 8, 1, '#6f5730'); px(x, 8, 39, 6, 1, '#6f5730'); px(x, 8, 41, 7, 1, '#6f5730');
   SPR.gardengate = { c, ax: 12, ay: 82 };
-  // DBG greenhouse complex — long parallel growing ranges (the striped white
-  // roofs in the aerial), deliberately utilitarian next to the showpiece dome
-  c = mkCanvas(72, 34); x = c.getContext('2d');
-  for (let range = 0; range < 3; range++) {
-    const ry = range * 10;
-    px(x, 2, ry + 4, 68, 7, '#c8ccc9');                 // range body
-    px(x, 2, ry + 2, 68, 3, '#e8ecea');                 // ridge highlight
-    px(x, 2, ry + 9, 68, 2, '#9aa09d');                 // eave shadow
-    for (let i = 6; i < 68; i += 7) px(x, i, ry + 3, 1, 7, '#aab4b0');  // glazing bars
+  // DBG greenhouse complex — ONE big facility: five parallel sawtooth ranges
+  // (the striped white roofs in the aerial) + service apron
+  c = mkCanvas(116, 52); x = c.getContext('2d');
+  for (let range = 0; range < 5; range++) {
+    const ry = range * 9;
+    px(x, 2, ry + 4, 112, 6, '#c8ccc9');                 // range body
+    px(x, 2, ry + 2, 112, 3, '#e8ecea');                 // ridge highlight
+    px(x, 2, ry + 8, 112, 2, '#9aa09d');                 // eave shadow
+    for (let i = 6; i < 112; i += 7) px(x, i, ry + 3, 1, 6, '#aab4b0');  // glazing bars
   }
-  px(x, 0, 30, 72, 4, '#b8b2a0'); px(x, 0, 32, 72, 2, '#9a947f');       // service apron
-  px(x, 33, 26, 6, 6, '#4a5a58');                       // door
-  SPR.greenhouse = { c, ax: 36, ay: 32 };
+  px(x, 0, 46, 116, 4, '#b8b2a0'); px(x, 0, 48, 116, 2, '#9a947f');     // service apron
+  px(x, 54, 42, 8, 8, '#4a5a58');                        // door
+  px(x, 10, 42, 6, 6, '#4a5a58'); px(x, 100, 42, 6, 6, '#4a5a58');
+  SPR.greenhouse = { c, ax: 58, ay: 48 };
   // Boettcher Conservatory (1966) — faceted glass between interlaced concrete
-  // arches; a pointed ribbed dome, Denver Landmark
-  c = mkCanvas(44, 40); x = c.getContext('2d');
-  for (let r = 0; r < 30; r++) {                        // pointed dome profile
-    const w = Math.round(40 * Math.sin((r / 30) * Math.PI / 2));
-    px(x, 22 - w / 2 | 0, r + 2, w, 1, '#9fc4c0');      // glass
-    px(x, 22 - w / 2 | 0, r + 2, Math.max(1, w / 4 | 0), 1, '#c4e0dc');  // sheen
+  // arches; the pointed ribbed dome, Denver Landmark, and it is BIG
+  c = mkCanvas(84, 78); x = c.getContext('2d');
+  for (let r = 0; r < 60; r++) {                        // pointed dome profile
+    const w = Math.round(78 * Math.sin((r / 60) * Math.PI / 2));
+    px(x, 42 - w / 2 | 0, r + 4, w, 1, '#9fc4c0');      // glass
+    px(x, 42 - w / 2 | 0, r + 4, Math.max(1, w / 4 | 0), 1, '#c4e0dc');  // sheen
   }
-  for (let k = -2; k <= 2; k++) {                       // concrete ribs, interlaced
-    for (let r = 2; r < 32; r++) {
-      const w = Math.round(40 * Math.sin(((r - 2) / 30) * Math.PI / 2));
-      const rx = 22 + Math.round(k * w / 5);
-      if (rx > 22 - w / 2 - 1 && rx < 22 + w / 2 + 1) px(x, rx, r, 1, 1, '#cfc9b6');
+  for (let k = -3; k <= 3; k++) {                       // concrete ribs, interlaced
+    for (let r = 4; r < 64; r++) {
+      const w = Math.round(78 * Math.sin(((r - 4) / 60) * Math.PI / 2));
+      const rx = 42 + Math.round(k * w / 7);
+      if (rx > 42 - w / 2 - 1 && rx < 42 + w / 2 + 1) px(x, rx, r, 2, 1, '#cfc9b6');
     }
   }
-  px(x, 21, 0, 2, 3, '#cfc9b6');                        // apex
-  px(x, 2, 32, 40, 5, '#b8b2a0'); px(x, 2, 35, 40, 2, '#9a947f');  // base
-  px(x, 19, 30, 6, 7, '#4a5a58');                       // entry
-  SPR.dome = { c, ax: 22, ay: 38 };
+  px(x, 40, 0, 4, 5, '#cfc9b6');                        // apex
+  px(x, 3, 64, 78, 6, '#b8b2a0'); px(x, 3, 68, 78, 2, '#9a947f');  // base
+  px(x, 36, 58, 12, 12, '#4a5a58'); px(x, 39, 61, 6, 9, '#2e3a38'); // grand entry
+  SPR.dome = { c, ax: 42, ay: 74 };
   // Ella Mullen Weckbaugh Tea House — open pavilion on the Monet Pool peninsula
   c = mkCanvas(20, 18); x = c.getContext('2d');
   px(x, 0, 4, 20, 3, '#3a2f26'); px(x, 2, 2, 16, 3, '#4a3b2e');    // wide hip roof
@@ -275,20 +276,21 @@ export function buildSprites(rnd) {
   for (let i = 3; i < 16; i += 4) px(x, i, 7, 1, 5, '#aab4b0');     // glazing
   px(x, 0, 12, 18, 2, '#b8a888');
   SPR.glasshouse = { c, ax: 9, ay: 13 };
-  // the Science Pyramid (DBG) — big dark faceted building, honeycomb panels
-  c = mkCanvas(52, 42); x = c.getContext('2d');
-  for (let r = 0; r < 36; r++) {
-    const w = (r * 52 / 36) | 0;
-    px(x, 26 - w / 2 | 0, r + 2, w, 1, '#3a3f4a');
-    px(x, 26 - w / 2 | 0, r + 2, Math.max(1, w / 3 | 0), 1, '#4c5566');
+  // the Science Pyramid (DBG) — a full-size building now: dark faceted
+  // honeycomb-paneled pyramid with glowing panes
+  c = mkCanvas(104, 84); x = c.getContext('2d');
+  for (let r = 0; r < 72; r++) {
+    const w = (r * 104 / 72) | 0;
+    px(x, 52 - w / 2 | 0, r + 4, w, 1, '#3a3f4a');
+    px(x, 52 - w / 2 | 0, r + 4, Math.max(1, w / 3 | 0), 1, '#4c5566');
   }
-  px(x, 25, 2, 2, 36, '#2a2e38');                       // center seam
-  for (let r = 8; r < 36; r += 6) px(x, 26 - (r * 52 / 36) / 2 | 0, r + 2, (r * 52 / 36) | 0, 1, '#2a2e38'); // panel courses
-  for (let r = 10; r < 34; r += 8) { px(x, 20, r, 1, 4, '#2a2e38'); px(x, 32, r + 3, 1, 4, '#2a2e38'); }     // facet joints
-  px(x, 10, 32, 9, 6, '#7fd0ff'); px(x, 11, 33, 7, 4, '#a8e0ff');  // glowing entry pane
-  px(x, 34, 30, 6, 5, '#5f7d8a');                       // second pane
-  px(x, 0, 38, 52, 3, '#9a947f'); px(x, 0, 40, 52, 2, '#8a8475'); // plinth
-  SPR.pyramid = { c, ax: 26, ay: 40 };
+  px(x, 50, 4, 3, 72, '#2a2e38');                       // center seam
+  for (let r = 12; r < 72; r += 9) px(x, 52 - (r * 104 / 72) / 2 | 0, r + 4, (r * 104 / 72) | 0, 1, '#2a2e38'); // panel courses
+  for (let r = 16; r < 68; r += 12) { px(x, 38, r, 2, 7, '#2a2e38'); px(x, 64, r + 5, 2, 7, '#2a2e38'); }       // facet joints
+  px(x, 20, 62, 16, 12, '#7fd0ff'); px(x, 22, 64, 12, 8, '#a8e0ff');  // glowing entry pane
+  px(x, 68, 58, 12, 10, '#5f7d8a'); px(x, 70, 60, 8, 6, '#7a99a8');   // second pane
+  px(x, 0, 76, 104, 5, '#9a947f'); px(x, 0, 79, 104, 3, '#8a8475');   // plinth
+  SPR.pyramid = { c, ax: 52, ay: 80 };
   return SPR;
 }
 
