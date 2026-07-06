@@ -96,7 +96,7 @@ export function renderGround(state) {
   const { cars } = state;
   const g = groundCv.getContext('2d');
   paintTiles(g, state.ground, MH);
-  for (let x = 4; x < MW * T - 4; x += 24) { px(g, x, 1 * T + 7, 12, 2, PAL.dash); px(g, x, (MH - 2) * T + 7, 12, 2, PAL.dash); }
+  for (let x = 4; x < MW * T - 4; x += 24) px(g, x, (MH - 2) * T + 7, 12, 2, PAL.dash);
   for (let y = 4; y < MH * T - 4; y += 24) { px(g, 1 * T + 7, y, 2, 12, PAL.dash); }
   for (let y = 34 * T + 4; y < MH * T - 4; y += 24) { px(g, (MW - 2) * T + 7, y, 2, 12, PAL.dash); }
   for (let i = 0; i < 4; i++) px(g, 2 + i * 11, 45 * T + 2, 8, 28, PAL.dash);
@@ -109,7 +109,6 @@ export function renderGround(state) {
       px(g, X - 3, Y + 1, 5, 2, '#222'); px(g, X + 11, Y + 1, 5, 2, '#222'); px(g, X - 3, Y + 13, 5, 2, '#222'); px(g, X + 11, Y + 13, 5, 2, '#222'); }
   });
   g.fillStyle = '#cfc9b6'; g.font = 'bold 9px ui-monospace,monospace'; g.textBaseline = 'middle';
-  g.fillText('E  1 3 T H   A V E', 26 * T, 1.5 * T);
   g.fillText('E  8 T H   A V E', 26 * T, (MH - 1.5) * T);
   g.save(); g.translate(1.5 * T, 60 * T); g.rotate(-Math.PI / 2);
   g.fillText('H U M B O L D T   S T', 0, 0); g.restore();
@@ -197,30 +196,37 @@ function nightAlpha(state, t) {
 // overscan band above it: One Cheesman Place, Park Towers, the
 // Tears-McFarlane House, and filler walk-ups. Pure dressing — no sim impact.
 export const NORTH_OVER = 4.5 * T;
-const STREETSCAPE = [
-  ['b_walkup1', 6], ['b_walkup2', 10], ['b_walkup3', 14.5], ['b_walkup2', 19], ['b_walkup1', 23],
-  ['b_parktowers', 28.5], ['b_ocp', 36], ['b_tears', 44.5],
-  ['b_walkup3', 50], ['b_walkup1', 54.5], ['b_walkup2', 58.5], ['b_walkup3', 63], ['b_walkup1', 67.5],
+const FAR_SIDE = [
+  ['b_walkup1', 5.5], ['b_walkup2', 9.5], ['b_walkup3', 14], ['b_walkup2', 18.5], ['b_walkup1', 22.5],
+  ['b_walkup3', 27], ['b_walkup2', 31.5], ['b_walkup1', 36], ['b_walkup3', 40.5], ['b_walkup2', 45],
+  ['b_walkup1', 49.5], ['b_walkup3', 54], ['b_walkup2', 58.5], ['b_walkup1', 63], ['b_walkup3', 67.5],
 ];
 function drawNorthBand(state, t, camX, camY) {
-  const topY = -NORTH_OVER - camY;                       // screen y of band top
-  ctx.fillStyle = '#252e1e';                             // backyard canopy behind it all
+  const topY = -NORTH_OVER - camY;
+  ctx.fillStyle = '#252e1e';                             // canopy beyond the far houses
   ctx.fillRect(0, topY, VW, NORTH_OVER);
-  ctx.fillStyle = '#8d8a80';                             // far sidewalk of 13th Ave
-  ctx.fillRect(0, -10 - camY, VW, 10);
-  ctx.fillStyle = '#7d7a70'; ctx.fillRect(0, -2 - camY, VW, 2);   // curb
-  for (let i = 0; i < 36; i++) {                         // street trees along the walk
-    const tx = (i * 33 + 12) - camX;
-    if (tx < -8 || tx > VW + 8) continue;
-    ctx.fillStyle = i % 3 ? '#2f3d24' : '#37472a';
-    ctx.beginPath(); ctx.arc(tx, -13 - camY, 5 + (i * 7) % 3, 0, 7); ctx.fill();
+  ctx.fillStyle = PAL.road;                              // E 13th Ave, behind the landmarks
+  ctx.fillRect(0, -22 - camY, VW, 22);
+  for (let x = 4 - (camX % 24); x < VW; x += 24) px(ctx, x, -12 - camY, 12, 2, PAL.dash);
+  ctx.fillStyle = '#8d8a80';                             // far sidewalk + curb
+  ctx.fillRect(0, -30 - camY, VW, 8);
+  ctx.fillStyle = '#7d7a70'; ctx.fillRect(0, -23 - camY, VW, 1);
+  const carCols = ['#7a8ba0', '#a05a4c', '#4c6b57'];
+  for (let i = 0; i < 3; i++) {                          // parked along the far curb
+    const cx = ((i * 19 + 9) * T) - camX;
+    if (cx < -30 || cx > VW) continue;
+    px(ctx, cx, -21 - camY, 26, 11, carCols[i]);
+    px(ctx, cx + 4, -20 - camY, 6, 9, '#cfe3ea'); px(ctx, cx + 16, -20 - camY, 5, 9, '#cfe3ea');
   }
-  for (const [type, tileX] of STREETSCAPE) {
+  ctx.fillStyle = '#cfc9b6'; ctx.font = 'bold 9px ui-monospace,monospace'; ctx.textBaseline = 'middle';
+  ctx.fillText('E  1 3 T H   A V E', 12 * T - camX, -11 - camY);
+  ctx.fillText('E  1 3 T H   A V E', 52 * T - camX, -11 - camY);
+  for (const [type, tileX] of FAR_SIDE) {
     const spr = SPR[type]; if (!spr) continue;
-    const bx = (tileX * T - spr.ax - camX) | 0, by = (-6 - spr.ay - camY) | 0;
+    const bx = (tileX * T - spr.ax - camX) | 0, by = (-32 - spr.ay - camY) | 0;
     if (bx > VW || bx + spr.c.width < 0) continue;
     ctx.drawImage(spr.c, bx, by);
-    if (NA > 0.05) {                                     // windows light up at dusk
+    if (NA > 0.05) {
       const ns = SPR[type + '_n'];
       if (ns) { ctx.globalAlpha = Math.min(1, NA * 1.6); ctx.drawImage(ns.c, bx, by); ctx.globalAlpha = 1; }
     }
@@ -297,6 +303,8 @@ export function render(state, t) {
     ctx.fillStyle = 'rgba(0,0,0,.18)';
     if (o.type === 'tree' || o.type === 'pine') ctx.fillRect(o.x * T - 9 - camX, o.y * T - 2 - camY, 18, 4);
     ctx.drawImage(spr.c, ((o.x * T - spr.ax) - camX) | 0, ((o.y * T - spr.ay) - camY) | 0);
+    const nspr = NA > 0.05 && SPR[o.type + '_n'];
+    if (nspr) { ctx.globalAlpha = Math.min(1, NA * 1.6); ctx.drawImage(nspr.c, ((o.x * T - spr.ax) - camX) | 0, ((o.y * T - spr.ay) - camY) | 0); ctx.globalAlpha = 1; }
     if (o.type === 'cart' && state.phase === 'day' && Math.hypot(player.x - SHOP_POS.x, player.y - SHOP_POS.y) < 70) {
       ctx.fillStyle = '#e5c04b'; ctx.font = '7px ui-monospace,monospace';
       ctx.fillText('SHOP', o.x * T - 9 - camX, o.y * T - 34 - camY);

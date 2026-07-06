@@ -19,7 +19,7 @@ export function buildMap(state, rnd) {
   const getG = (x, y) => (inMap(x, y) ? ground[gi(x, y)] : G.ROAD);
 
   // --- streets, sidewalks, botanic gardens ---------------------------------
-  fillG(0, 0, MW - 1, 2, G.ROAD);          // E 13th Ave
+  fillG(0, 0, MW - 1, 2, G.GRASS);         // north border: the park-side buildings' grounds (13th Ave is behind them, in the render band)
   fillG(0, MH - 3, MW - 1, MH - 1, G.ROAD); // E 8th Ave
   fillG(0, 0, 2, MH - 1, G.ROAD);          // Franklin St
   fillG(MW - 3, 34, MW - 1, MH - 1, G.ROAD); // Race St
@@ -92,6 +92,16 @@ export function buildMap(state, rnd) {
     if (isSolid) { const tx = Math.floor(x), ty = Math.floor(y); if (inMap(tx, ty)) solid[gi(tx, ty)] = 1; }
   };
 
+  // the north-border landmarks stand IN the park block, backs to 13th Ave
+  addObj('b_parktowers', 27, 2.9);
+  addObj('b_ocp', 36.5, 2.95);
+  addObj('b_tears', 45.5, 2.85);
+  for (let y = 0; y <= 2; y++) for (let x = 0; x < MW; x++) solid[gi(x, y)] = 1;  // their grounds: look, don't trespass
+  for (let x = 5; x <= 61; x += 2.4) {                     // hedge line in the gaps
+    if ((x > 24.5 && x < 29.5) || (x > 33 && x < 40) || (x > 43 && x < 48)) continue;
+    addObj('bush', x, 2.75, false);
+  }
+  addObj('tree', 31.5, 2.8, false); addObj('tree', 41.5, 2.7, false); addObj('tree2', 51.5, 2.85, false);
   for (let y = 3; y <= 33; y += 1) { if (y < 17 || y > 20) addObj('fence', 63, y); }
   addObj('gardengate', 63.5, 21.15);         // the Cheesman Gate into the Botanic Gardens
   for (let y = 17; y <= 20; y++) if (inMap(63, y)) solid[gi(63, y)] = 1;   // gateway itself stays solid (entry is by proximity)
@@ -170,6 +180,5 @@ export function buildMap(state, rnd) {
   // --- traffic on the surrounding streets ----------------------------------
   for (let y = 8; y < MH - 8; y += 11) cars.push({ x: 1, y, v: 1 });
   for (let y = 40; y < MH - 8; y += 13) cars.push({ x: MW - 2, y, v: 1 });
-  for (let x = 8; x < MW - 10; x += 13) cars.push({ x, y: 1, v: 0 });
   for (let x = 8; x < 58; x += 15) cars.push({ x, y: MH - 2, v: 0 });
 }
