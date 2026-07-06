@@ -289,7 +289,14 @@ function buildShop() {
     div.appendChild(mid);
     const b = document.createElement('button'); b.className = 'buy';
     div.appendChild(b);
-    b.addEventListener('click', () => { buyWeapon(S, id); refreshShop(); });
+    b.addEventListener('click', () => {
+      const wasOwned = S.player.owned.has(id);
+      buyWeapon(S, id);
+      // the flavor line rides the purchase toast — every joke lands exactly
+      // once, and mobile keeps its scroll-free shop
+      if (!wasOwned && S.player.owned.has(id)) toast('\u2728 ' + w.name + '!', w.desc, 5000);
+      refreshShop();
+    });
     div.dataset.wid = id;
     shopItemsEl.appendChild(div);
   }
