@@ -131,7 +131,13 @@ export function buildMap(state, rnd) {
   addObj('cart', 44, 54.6);                     // THE RANGER CART (shop)
 
   for (let y = 6; y < MH - 6; y += 5) addObj('tree', 5.2, y + rnd() * .6);
-  for (let x = 6; x < 60; x += 5) { addObj('tree', x + rnd() * .6, 5.4); addObj('tree', x + rnd() * .6, MH - 5.6); }
+  // north allée thins where the landmark labels sit on the sidewalk
+  const overLabel = (x) => (x > 23.7 && x < 30.3) || (x > 32.5 && x < 40.7) || (x > 41 && x < 50.3);
+  for (let x = 6; x < 60; x += 5) {
+    const nx = x + rnd() * .6;
+    if (!overLabel(nx)) addObj('tree', nx, 5.4);
+    addObj('tree', x + rnd() * .6, MH - 5.6);
+  }
   for (let y = 36; y < MH - 6; y += 5) addObj('tree', 65.6, y + rnd() * .6);
 
   const clearOfPaths = (x, y) => {
