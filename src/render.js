@@ -204,7 +204,7 @@ const FAR_SIDE = [
 ];
 // West/east overscan: the street behind the border mansions, far-side houses
 // beyond it. East side north of 34: the two high-rises across from the gardens.
-function drawSideBand(camX, camY, side) {
+function drawSideBand(tNow, camX, camY, side) {
   const W = MW * T, east = side === 'e';
   const roadW = east ? 22 : 34;                          // Humboldt runs wider
   const bandL = east ? W : -SIDE_OVER;
@@ -227,6 +227,8 @@ function drawSideBand(camX, camY, side) {
     px(ctx, cx2, cy, 11, 26, carCols[i % 5]);
     px(ctx, cx2 + 1, cy + 4, 9, 6, '#cfe3ea'); px(ctx, cx2 + 1, cy + 16, 9, 5, '#cfe3ea');
   }
+  const laneX = east ? W + roadW - 13 : roadL + roadW - 14;   // near-side lane, parked row stays put
+  drawTraffic(tNow, camX, camY, true, laneX, 0, east ? -1 : 1, MH * T + 200, east ? 3 : 4, east ? 44 : 50, east ? 1 : 3);
   ctx.fillStyle = '#cfc9b6'; ctx.font = 'bold 9px ui-monospace,monospace'; ctx.textBaseline = 'middle';
   for (const ly of [24, 68]) {
     ctx.save(); ctx.translate((east ? W + 11 : roadL + (roadW >> 1)) - camX, ly * T - camY); ctx.rotate(-Math.PI / 2);
@@ -248,6 +250,40 @@ function drawSideBand(camX, camY, side) {
       if (ty < -10 || ty > VH + 10) continue;
       ctx.fillStyle = i % 3 ? '#2f3d24' : '#37472a';
       ctx.beginPath(); ctx.arc(walkL - 6 - camX, ty, 5 + (i * 7) % 4, 0, 7); ctx.fill();
+    }
+  }
+}
+// moving traffic in the bands: each lane loops a few cars end-to-end.
+// Pure ambience — lives entirely in render space, never touches the sim.
+const TRAFFIC = ['#7a8ba0', '#a05a4c', '#4c6b57', '#5a5a80', '#8a6f4e'];
+function drawTraffic(t, camX, camY, vertical, laneX, laneY, dir, span, n, speed, phase) {
+  for (let i = 0; i < n; i++) {
+    const u = ((t * speed + phase + i * (span / n)) % span + span) % span;
+    const col = TRAFFIC[(i + phase) % 5];
+    if (vertical) {
+      const cy = (dir > 0 ? u : span - u) - camY, cx = laneX - camX;
+      if (cy < -34 || cy > VH + 34) continue;
+      px(ctx, cx, cy, 11, 24, col);
+      px(ctx, cx + 1, cy + (dir > 0 ? 14 : 4), 9, 6, '#cfe3ea');
+      if (NA > 0.1) {                                            // headlights
+        ctx.fillStyle = 'rgba(255,240,180,' + (NA * 0.5).toFixed(2) + ')';
+        const hy = dir > 0 ? cy + 24 : cy - 7;
+        ctx.fillRect(cx + 1, hy, 3, 7); ctx.fillRect(cx + 7, hy, 3, 7);
+        px(ctx, cx + 2, dir > 0 ? cy - 1 : cy + 24, 2, 1, 'rgba(255,60,50,' + NA.toFixed(2) + ')');
+        px(ctx, cx + 8, dir > 0 ? cy - 1 : cy + 24, 2, 1, 'rgba(255,60,50,' + NA.toFixed(2) + ')');
+      }
+    } else {
+      const cx = (dir > 0 ? u : span - u) - camX, cy = laneY - camY;
+      if (cx < -34 || cx > VW + 34) continue;
+      px(ctx, cx, cy, 24, 11, col);
+      px(ctx, cx + (dir > 0 ? 14 : 4), cy + 1, 6, 9, '#cfe3ea');
+      if (NA > 0.1) {
+        ctx.fillStyle = 'rgba(255,240,180,' + (NA * 0.5).toFixed(2) + ')';
+        const hx = dir > 0 ? cx + 24 : cx - 7;
+        ctx.fillRect(hx, cy + 1, 7, 3); ctx.fillRect(hx, cy + 7, 7, 3);
+        px(ctx, dir > 0 ? cx - 1 : cx + 24, cy + 2, 1, 2, 'rgba(255,60,50,' + NA.toFixed(2) + ')');
+        px(ctx, dir > 0 ? cx - 1 : cx + 24, cy + 8, 1, 2, 'rgba(255,60,50,' + NA.toFixed(2) + ')');
+      }
     }
   }
 }
@@ -274,6 +310,8 @@ function drawNorthBand(state, t, camX, camY) {
     px(ctx, cx, -21 - camY, 26, 11, carCols[i]);
     px(ctx, cx + 4, -20 - camY, 6, 9, '#cfe3ea'); px(ctx, cx + 16, -20 - camY, 5, 9, '#cfe3ea');
   }
+  drawTraffic(t, camX, camY, false, 0, -21, 1, MW * T + 200, 4, 52, 0);   // eastbound lane
+  drawTraffic(t, camX, camY, false, 0, -10, -1, MW * T + 200, 3, 46, 2);  // westbound lane
   ctx.fillStyle = '#cfc9b6'; ctx.font = 'bold 9px ui-monospace,monospace'; ctx.textBaseline = 'middle';
   ctx.fillText('E  1 3 T H   A V E', 12 * T - camX, -11 - camY);
   ctx.fillText('E  1 3 T H   A V E', 52 * T - camX, -11 - camY);
@@ -305,8 +343,8 @@ export function render(state, t) {
   ctx.fillStyle = '#151a12'; ctx.fillRect(0, 0, VW, VH);   // letterbox if world shorter than view
   ctx.drawImage(inGarden ? gardenCv : groundCv, camX, camY, VW, VH, 0, 0, VW, VH);
   if (!inGarden) {
-    if (camX < 0) drawSideBand(camX, camY, 'w');
-    if (camX + VW > MW * T) drawSideBand(camX, camY, 'e');
+    if (camX < 0) drawSideBand(t, camX, camY, 'w');
+    if (camX + VW > MW * T) drawSideBand(t, camX, camY, 'e');
     if (camY < 0) drawNorthBand(state, t, camX, camY);
   }
   // water shimmer + jets (park scene only — these are park coordinates)
