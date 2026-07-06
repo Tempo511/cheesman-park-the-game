@@ -129,7 +129,7 @@ export const ARCHETYPES = {
     coinMult:1.5, priceMult:0.85, rangedMult:1.2,
     pal:{ skin:'#e8b58a', shirt:'#4c6b57', pants:'#8a8a8a', hair:'#2b2b2b' }, prop:'earbuds',
     ability1:{ name:'Overclock', icon:'⚡', level:5, cd:11, dur:5, speed:1.2, haste:1.6, desc:'+60% fire rate and +20% speed for 5 seconds.' },
-    ability2:{ name:'Drone', icon:'✈', level:8, cd:24, dur:12, rate:0.35, dmg:10, desc:'Deploys a drone that auto-fires at enemies from your shoulder for 12s.' } },
+    ability2:{ name:'Drone', icon:'✈', level:8, cd:24, dur:12, rate:0.35, dmg:10, desc:'Deploys an auto-firing drone for 12s — its firepower grows with your level.' } },
   hippie: { id:'hippie', name:'🌼 Hippie',
     flavor:'Peace, love, and regeneration. The supernatural doesn’t faze them.',
     perkText:'+2 HP/sec regen · −25% damage from ghosts, vampires & aliens',
@@ -150,7 +150,7 @@ export const ARCHETYPES = {
     dodge:0.25, stillRegen:2,
     pal:{ skin:'#f0c8a0', shirt:'#7fb4b4', pants:'#e8e4d4', hair:'#4a3123' },
     ability1:{ name:'Flow Roll', icon:'↻', level:5, cd:5, rollSpd:380, rollTime:0.22, desc:'A quick invincible roll — dodge anything, reposition free.' },
-    ability2:{ name:'Zen Mode', icon:'☯', level:8, cd:22, dur:5, slow:0.3, regen:9, desc:'The world slows to a crawl for 5s while you move free and heal.' } },
+    ability2:{ name:'Zen Mode', icon:'☯', level:8, cd:22, dur:5, slow:0.3, regen:9, strike:1.5, desc:'5s of clarity: enemies crawl at 30% speed, your hits do +50% damage, and you heal 9 HP/s.' } },
 };
 export const ARCHETYPE_ORDER = ['volleyball', 'tech', 'hippie', 'jogger', 'yogi'];
 

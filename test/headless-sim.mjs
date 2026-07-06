@@ -504,6 +504,19 @@ const zx0 = zenFoe.x, rx02 = refFoe2.x;
 for (let i = 0; i < 30; i++) { step(yz, NO_INPUT, 1 / 60); step(yzRef, NO_INPUT, 1 / 60); }
 ok('zen slows enemies to a crawl', (zx0 - zenFoe.x) < (rx02 - refFoe2.x) * 0.6);
 ok('zen heals the yogi', yz.player.hp > 100);
+// zen clarity: attacks during zen carry +50% damage
+const zzz = withTribe('yogi', 8);
+step(zzz, { move: { x: 0, y: 0 }, attack: false, ability2: true }, 1 / 60);   // zen on
+step(zzz, { move: { x: 0, y: 0 }, attack: true }, 1 / 60);
+const zenShot = zzz.projectiles[zzz.projectiles.length - 1];
+ok('zen strikes carry +50% damage', Math.abs(zenShot.dmg - 12 * 1.5) < 0.01);
+// drone firepower scales with level
+const dl = withTribe('tech', 10);
+mkFoe(dl, 60, 0, 5000);
+step(dl, { move: { x: 0, y: 0 }, attack: false, ability2: true }, 1 / 60);
+let bolt = null;
+for (let i = 0; i < 90 && !bolt; i++) { step(dl, ULT_OFF, 1 / 60); bolt = dl.projectiles.find((p2) => p2.style === 'bolt'); }
+ok('drone bolts scale with level ((10+lv) x ranged)', bolt && Math.abs(bolt.dmg - (10 + 10) * 1.2) < 0.01);
 
 // --- 6c-2. character style (cosmetic) ----------------------------------------
 section('Character style');

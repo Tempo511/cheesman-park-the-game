@@ -372,6 +372,7 @@ function tryAttack(state, rng) {
   if (player.atkCd > 0 || state.paused) return;
   const w = WEAPONS[player.weapon];
   player.atkCd = w.rate / (player.hasteT > 0 ? player.hasteRateMult : 1);
+  const zenStrike = state.zenT > 0 ? (ARCHETYPES.yogi.ability2.strike || 1) : 1;   // clarity: hits land true
   // aim assist: snap to nearest enemy within 180px
   let ax = player.fx, ay = player.fy, best = null, bd = 180;
   for (const e of state.enemies) { if (e.rise < 1) continue; const d = Math.hypot(e.x - player.x, e.y - player.y); if (d < bd) { bd = d; best = e; } }
@@ -384,11 +385,11 @@ function tryAttack(state, rng) {
       const dx = e.x - player.x, dy = e.y - 8 - (player.y - 8), d = Math.hypot(dx, dy);
       if (d > w.range + 8) continue;
       const dot = (dx * ax + dy * ay) / Math.max(1, d);
-      if (dot > 0.15) damageEnemy(state, e, w.dmg * player.dmgMult * (perk(state).meleeMult || 1), (dx / d) * (w.knock || 40), (dy / d) * (w.knock || 40), rng);
+      if (dot > 0.15) damageEnemy(state, e, w.dmg * player.dmgMult * zenStrike * (perk(state).meleeMult || 1), (dx / d) * (w.knock || 40), (dy / d) * (w.knock || 40), rng);
     }
   } else {
     state.projectiles.push({ x: player.x + ax * 8, y: player.y - 9 + ay * 8, vx: ax * w.spd, vy: ay * w.spd,
-      dmg: w.dmg * player.dmgMult * (perk(state).rangedMult || 1), ttl: w.ttl, size: w.size, col: w.col, splash: w.splash || 0, spin: 0, style: w.style });
+      dmg: w.dmg * player.dmgMult * zenStrike * (perk(state).rangedMult || 1), ttl: w.ttl, size: w.size, col: w.col, splash: w.splash || 0, spin: 0, style: w.style });
   }
 }
 
@@ -635,7 +636,7 @@ function updateDrone(state, dt) {
       d.fireCd = ab.rate;
       const ang = Math.atan2((best.y - 8) - d.y, best.x - d.x);
       state.projectiles.push({ x: d.x, y: d.y, vx: Math.cos(ang) * 260, vy: Math.sin(ang) * 260,
-        dmg: ab.dmg * p.dmgMult * (ARCHETYPES.tech.rangedMult || 1), ttl: 0.8, size: 3, col: '#7fd0ff', splash: 0, spin: 0, style: 'bolt' });
+        dmg: (ab.dmg + p.level) * p.dmgMult * (ARCHETYPES.tech.rangedMult || 1), ttl: 0.8, size: 3, col: '#7fd0ff', splash: 0, spin: 0, style: 'bolt' });
     }
   }
 }
