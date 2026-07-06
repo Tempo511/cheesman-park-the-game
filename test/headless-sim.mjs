@@ -24,7 +24,7 @@ section('World generation');
 const s = createState();
 ok('map grid sized MW*MH', s.ground.length === 72 * 92);
 ok('objects were placed', s.objects.length > 100);
-ok('cars were placed', s.cars.length > 0);
+ok('no parked cars in state (traffic is render-side)', s.cars.length === 0);
 ok('has a pavilion (MARBLE tiles)', s.ground.some((v) => v === G.MARBLE));
 ok('has a pool (WATER tiles)', s.ground.some((v) => v === G.WATER));
 ok('has paved figure-8 (PAVE tiles)', s.ground.some((v) => v === G.PAVE));

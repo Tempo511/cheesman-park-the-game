@@ -93,19 +93,10 @@ function paintTiles(g, groundArr, rows) {
 }
 
 export function renderGround(state) {
-  const { cars } = state;
   const g = groundCv.getContext('2d');
   paintTiles(g, state.ground, MH);
   for (let x = 4; x < MW * T - 4; x += 24) px(g, x, (MH - 2) * T + 7, 12, 2, PAL.dash);
 
-  const carCols = ['#7a8ba0', '#a05a4c', '#c9c3b2', '#4c6b57', '#5a5a80'];
-  cars.forEach((c, i) => {
-    const col = carCols[i % carCols.length], X = c.x * T, Y = c.y * T;
-    if (c.v) { px(g, X + 2, Y - 6, 12, 26, col); px(g, X + 3, Y - 2, 10, 6, '#cfe3ea'); px(g, X + 3, Y + 12, 10, 5, '#cfe3ea');
-      px(g, X + 1, Y - 3, 2, 5, '#222'); px(g, X + 13, Y - 3, 2, 5, '#222'); px(g, X + 1, Y + 11, 2, 5, '#222'); px(g, X + 13, Y + 11, 2, 5, '#222'); }
-    else { px(g, X - 6, Y + 2, 26, 12, col); px(g, X - 2, Y + 3, 6, 10, '#cfe3ea'); px(g, X + 10, Y + 3, 5, 10, '#cfe3ea');
-      px(g, X - 3, Y + 1, 5, 2, '#222'); px(g, X + 11, Y + 1, 5, 2, '#222'); px(g, X - 3, Y + 13, 5, 2, '#222'); px(g, X + 11, Y + 13, 5, 2, '#222'); }
-  });
   g.fillStyle = '#cfc9b6'; g.font = 'bold 9px ui-monospace,monospace'; g.textBaseline = 'middle';
   g.fillText('E  8 T H   A V E', 26 * T, (MH - 1.5) * T);
 
@@ -218,17 +209,9 @@ function drawSideBand(tNow, camX, camY, side) {
   const walkL = east ? W + roadW : roadL - 8;            // far sidewalk + curb
   ctx.fillStyle = '#8d8a80'; ctx.fillRect(walkL - camX, -NORTH_OVER - camY, 8, MH * T + NORTH_OVER);
   ctx.fillStyle = '#7d7a70'; ctx.fillRect((east ? W + roadW : roadL) - camX, -NORTH_OVER - camY, 1, MH * T + NORTH_OVER);
-  const carCols = ['#7a8ba0', '#a05a4c', '#4c6b57', '#5a5a80', '#c9c3b2'];
-  const nCars = east ? 5 : 9, carGap = east ? 17 : 10;   // wider street = busier parking
-  for (let i = 0; i < nCars; i++) {
-    const cy = ((i * carGap + 7) * T) - camY;
-    if (cy < -30 || cy > VH) continue;
-    const cx2 = (east ? W + 8 : roadL + 3) - camX;
-    px(ctx, cx2, cy, 11, 26, carCols[i % 5]);
-    px(ctx, cx2 + 1, cy + 4, 9, 6, '#cfe3ea'); px(ctx, cx2 + 1, cy + 16, 9, 5, '#cfe3ea');
-  }
-  const laneX = east ? W + roadW - 13 : roadL + roadW - 14;   // near-side lane, parked row stays put
-  drawTraffic(tNow, camX, camY, true, laneX, 0, east ? -1 : 1, MH * T + 200, east ? 3 : 4, east ? 44 : 50, east ? 1 : 3);
+  // two-way traffic: southbound on the west lane, northbound on the east lane
+  drawTraffic(tNow, camX, camY, true, roadL + 4, 0, 1, MH * T + 200, east ? 3 : 4, east ? 46 : 52, east ? 1 : 3);
+  drawTraffic(tNow, camX, camY, true, roadL + roadW - 15, 0, -1, MH * T + 200, east ? 3 : 4, east ? 40 : 45, east ? 4 : 7);
   ctx.fillStyle = '#cfc9b6'; ctx.font = 'bold 9px ui-monospace,monospace'; ctx.textBaseline = 'middle';
   for (const ly of [24, 68]) {
     ctx.save(); ctx.translate((east ? W + 11 : roadL + (roadW >> 1)) - camX, ly * T - camY); ctx.rotate(-Math.PI / 2);
@@ -266,7 +249,7 @@ function drawTraffic(t, camX, camY, vertical, laneX, laneY, dir, span, n, speed,
       px(ctx, cx, cy, 11, 24, col);
       px(ctx, cx + 1, cy + (dir > 0 ? 14 : 4), 9, 6, '#cfe3ea');
       if (NA > 0.1) {                                            // headlights
-        ctx.fillStyle = 'rgba(255,240,180,' + (NA * 0.5).toFixed(2) + ')';
+        ctx.fillStyle = 'rgba(240,198,88,' + (NA * 0.55).toFixed(2) + ')';
         const hy = dir > 0 ? cy + 24 : cy - 7;
         ctx.fillRect(cx + 1, hy, 3, 7); ctx.fillRect(cx + 7, hy, 3, 7);
         px(ctx, cx + 2, dir > 0 ? cy - 1 : cy + 24, 2, 1, 'rgba(255,60,50,' + NA.toFixed(2) + ')');
@@ -278,7 +261,7 @@ function drawTraffic(t, camX, camY, vertical, laneX, laneY, dir, span, n, speed,
       px(ctx, cx, cy, 24, 11, col);
       px(ctx, cx + (dir > 0 ? 14 : 4), cy + 1, 6, 9, '#cfe3ea');
       if (NA > 0.1) {
-        ctx.fillStyle = 'rgba(255,240,180,' + (NA * 0.5).toFixed(2) + ')';
+        ctx.fillStyle = 'rgba(240,198,88,' + (NA * 0.55).toFixed(2) + ')';
         const hx = dir > 0 ? cx + 24 : cx - 7;
         ctx.fillRect(hx, cy + 1, 7, 3); ctx.fillRect(hx, cy + 7, 7, 3);
         px(ctx, dir > 0 ? cx - 1 : cx + 24, cy + 2, 1, 2, 'rgba(255,60,50,' + NA.toFixed(2) + ')');
@@ -303,13 +286,6 @@ function drawNorthBand(state, t, camX, camY) {
   ctx.fillStyle = '#8d8a80';                             // far sidewalk + curb
   ctx.fillRect(0, -30 - camY, VW, 8);
   ctx.fillStyle = '#7d7a70'; ctx.fillRect(0, -23 - camY, VW, 1);
-  const carCols = ['#7a8ba0', '#a05a4c', '#4c6b57'];
-  for (let i = 0; i < 3; i++) {                          // parked along the far curb
-    const cx = ((i * 19 + 9) * T) - camX;
-    if (cx < -30 || cx > VW) continue;
-    px(ctx, cx, -21 - camY, 26, 11, carCols[i]);
-    px(ctx, cx + 4, -20 - camY, 6, 9, '#cfe3ea'); px(ctx, cx + 16, -20 - camY, 5, 9, '#cfe3ea');
-  }
   drawTraffic(t, camX, camY, false, 0, -21, 1, MW * T + 200, 4, 52, 0);   // eastbound lane
   drawTraffic(t, camX, camY, false, 0, -10, -1, MW * T + 200, 3, 46, 2);  // westbound lane
   ctx.fillStyle = '#cfc9b6'; ctx.font = 'bold 9px ui-monospace,monospace'; ctx.textBaseline = 'middle';
@@ -343,6 +319,8 @@ export function render(state, t) {
   ctx.fillStyle = '#151a12'; ctx.fillRect(0, 0, VW, VH);   // letterbox if world shorter than view
   ctx.drawImage(inGarden ? gardenCv : groundCv, camX, camY, VW, VH, 0, 0, VW, VH);
   if (!inGarden) {
+    drawTraffic(t, camX, camY, false, 0, (MH - 3) * T + 2, 1, MW * T + 200, 3, 47, 1);   // 8th Ave eastbound
+    drawTraffic(t, camX, camY, false, 0, (MH - 2) * T + 3, -1, MW * T + 200, 3, 42, 5);  // 8th Ave westbound
     if (camX < 0) drawSideBand(t, camX, camY, 'w');
     if (camX + VW > MW * T) drawSideBand(t, camX, camY, 'e');
     if (camY < 0) drawNorthBand(state, t, camX, camY);

@@ -192,5 +192,4 @@ export function buildMap(state, rnd) {
   }
 
   // --- traffic on the surrounding streets ----------------------------------
-  for (let x = 8; x < 58; x += 15) cars.push({ x, y: MH - 2, v: 0 });
 }
