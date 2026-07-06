@@ -8,7 +8,7 @@
 // broadcast the resulting state — no gameplay code changes. Randomness flows
 // through state.simSeed so outcomes are reproducible.
 // ============================================================================
-import { WEAPONS, ZONES, ENEMY_TYPES, ENEMY_ORDER, ARCHETYPES, ARCHETYPE_LEVEL, archName, xpNeed, T, MW, MH, G, GARDEN, SOLID_GROUND, SHOP_POS } from './constants.js';
+import { WEAPONS, ZONES, ENEMY_TYPES, ENEMY_ORDER, ARCHETYPES, ARCHETYPE_LEVEL, archName, xpNeed, T, MW, MH, G, GARDEN, IMPROVEMENTS, HOTDOG, SOLID_GROUND, SHOP_POS } from './constants.js';
 import { gi, inMap, getG } from './tiles.js';
 import { makeRng } from './rng.js';
 
@@ -144,7 +144,7 @@ function updateAmbients(state, dt, rng) {
       // not the empty middle of the huddle
       if (a.kind === 'dogpark') { const o = a.owners[(rng() * a.owners.length) | 0]; a.b.sx = o.x; a.b.sy = o.y; }
       else if (a.kind === 'vb') { const i = (rng() * 4) | 0; a.b.sx = a.px[i]; a.b.sy = a.py[i]; }
-      else if (a.kind === 'dance') { const c = a.crew[(rng() * a.crew.length) | 0]; a.b.sx = c[0] * T; a.b.sy = c[1] * T; }
+      else if (a.kind === 'dance' || a.kind === 'pride') { const c = a.crew[(rng() * a.crew.length) | 0]; a.b.sx = c[0] * T; a.b.sy = c[1] * T; }
       else if (a.kind === 'yoga') { const yg = a.yogis[(rng() * a.yogis.length) | 0]; a.b.sx = yg.x; a.b.sy = yg.y; }
     }
     if (a.kind === 'slack') {
@@ -173,7 +173,7 @@ function updateAmbients(state, dt, rng) {
       }
     }
     if (a.kind === 'ham') a.sway += dt * 1.5;
-    if (a.kind === 'dance') a.beat += dt;
+    if (a.kind === 'dance' || a.kind === 'pride') a.beat += dt;
     if (a.kind === 'dogpark') {
       for (const d of a.dogs) {
         // Sprout notices you: she runs over, accepts one (1) pet, then it's
@@ -752,6 +752,81 @@ export function buyWeapon(state, id) {
   if (state.player.owned.has(id)) { state.player.weapon = id; }
   else if (state.player.coins >= price) { state.player.coins -= price; state.player.owned.add(id); state.player.weapon = id; }
 }
+// --- Park Benefactor projects ------------------------------------------------
+// Clear natural clutter (and its collision) so a new landmark has room.
+// Deterministic: same purchase frame -> same removals in every replay.
+function clearArea(state, x0, y0, x1, y1) {
+  const NAT = new Set(['tree', 'tree2', 'pine', 'bush', 'gplant', 'flower', 'bench']);
+  state.objects = state.objects.filter((o) => {
+    const tx = Math.floor(o.x), ty = Math.floor(o.y);
+    if (tx < x0 || tx > x1 || ty < y0 || ty > y1 || !NAT.has(o.type)) return true;
+    if (inMap(tx, ty)) state.solid[gi(tx, ty)] = 0;
+    return false;
+  });
+}
+
+const PRIDE_PALS = [
+  { skin: '#e8b58a', shirt: '#e23b3b', pants: '#2f3742', hair: '#2b2b2b' },
+  { skin: '#8a5a3a', shirt: '#f08a24', pants: '#3b4a6b', hair: '#1f1a14' },
+  { skin: '#f0c8a0', shirt: '#efd21f', pants: '#555555', hair: '#7a5230' },
+  { skin: '#d9a06f', shirt: '#3fae5a', pants: '#2f3742', hair: '#6b4a2e' },
+  { skin: '#c98e63', shirt: '#3f7fd9', pants: '#463f38', hair: '#2b2b2b' },
+  { skin: '#e8b58a', shirt: '#8e4fd0', pants: '#2f3742', hair: '#7a5230' },
+  { skin: '#f0c8a0', shirt: '#d98aa6', pants: '#3b4a6b', hair: '#1f1a14' },
+  { skin: '#8a5a3a', shirt: '#f2ead6', pants: '#555555', hair: '#2b2b2b' },
+];
+
+function placeImprovement(state, id) {
+  const setSolid = (tx, ty) => { if (inMap(tx, ty)) state.solid[gi(tx, ty)] = 1; };
+  if (id === 'hotdog') {
+    clearArea(state, 39, 52, 42, 56);
+    state.objects.push({ type: 'hotdogstand', x: 40.5, y: 54.6 });
+    setSolid(40, 54);
+  } else if (id === 'pride') {
+    clearArea(state, 22, 59, 31, 66);
+    state.objects.push({ type: 'pridearch', x: 26.5, y: 61.0 });  // no solid: walk under it
+    state.ambients.push({ kind: 'pride', x: 26.5 * T, y: 63.2 * T, cd: 1.5, b: null, beat: 0,
+      crew: [[24.0, 62.2], [26.0, 61.9], [28.4, 62.1], [23.4, 64.3], [25.6, 64.8], [27.8, 64.5], [29.4, 63.4], [26.6, 63.3]],
+      pals: PRIDE_PALS,
+      lines: ['Happy Pride!!', 'You threw this?! Iconic.', 'All of Denver showed UP.',
+        'The ghosts can wait. It\u2019s Pride.', 'This lawn has seen some things. Today it sees JOY.',
+        'Somebody tell the cemetery: love wins.', 'Best park in Denver. No notes.'] });
+  } else if (id === 'blucifer') {
+    clearArea(state, 24, 43, 29, 47);
+    state.objects.push({ type: 'blucifer', x: 26.5, y: 46.4 });
+    setSolid(25, 46); setSolid(26, 46); setSolid(27, 46);
+  }
+}
+
+export function buyImprovement(state, id) {
+  if (state.phase !== 'day' || state.scene !== 'park') return;
+  const imp = IMPROVEMENTS.find((i) => i.id === id); if (!imp) return;
+  logAction(state, 'buyImprovement', id);
+  if (state.improvements.includes(id) || state.player.coins < imp.cost) return;
+  state.player.coins -= imp.cost;
+  state.improvements.push(id);
+  addScore(state, imp.pts);
+  placeImprovement(state, id);
+  const copy = {
+    hotdog: ['\u{1F32D} HOTDOG STAND OPENS \u{1F32D}', 'The pavilion smells incredible. $15 dogs at the cart, heal 25. +' + imp.pts + ' pts'],
+    pride: ['\u{1F3F3}\uFE0F\u200D\u{1F308} PRIDE PARTY ON THE GREAT LAWN \u{1F3F3}\uFE0F\u200D\u{1F308}', 'Rainbows, dancing, all of Denver \u2014 every day, rest of the run. +' + imp.pts + ' pts'],
+    blucifer: ['\u{1F434} THE CITY ERECTS YOUR STATUE \u{1F434}', 'You. Gilded. Riding Blucifer. The eyes glow at night. +' + imp.pts + ' pts'],
+  }[id];
+  emit(state, { type: 'banner', t: copy[0], p: copy[1] });
+}
+
+// $15 dog from your own stand — a second (cheaper, smaller) snack once built
+export function buyHotdog(state) {
+  if (state.phase !== 'day') return;
+  if (!state.improvements.includes('hotdog')) return;
+  logAction(state, 'buyHotdog');
+  const price = effectivePrice(state, HOTDOG.COST);
+  if (state.player.coins >= price && state.player.hp < state.player.maxHp) {
+    state.player.coins -= price;
+    state.player.hp = Math.min(state.player.maxHp, state.player.hp + HOTDOG.HEAL);
+  }
+}
+
 export function buyChile(state) {
   if (state.phase !== 'day') return;
   logAction(state, 'buyChile');   // the kitchen closes at night — no mid-horde heal spam

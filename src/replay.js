@@ -15,7 +15,7 @@
 // — inputs change rarely, so a full run compresses to tens of KB.
 // ============================================================================
 import { createState } from './state.js';
-import { step, buyWeapon, buyChile, chooseArchetype, setStyle, respawn } from './simulate.js';
+import { step, buyWeapon, buyChile, chooseArchetype, setStyle, respawn, buyImprovement, buyHotdog } from './simulate.js';
 import { GAME_VERSION } from './constants.js';
 
 // Quantize analog inputs so what we record is bit-identical to what the sim
@@ -46,7 +46,7 @@ export function finishRecording(rec, state) {
 
 // Re-run a recording through the actual simulation and return what really
 // happened. The claimed score never enters into it.
-const ACTIONS = { buyWeapon, buyChile, chooseArchetype, setStyle };
+const ACTIONS = { buyWeapon, buyChile, chooseArchetype, setStyle, buyImprovement, buyHotdog };
 export function replay(recording) {
   const st = createState(recording.seed);
   st.started = true;

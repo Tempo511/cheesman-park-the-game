@@ -293,6 +293,71 @@ export function buildSprites(rnd) {
   px(x, 68, 58, 12, 10, '#5f7d8a'); px(x, 70, 60, 8, 6, '#7a99a8');   // second pane
   px(x, 0, 76, 104, 5, '#9a947f'); px(x, 0, 79, 104, 3, '#8a8475');   // plinth
   SPR.pyramid = { c, ax: 52, ay: 80 };
+
+  // --- Park Benefactor projects ---------------------------------------------
+  // hotdog stand: striped umbrella, steel cart, vendor in orange & navy
+  c = mkCanvas(40, 44); x = c.getContext('2d');
+  px(x, 4, 2, 32, 3, '#c94f43');                                    // umbrella crown
+  for (let i = 0; i < 4; i++) px(x, 2 + i * 9, 5, 9, 4, i % 2 ? '#c94f43' : '#f2ead6');   // stripes
+  px(x, 2, 9, 36, 1, '#8a3a30');                                    // umbrella rim
+  px(x, 19, 10, 2, 12, '#6b6b70');                                  // pole
+  // vendor peeking over the counter (orange jersey, navy sleeves — go Broncos)
+  px(x, 8, 14, 8, 7, '#f08a24'); px(x, 7, 15, 2, 4, '#1d2f52'); px(x, 15, 15, 2, 4, '#1d2f52');
+  px(x, 9, 9, 6, 6, '#e8b58a'); px(x, 9, 8, 6, 2, '#4a3123');       // head + hair
+  px(x, 10, 12, 1, 1, '#1c1c1c'); px(x, 13, 12, 1, 1, '#1c1c1c');
+  px(x, 4, 21, 32, 14, '#b8bec8'); px(x, 4, 21, 32, 2, '#d8dde4');  // steel cart body
+  px(x, 4, 33, 32, 2, '#7d838d');
+  px(x, 8, 24, 12, 5, '#e8c46a'); px(x, 9, 25, 10, 2, '#c8743f');   // giant hotdog sign
+  px(x, 24, 24, 9, 6, '#3a3a40'); px(x, 25, 25, 7, 1, '#e5c04b');   // menu board
+  px(x, 26, 27, 5, 1, '#9a947f'); px(x, 26, 28, 4, 1, '#9a947f');
+  px(x, 6, 35, 5, 6, '#2f3238'); px(x, 29, 35, 5, 6, '#2f3238');    // wheels
+  px(x, 7, 36, 2, 2, '#6b6b70'); px(x, 30, 36, 2, 2, '#6b6b70');
+  SPR.hotdogstand = { c, ax: 20, ay: 42 };
+
+  // pride party arch: balloon columns + rainbow bands (nothing solid — walk under)
+  c = mkCanvas(96, 46); x = c.getContext('2d');
+  const RB = ['#e23b3b', '#f08a24', '#efd21f', '#3fae5a', '#3f7fd9', '#8e4fd0'];
+  for (let b = 0; b < 6; b++) {                                     // the arc
+    for (let a = 0; a <= 60; a++) {
+      const th = Math.PI * a / 60;
+      const ax2 = 48 + Math.cos(th) * (40 - b * 2.6), ay2 = 34 - Math.sin(th) * (28 - b * 2.2);
+      px(x, ax2 | 0, ay2 | 0, 3, 3, RB[b]);
+    }
+  }
+  for (let i = 0; i < 7; i++) {                                     // balloon columns
+    const by = 40 - i * 4.6;
+    px(x, 4 + ((i % 2) * 3), by | 0, 5, 5, RB[i % 6]); px(x, 87 - ((i % 2) * 3), by | 0, 5, 5, RB[(i + 3) % 6]);
+    px(x, 5 + ((i % 2) * 3), (by + 1) | 0, 1, 1, '#ffffff'); px(x, 88 - ((i % 2) * 3), (by + 1) | 0, 1, 1, '#ffffff');
+  }
+  SPR.pridearch = { c, ax: 48, ay: 44 };
+
+  // Blucifer: the blue mustang, rearing, on a granite plinth. The rider (you,
+  // gilded) and the glowing eyes are drawn live in render.js.
+  c = mkCanvas(56, 68); x = c.getContext('2d');
+  px(x, 8, 58, 40, 9, '#8d8a80'); px(x, 8, 58, 40, 2, '#a8a498');   // plinth
+  px(x, 8, 65, 40, 2, '#6f6c63'); px(x, 22, 61, 12, 3, '#e5c04b');  // brass plaque
+  const B = '#2f6bdc', BD = '#22488f', BH = '#5a8ce8', MN = '#161a22';
+  // hind legs planted on the plinth
+  px(x, 30, 44, 5, 14, B); px(x, 30, 44, 2, 14, BD); px(x, 29, 56, 6, 3, MN);
+  px(x, 38, 42, 5, 16, B); px(x, 41, 42, 2, 16, BD); px(x, 37, 56, 6, 3, MN);
+  // body rising diagonally up-left
+  px(x, 24, 32, 20, 14, B); px(x, 20, 28, 20, 12, B); px(x, 16, 24, 16, 10, B);
+  px(x, 36, 34, 8, 12, BD);                                          // haunch shading
+  px(x, 17, 25, 6, 8, BH); px(x, 22, 30, 6, 6, BH);                  // chest highlight
+  // neck + head, up and proud
+  px(x, 13, 14, 8, 12, B); px(x, 12, 9, 9, 8, B);
+  px(x, 6, 10, 8, 6, B); px(x, 4, 12, 4, 4, B);                      // muzzle
+  px(x, 5, 15, 3, 2, BD);                                            // nostril shade
+  px(x, 14, 6, 4, 4, MN); px(x, 19, 5, 3, 5, MN);                    // ears
+  // mane down the neck + tail arcing behind
+  px(x, 20, 8, 4, 18, MN); px(x, 23, 14, 3, 14, MN);
+  px(x, 43, 28, 4, 10, MN); px(x, 46, 22, 4, 10, MN); px(x, 48, 16, 3, 9, MN);
+  // front legs pawing the air
+  px(x, 10, 26, 4, 10, B); px(x, 8, 34, 4, 5, B); px(x, 7, 37, 4, 3, MN);
+  px(x, 18, 30, 4, 9, B); px(x, 19, 37, 4, 5, B); px(x, 20, 40, 4, 3, MN);
+  // the infamous eye (base red; render adds the night glow)
+  px(x, 10, 11, 2, 2, '#e23b3b');
+  SPR.blucifer = { c, ax: 28, ay: 66 };
   return SPR;
 }
 

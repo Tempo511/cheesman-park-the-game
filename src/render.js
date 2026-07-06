@@ -171,6 +171,19 @@ function nightTarget(state) {
 // Render-side smoothing so abrupt phase changes (early dawn when the last
 // enemy dies, console jumps) ease instead of snapping. Cosmetic only.
 let NA = 0, naLastT = 0;
+
+// Blucifer's rider: YOUR character, gilded — rebuilt when the look changes
+let riderCv = null, riderKey = '';
+function gildedRider(archetype, style) {
+  const key = archetype + '|' + style;
+  if (riderCv && riderKey === key) return riderCv;
+  const c = mkCanvas(26, 28), x2 = c.getContext('2d');
+  drawPlayerChar(x2, 13, 26, 'left', 0, archetype, style, false);
+  x2.globalCompositeOperation = 'source-atop';
+  x2.fillStyle = 'rgba(232,196,106,0.78)'; x2.fillRect(0, 0, 26, 28);
+  riderCv = c; riderKey = key;
+  return c;
+}
 function nightAlpha(state, t) {
   const dt = Math.min(0.1, Math.max(0, t - naLastT)); naLastT = t;
   const target = nightTarget(state);
@@ -250,6 +263,27 @@ export function render(state, t) {
     if (o.type === 'cart' && state.phase === 'day' && Math.hypot(player.x - SHOP_POS.x, player.y - SHOP_POS.y) < 70) {
       ctx.fillStyle = '#e5c04b'; ctx.font = '7px ui-monospace,monospace';
       ctx.fillText('SHOP', o.x * T - 9 - camX, o.y * T - 34 - camY);
+    }
+    if (o.type === 'hotdogstand') {                    // grill steam, always cooking
+      for (let k = 0; k < 3; k++) {
+        const ph = (t * 0.5 + k * 0.37) % 1;
+        const sx = o.x * T - 6 + k * 5 + Math.sin(t * 2.1 + k * 2.6) * 2;
+        const sy = o.y * T - 32 - ph * 14;
+        px(ctx, (sx | 0) - camX, (sy | 0) - camY, 2, 2, 'rgba(222,222,222,' + (0.55 * (1 - ph)).toFixed(2) + ')');
+      }
+    }
+    if (o.type === 'blucifer') {
+      ctx.drawImage(gildedRider(player.archetype, player.style),
+        ((o.x * T - 13 + 1) - camX) | 0, ((o.y * T - 66 + 4) - camY) | 0);
+      const ex = (o.x * T - 28 + 11) - camX, ey = (o.y * T - 66 + 12) - camY;
+      if (NA > 0.15) {                                 // the eye. it glows. it watches.
+        const pulse = 0.35 + Math.sin(t * 3.2) * 0.18;
+        const g = ctx.createRadialGradient(ex + 1, ey + 1, 0, ex + 1, ey + 1, 7);
+        g.addColorStop(0, 'rgba(255,40,30,' + (NA * pulse).toFixed(2) + ')');
+        g.addColorStop(1, 'rgba(255,40,30,0)');
+        ctx.fillStyle = g; ctx.fillRect(ex - 6, ey - 6, 14, 14);
+        px(ctx, ex | 0, ey | 0, 2, 2, '#ff3b2b');
+      }
     }
   } });
   ents.push({ y: player.y, draw: () => {
@@ -338,6 +372,17 @@ export function render(state, t) {
       px(ctx, (57.6 * T + 1 | 0) - camX, (45.4 * T + 1 | 0) - camY, 1, 1, '#e5c04b');
       const nn = Math.floor(a.beat * 2.2) % 2;
       px(ctx, (58 * T | 0) - camX, (44.2 * T - nn * 2 | 0) - camY, 2, 2, '#f2ead6');
+    } });
+    if (a.kind === 'pride') ents.push({ y: a.y, draw: () => {
+      const f = Math.floor(a.beat * 2.6) % 4;
+      a.crew.forEach((cc, i) => drawDancer(ctx, (cc[0] * T | 0) - camX, (cc[1] * T | 0) - camY, (f + i) % 4, a.pals[i]));
+      const CONF = ['#e23b3b', '#f08a24', '#efd21f', '#3fae5a', '#3f7fd9', '#8e4fd0'];
+      for (let i = 0; i < 24; i++) {                   // confetti, forever
+        const ph = (t * (0.35 + (i % 5) * 0.09) + i * 0.41) % 1;
+        const cx = a.x + Math.sin(i * 2.39) * 5.2 * T + Math.sin(t * 1.6 + i) * 5;
+        const cy = a.y - 52 + ph * 58;
+        px(ctx, (cx | 0) - camX, (cy | 0) - camY, 2, 2, CONF[i % 6]);
+      }
     } });
     if (a.kind === 'stoner') ents.push({ y: a.y, draw: () => {
       const ax = (a.x | 0) - camX, ay = (a.y | 0) - camY;

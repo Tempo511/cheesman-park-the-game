@@ -5,7 +5,7 @@
 
 // Bump whenever a change affects the SIMULATION (balance, mechanics, scoring):
 // leaderboard replays are only valid against the version that recorded them.
-export const GAME_VERSION = '1.1.1';
+export const GAME_VERSION = '1.2.0';
 
 export const T = 16;                 // tile size in pixels
 export const MW = 72, MH = 92;       // map width/height in tiles
@@ -111,7 +111,21 @@ export const ENEMY_ORDER = ['zombie', 'ghost', 'vampire', 'werewolf', 'alien'];
 export const ARCHETYPE_LEVEL = 3;
 
 // Ranger rescues per run: die this many times and the run is over.
-export const MAX_LIVES = 3;
+// (2 keeps good runs in the 8-15 minute arcade sweet spot)
+export const MAX_LIVES = 2;
+
+// Park Benefactor projects: the late-game money sink. Weapons top out around
+// $1,100 — past that, a rich ranger spends their fortune improving the park.
+// One-time purchases, escalating points-per-dollar so saving up is rewarded.
+export const IMPROVEMENTS = [
+  { id: 'hotdog', icon: '\u{1F32D}', name: 'Hotdog Stand', cost: 1000, pts: 300,
+    ds: 'A vendor sets up by the pavilion. Sells $15 dogs (heal 25).' },
+  { id: 'pride', icon: '\u{1F3F3}\uFE0F\u200D\u{1F308}', name: 'Throw a Pride Party', cost: 3000, pts: 1000,
+    ds: 'Rainbow arch and a dance party on the Great Lawn — every day, all run.' },
+  { id: 'blucifer', icon: '\u{1F434}', name: 'Statue of You on Blucifer', cost: 5000, pts: 2000,
+    ds: 'You, gilded, astride the blue mustang. The eyes glow red at night.' },
+];
+export const HOTDOG = { COST: 15, HEAL: 25 };
 // display name for an archetype, honoring the player's chosen style
 export const archName = (a, style) => (style === 'f' && a.nameF) ? a.nameF : a.name;
 

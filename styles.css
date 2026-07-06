@@ -197,12 +197,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:#151a12;touch-action
   #shopItems .st{font-size:8px}
   #shopItems .ds{font-size:8px;line-height:1.25}
   #shopItems .buy{padding:5px 7px;font-size:8.5px;border-width:2px}
+  #impItems{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px}
+  #impItems .item{margin-bottom:0;padding:5px 6px;gap:6px;border-width:2px}
+  #impItems .ic{width:24px;height:24px;border-width:2px;font-size:13px}
+  #impItems .nm{font-size:9.5px}
+  #impItems .st{font-size:8px}
+  #impItems .ds{display:none}
+  #impItems .buy{padding:5px 7px;font-size:8.5px;border-width:2px}
 }
 /* shop */
 #shop{display:none}
 .item{display:flex;align-items:center;gap:10px;border:2px solid var(--ink);padding:8px;margin-bottom:8px;
   background:#faf5e6;text-align:left}
 .item .ic{width:34px;height:34px;image-rendering:pixelated;flex:none;border:2px solid var(--ink);background:#e8e0c8}
+.item .impic{display:flex;align-items:center;justify-content:center;font-size:17px}
 .item .portrait{width:52px;height:56px;image-rendering:pixelated;flex:none;border:2px solid var(--ink)}
 .item .nm{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .item .ds{font-size:10.5px;color:#4a4436;line-height:1.35}

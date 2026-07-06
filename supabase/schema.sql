@@ -32,11 +32,15 @@ create table public.scores (
 --   dawns:     100 x night at each dawn survived  -> 50*N*(N-1)
 --   bosses:    150 x night on nights 5,10,15... <= N
 --   daytime:   squirrels/pets are time-capped; 350/day is generous, N+1 days
+--   gardens:   one run per boss night; 30 flowers x 15 + 100 perfect = 550 each
+--   benefactor: one-time park projects, 300 + 1000 + 2000 = 3300 max, ever
 create or replace function public.max_plausible_score(n int, k int)
 returns int language sql immutable as $$
   select 200 + 2*k + 50*n*(n-1)
        + coalesce((select sum(150*b)::int from generate_series(5, greatest(n,0), 5) as b), 0)
-       + 350*(n+1);
+       + 350*(n+1)
+       + 550 * (greatest(n,0) / 5)
+       + 3300;
 $$;
 
 create or replace function public.scores_guard()

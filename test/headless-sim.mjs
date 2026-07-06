@@ -8,8 +8,8 @@
 //   node test/headless-sim.mjs
 // ============================================================================
 import { createState, toSaveData, applySaveData, DEFAULT_SEED } from '../src/state.js';
-import { step, respawn, buyWeapon, buyChile, nearShop, chooseArchetype, setStyle, weaponPrice, ability1State, ability2State, startGardenRun } from '../src/simulate.js';
-import { G, T, WEAPONS, ENEMY_TYPES, xpNeed } from '../src/constants.js';
+import { step, respawn, buyWeapon, buyChile, buyImprovement, buyHotdog, nearShop, chooseArchetype, setStyle, weaponPrice, ability1State, ability2State, startGardenRun } from '../src/simulate.js';
+import { G, T, WEAPONS, ENEMY_TYPES, IMPROVEMENTS, xpNeed } from '../src/constants.js';
 import { gi } from '../src/tiles.js';
 
 let passed = 0, failed = 0;
@@ -615,6 +615,50 @@ ok('nearShop true at the cart', nearShop(sh) === true);
 sh.player.x = 0; sh.player.y = 0;
 ok('nearShop false far away', nearShop(sh) === false);
 
+// --- 8b. Park Benefactor projects -------------------------------------------
+section('Park Benefactor projects');
+const bf = createState(); bf.started = true; bf.phase = 'day';
+bf.player.coins = 9000;
+const bfS0 = bf.parkScore;
+buyImprovement(bf, 'hotdog');
+ok('hotdog stand costs $1000', bf.player.coins === 8000);
+ok('hotdog stand awards +300 pts', bf.parkScore === bfS0 + 300);
+ok('hotdog stand object placed', bf.objects.some((o) => o.type === 'hotdogstand'));
+ok('hotdog stand tile is solid', bf.solid[gi(40, 54)] === 1);
+ok('purchase recorded for replay', bf.actionLog.some((a) => a.a === 'buyImprovement' && a.v === 'hotdog'));
+buyImprovement(bf, 'hotdog');
+ok('improvements are one-time (no double charge)', bf.player.coins === 8000 && bf.parkScore === bfS0 + 300);
+bf.player.hp = 40;
+buyHotdog(bf);
+ok('hotdog snack heals 25 for $15', bf.player.hp === 65 && bf.player.coins === 7985);
+buyImprovement(bf, 'pride');
+ok('pride party costs $3000 / +1000 pts', bf.player.coins === 4985 && bf.parkScore === bfS0 + 1300);
+ok('pride party spawns the crowd + arch', bf.ambients.some((a) => a.kind === 'pride') && bf.objects.some((o) => o.type === 'pridearch'));
+buyImprovement(bf, 'blucifer');
+ok('Blucifer costs $5000... which we no longer have', bf.player.coins === 4985 && !bf.improvements.includes('blucifer'));
+bf.player.coins = 5000;
+buyImprovement(bf, 'blucifer');
+ok('Blucifer statue built (+2000 pts, solid plinth)', bf.parkScore === bfS0 + 3300 && bf.objects.some((o) => o.type === 'blucifer') && bf.solid[gi(26, 46)] === 1);
+ok('a rich run can fund all three projects', bf.improvements.length === IMPROVEMENTS.length);
+bf.improvements.length = 0; bf.player.coins = 9000; bf.phase = 'night';
+buyImprovement(bf, 'hotdog');
+ok('construction crews clock out at night', bf.player.coins === 9000 && bf.improvements.length === 0);
+bf.phase = 'day'; bf.scene = 'garden';
+buyImprovement(bf, 'hotdog');
+ok('no construction inside the Botanic Gardens', bf.player.coins === 9000 && bf.improvements.length === 0);
+const bh2 = createState(); bh2.started = true; bh2.phase = 'day';
+bh2.player.coins = 100; bh2.player.hp = 40;
+buyHotdog(bh2);
+ok('no hotdogs without a stand', bh2.player.hp === 40 && bh2.player.coins === 100);
+// crowd animates deterministically and speaks from a member's mouth
+const pr = createState(); pr.started = true; pr.phase = 'day'; pr.player.coins = 9000;
+buyImprovement(pr, 'hotdog'); buyImprovement(pr, 'pride');
+const pa = pr.ambients.find((a) => a.kind === 'pride');
+pr.player.x = pa.x; pr.player.y = pa.y;
+for (let i = 0; i < 240; i++) step(pr, NO_INPUT, 1 / 60);
+ok('pride crowd keeps the beat', pa.beat > 3.5);
+ok('pride crowd chats with you (speaker-anchored)', pa.b && typeof pa.b.sx === 'number');
+
 // --- 9. death / respawn -----------------------------------------------------
 section('Death & respawn');
 const d = createState(); d.started = true;
@@ -624,9 +668,9 @@ d.enemies.push({ kind: 'zombie', x: d.player.x, y: d.player.y, hp: 999, maxHp: 9
 for (let i = 0; i < 120 && !d.dead; i++) step(d, NO_INPUT, 1 / 60);
 ok('player dies at 0 HP', d.dead === true && d.paused === true);
 ok('death emits a death event', d.events.some((e) => e.type === 'death'));
-ok('first death burns a life (3 -> 2)', d.lives === 2 && d.gameOver === false);
+ok('first death burns a life (2 -> 1)', d.lives === 1 && d.gameOver === false);
 const dEv = d.events.find((e) => e.type === 'death');
-ok('death event reports remaining lives', dEv && dEv.lives === 2);
+ok('death event reports remaining lives', dEv && dEv.lives === 1);
 const coinsAtDeath = d.player.coins = 100;
 d.player.dashT = 0.5; d.player.hasteT = 3; d.player.shieldT = 2; d.player.ab1Cd = 4; // died mid-buff
 respawn(d);
@@ -645,9 +689,8 @@ const killPlayer = () => {
   for (let i = 0; i < 120 && !g3.dead; i++) step(g3, NO_INPUT, 1 / 60);
 };
 killPlayer(); respawn(g3);
-killPlayer(); respawn(g3);
 killPlayer();
-ok('third death is game over', g3.lives === 0 && g3.gameOver === true && g3.dead === true);
+ok('second death is game over', g3.lives === 0 && g3.gameOver === true && g3.dead === true);
 const goEv = g3.events.filter((e) => e.type === 'death').pop();
 ok('game-over death event has lives 0 + bestScore', goEv && goEv.lives === 0 && typeof goEv.bestScore === 'number');
 respawn(g3);
@@ -680,6 +723,8 @@ section('Replay recording');
   for (let i = 0; i < 3200; i++) {                  // ~54s: through dusk into night 1
     if (i === 120) chooseArchetype(live, 'jogger'); // mid-run action (logged)
     if (i === 600) buyWeapon(live, 'leash');        // action even if unaffordable (no-op both sides)
+    if (i === 700) buyImprovement(live, 'hotdog'); // unaffordable: identical no-op in the replay
+    if (i === 900) buyHotdog(live);                // no stand yet: same
     if (live.paused) continue;
     const seg = (i / 25) | 0;                       // inputs held for 25-frame stretches (RLE-friendly)
     const raw = { move: { x: Math.sin(seg) * 0.83, y: Math.cos(seg * 1.3) * 0.61 }, attack: (i % 120) < 60, ability1: i % 400 === 0, ability2: false };

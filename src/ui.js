@@ -5,8 +5,8 @@
 // simulation) to show toasts / the death card. Shop purchases call the
 // authoritative sim functions so the same rules apply everywhere.
 // ============================================================================
-import { WEAPONS, WEAPON_ORDER, xpNeed, ARCHETYPES, ARCHETYPE_ORDER, MAX_LIVES, archName, ENEMY_TYPES } from './constants.js';
-import { nearShop, buyWeapon, buyChile, chooseArchetype, setStyle, weaponPrice, effectivePrice, ability1State, ability2State, startGardenRun } from './simulate.js';
+import { WEAPONS, WEAPON_ORDER, IMPROVEMENTS, HOTDOG, xpNeed, ARCHETYPES, ARCHETYPE_ORDER, MAX_LIVES, archName, ENEMY_TYPES } from './constants.js';
+import { nearShop, buyWeapon, buyChile, buyImprovement, buyHotdog, chooseArchetype, setStyle, weaponPrice, effectivePrice, ability1State, ability2State, startGardenRun } from './simulate.js';
 import { mkCanvas, px, drawPlayerChar } from './sprites.js';
 import { leaderboardEnabled, submitScore, fetchTop, fetchRank, cleanName } from './leaderboard.js';
 import { GAME_VERSION } from './constants.js';
@@ -43,6 +43,7 @@ export function initUI(state, { onStart, onRespawn, onNewRun, getRecording: getR
   $('closeShop').addEventListener('click', closeShop);
   btnShop.addEventListener('click', () => { if (nearShop(S)) openShop(); });
   $('buyChile').addEventListener('click', () => { buyChile(S); refreshShop(); });
+  $('buyHotdog').addEventListener('click', () => { buyHotdog(S); refreshShop(); });
   $('respawn').addEventListener('click', () => { onRespawn && onRespawn(); });
   $('newRun').addEventListener('click', () => { onNewRun && onNewRun(); });
   $('start').addEventListener('click', () => { $('intro').style.display = 'none'; onStart && onStart(); });
@@ -286,6 +287,20 @@ function buildShop() {
     div.dataset.wid = id;
     shopItemsEl.appendChild(div);
   }
+  const impEl = $('impItems'); impEl.innerHTML = '';
+  for (const imp of IMPROVEMENTS) {
+    const div = document.createElement('div'); div.className = 'item';
+    const ic = document.createElement('div'); ic.className = 'ic impic'; ic.textContent = imp.icon;
+    div.appendChild(ic);
+    const mid = document.createElement('div');
+    mid.innerHTML = `<div class="nm">${imp.name}</div><div class="st">ONE-TIME · +${imp.pts} PTS</div><div class="ds">${imp.ds}</div>`;
+    div.appendChild(mid);
+    const b = document.createElement('button'); b.className = 'buy';
+    div.appendChild(b);
+    b.addEventListener('click', () => { buyImprovement(S, imp.id); refreshShop(); });
+    div.dataset.iid = imp.id;
+    impEl.appendChild(div);
+  }
 }
 
 function refreshShop() {
@@ -296,6 +311,21 @@ function refreshShop() {
     else if (S.player.owned.has(id)) { b.textContent = 'Equip'; b.className = 'buy'; b.disabled = false; }
     else { const price = weaponPrice(S, id); b.textContent = '$' + price; b.className = 'buy'; b.disabled = S.player.coins < price; }
   }
+  for (const div of $('impItems').children) {
+    const imp = IMPROVEMENTS.find((i) => i.id === div.dataset.iid), b = div.querySelector('.buy');
+    if (S.improvements.includes(imp.id)) { b.textContent = 'Built ✓'; b.className = 'buy equipped'; b.disabled = true; }
+    else { b.textContent = '$' + imp.cost; b.className = 'buy'; b.disabled = S.phase !== 'day' || S.player.coins < imp.cost; }
+  }
+  const bh = $('buyHotdog');
+  if (S.improvements.includes('hotdog')) {
+    bh.style.display = '';
+    const hp2 = effectivePrice(S, HOTDOG.COST);
+    if (S.phase !== 'day') { bh.textContent = 'Hotdog — stand closed till dawn \u{1F319}'; bh.disabled = true; }
+    else {
+      bh.textContent = 'Hotdog from your stand — $' + hp2 + ' (heal ' + HOTDOG.HEAL + ')';
+      bh.disabled = S.player.coins < hp2 || S.player.hp >= S.player.maxHp;
+    }
+  } else bh.style.display = 'none';
   const cp = effectivePrice(S, 25);
   const bc = $('buyChile');
   if (S.phase !== 'day') {                        // kitchen keeps day hours
