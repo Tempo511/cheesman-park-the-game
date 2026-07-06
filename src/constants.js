@@ -5,7 +5,7 @@
 
 // Bump whenever a change affects the SIMULATION (balance, mechanics, scoring):
 // leaderboard replays are only valid against the version that recorded them.
-export const GAME_VERSION = '1.1.0';
+export const GAME_VERSION = '1.1.1';
 
 export const T = 16;                 // tile size in pixels
 export const MW = 72, MH = 92;       // map width/height in tiles
@@ -136,7 +136,7 @@ export const ARCHETYPES = {
     regen:2, superRes:0.25,
     pal:{ skin:'#d9a06f', shirt:'#8e6fb8', pants:'#4c6b57', hair:'#6b4a2e' }, prop:'shades',
     ability1:{ name:'Second Wind', icon:'✦', level:5, cd:11, healFrac:0.4, dur:4, resist:0.4, desc:'Instantly heal 40% of max HP and take 40% less damage for 4s.' },
-    ability2:{ name:'Smoke Cloud', icon:'☁', level:8, cd:20, dur:7.5, radius:76, slow:0.35, desc:'A chill haze: enemies inside crawl and are too mellow to attack you.' } },
+    ability2:{ name:'Smoke Cloud', icon:'☁', level:8, cd:20, dur:7.5, radius:76, slow:0.35, amp:1.35, desc:'A chill haze: enemies inside crawl, can’t attack — and take 35% more damage.' } },
   jogger: { id:'jogger', name:'🏃 Jogger',
     flavor:'On your left! Altitude-trained and too fast to pin down.',
     perkText:'+30% speed · −25% damage while moving',

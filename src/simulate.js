@@ -394,8 +394,12 @@ function tryAttack(state, rng) {
 
 function damageEnemy(state, e, dmg, kx, ky, rng) {
   const km = (perk(state).knockMult || 1) * (ENEMY_TYPES[e.kind].boss ? 0.15 : 1); // bosses barely budge
+  let amped = false;                                     // dazed in the smoke: take extra
+  for (const c of state.clouds) {
+    if (c.amp && Math.hypot(e.x - c.x, e.y - c.y) < c.r) { dmg *= c.amp; amped = true; break; }
+  }
   e.hp -= dmg; e.hitT = 0.1; e.kx += (kx || 0) * km; e.ky += (ky || 0) * km;
-  addFloat(state, e.x + (rng() * 8 - 4), e.y - 18, Math.round(dmg), '#fff');
+  addFloat(state, e.x + (rng() * 8 - 4), e.y - 18, Math.round(dmg), amped ? '#b9e37a' : '#fff');
   if (e.hp <= 0) killEnemy(state, e, true, rng);
 }
 
@@ -602,7 +606,7 @@ function useAbility2(state, rng) {
     state.drone = { ttl: ab.dur, fireCd: 0.4, x: p.x + 16, y: p.y - 30 };
     addFloat(state, p.x, p.y - 26, 'DRONE ONLINE', '#7fd0ff');
   } else if (p.archetype === 'hippie') {         // Smoke Cloud
-    state.clouds.push({ x: p.x, y: p.y - 6, r: ab.radius, ttl: ab.dur, slow: ab.slow });
+    state.clouds.push({ x: p.x, y: p.y - 6, r: ab.radius, ttl: ab.dur, slow: ab.slow, amp: ab.amp });
     addFloat(state, p.x, p.y - 26, 'chill…', '#b9c79a');
   } else if (p.archetype === 'jogger') {         // Bolder Boulder: weaponized momentum
     p.boulderT = ab.dur; p.hasteT = ab.dur; p.hasteMoveMult = ab.speed; p.hasteRateMult = 1;

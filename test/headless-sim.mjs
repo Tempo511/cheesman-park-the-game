@@ -411,6 +411,17 @@ const cFoe = mkFoe(sc, 230, 0, 500); sc.clouds[0].x = cFoe.x; sc.clouds[0].ttl =
 const cx0 = cFoe.x, rx0 = refFoe.x;
 for (let i = 0; i < 30; i++) { step(sc, ULT_OFF, 1 / 60); step(scRef, ULT_OFF, 1 / 60); }
 ok('clouded enemies move slower', (cx0 - cFoe.x) < (rx0 - refFoe.x) * 0.7);
+// amp: the same paddle hit does 35% more inside the cloud
+const hitFor = (useCloud) => {
+  const st = withTribe('hippie', 8);
+  st.player.weapon = 'paddle'; st.player.owned.add('paddle');
+  const foe = mkFoe(st, 20, 0, 5000);
+  if (useCloud) st.clouds.push({ x: foe.x, y: foe.y, r: 76, ttl: 99, slow: 0.35, amp: 1.35 });
+  st.player.fx = 1; st.player.fy = 0; st.player.atkCd = 0;
+  step(st, { move: { x: 0, y: 0 }, attack: true }, 1 / 60);
+  return foe.maxHp - foe.hp;
+};
+ok('smoke cloud amplifies damage taken inside', Math.abs(hitFor(true) - hitFor(false) * 1.35) < 0.01);
 
 // hitting an ability level announces the unlock (so the UI can show the key)
 const au = createState(); au.started = true; au.player.archetype = 'tech'; au.player.level = 4;
