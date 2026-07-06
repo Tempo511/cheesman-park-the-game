@@ -150,7 +150,7 @@ export const ARCHETYPES = {
     dodge:0.25, stillRegen:2,
     pal:{ skin:'#f0c8a0', shirt:'#7fb4b4', pants:'#e8e4d4', hair:'#4a3123' },
     ability1:{ name:'Flow Roll', icon:'↻', level:5, cd:5, rollSpd:380, rollTime:0.22, desc:'A quick invincible roll — dodge anything, reposition free.' },
-    ability2:{ name:'Zen Mode', icon:'☯', level:8, cd:22, dur:5, slow:0.3, regen:9, strike:1.5, desc:'5s of clarity: enemies crawl at 30% speed, your hits do +50% damage, and you heal 9 HP/s.' } },
+    ability2:{ name:'Zen Mode', icon:'☯', level:8, cd:22, dur:7, slow:0.3, regen:9, strike:1.5, desc:'7s of clarity: enemies crawl at 30% speed, your hits do +50% damage, and you heal 9 HP/s.' } },
 };
 export const ARCHETYPE_ORDER = ['volleyball', 'tech', 'hippie', 'jogger', 'yogi'];
 
