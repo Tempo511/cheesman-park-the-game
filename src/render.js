@@ -155,8 +155,8 @@ export function buildMini() {
 // fade-in term here caused a one-second daylight flash at nightfall), easing
 // out over the final second before dawn.
 function nightTarget(state) {
-  if (state.phase === 'night') return Math.min(0.42, state.phaseT * 0.5);
-  return Math.min(0.42, Math.max(0, (3 - state.phaseT) * 0.2)); // pre-dusk ramp
+  if (state.phase === 'night') return Math.min(0.46, state.phaseT * 0.5);
+  return Math.min(0.46, Math.max(0, (3 - state.phaseT) * 0.2)); // pre-dusk ramp
 }
 // Render-side smoothing so abrupt phase changes (early dawn when the last
 // enemy dies, console jumps) ease instead of snapping. Cosmetic only.
