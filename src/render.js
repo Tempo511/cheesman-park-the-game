@@ -116,6 +116,11 @@ export function renderGround(state) {
   g.fillText('F R A N K L I N   S T', 0, 0); g.restore();
   g.fillStyle = 'rgba(20,40,20,.55)'; g.font = 'bold 8px ui-monospace,monospace';
   g.fillText('DENVER BOTANIC GARDENS', 64.3 * T, 25 * T);
+  g.textAlign = 'center'; g.fillStyle = 'rgba(30,34,26,.72)'; g.font = 'bold 7px ui-monospace,monospace';
+  g.fillText('PARK TOWERS', 27 * T, 3.55 * T);
+  g.fillText('ONE CHEESMAN PLACE', 36.5 * T, 3.55 * T);
+  g.fillText('TEARS-McFARLANE HOUSE', 45.7 * T, 3.55 * T);
+  g.textAlign = 'start';
 }
 
 export function renderGardenGround(state) {
