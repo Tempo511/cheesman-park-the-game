@@ -140,6 +140,12 @@ function updateAmbients(state, dt, rng) {
     if (a.cd <= 0 && Math.hypot(player.x - hx, player.y - hy) < 52) {
       const pool = (a.kind === 'stoner' && state.phase === 'night') ? a.nightLines : a.lines;
       a.b = { txt: pool[(rng() * pool.length) | 0], t: 2.8 }; a.cd = 9 + rng() * 6;
+      // group ambients: the line comes out of an actual member's mouth,
+      // not the empty middle of the huddle
+      if (a.kind === 'dogpark') { const o = a.owners[(rng() * a.owners.length) | 0]; a.b.sx = o.x; a.b.sy = o.y; }
+      else if (a.kind === 'vb') { const i = (rng() * 4) | 0; a.b.sx = a.px[i]; a.b.sy = a.py[i]; }
+      else if (a.kind === 'dance') { const c = a.crew[(rng() * a.crew.length) | 0]; a.b.sx = c[0] * T; a.b.sy = c[1] * T; }
+      else if (a.kind === 'yoga') { const yg = a.yogis[(rng() * a.yogis.length) | 0]; a.b.sx = yg.x; a.b.sy = yg.y; }
     }
     if (a.kind === 'slack') {
       if (a.fall > 0) { a.fall -= dt; if (a.fall <= 0) { a.wob = 0; } continue; }

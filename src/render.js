@@ -532,7 +532,8 @@ export function renderFx(state) {
   if (state.phase === 'day') for (const n of state.npcs) if (n.b) items.push([n.x, n.y, n.b.txt]);
   for (const a of state.ambients) {
     if (!ambientActive(state, a) || !a.b) continue;
-    const hx = a.kind === 'vb' ? a.nx : a.x, hy = a.kind === 'vb' ? a.ny - 10 : a.y;
+    const hx = a.b.sx ?? (a.kind === 'vb' ? a.nx : a.x);
+    const hy = a.b.sy ?? (a.kind === 'vb' ? a.ny - 10 : a.y);
     items.push([hx, hy, a.b.txt]);
   }
   fctx.font = '600 11px ui-monospace,Menlo,Consolas,monospace';
