@@ -50,7 +50,8 @@ begin
   -- (client filters too, but direct API posts bypass the client)
   new.name := left(btrim(coalesce(new.name, '')), 16);
   if new.name = ''
-     or new.name ~* '(fuck|shit|bitch|cunt|dick|nigg|fagg|rape)' then
+     or regexp_replace(translate(lower(new.name), '013457８8@$!', 'oieast88asi'), '[^a-z]', '', 'g')
+        ~ '(fuck|shit|bitch|cunt|dick|nigg|fagg|rape|whore|slut|penis|vagin|porn|tranny|kike|hitler|nazi)' then
     new.name := 'Ranger';
   end if;
   -- kills are bounded by what the game can actually spawn

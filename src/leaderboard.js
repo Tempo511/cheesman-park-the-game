@@ -16,13 +16,23 @@ const HEADERS = () => ({
 });
 
 // mild client-side name hygiene (the flyer will be read by kids)
-const BAD = ['fuck', 'shit', 'bitch', 'cunt', 'dick', 'nigg', 'fagg', 'rape'];
+// Profanity check with evasion normalization — the same approach filter
+// libraries use (leet map + strip + collapse), with a list sized for a park
+// leaderboard. Kept dependency-free like everything else in the game.
+const BAD = ['fuck', 'shit', 'bitch', 'cunt', 'dick', 'nigg', 'fagg', 'rape',
+  'whore', 'slut', 'penis', 'vagin', 'porn', 'tranny', 'kike', 'hitler', 'nazi'];
+const LEET = { 0: 'o', 1: 'i', 3: 'e', 4: 'a', 5: 's', 7: 't', 8: 'b', '@': 'a', '$': 's', '!': 'i' };
+export function nameFlagged(raw) {
+  const norm = String(raw || '').toLowerCase()
+    .split('').map((c) => LEET[c] || c).join('')
+    .replace(/[^a-z]/g, '');
+  const squeezed = norm.replace(/(.)\1+/g, '$1');   // fuuuck -> fuck
+  return BAD.some((w) => norm.includes(w) || squeezed.includes(w));
+}
 export function cleanName(raw) {
-  let n = String(raw || '').trim().slice(0, 16);
+  const n = String(raw || '').trim().slice(0, 16);
   if (!n) return 'Ranger';
-  const low = n.toLowerCase();
-  if (BAD.some((w) => low.includes(w))) return 'Ranger';
-  return n;
+  return nameFlagged(n) ? 'Ranger' : n;
 }
 
 // Submit a finished run. Returns { ok, error? }.

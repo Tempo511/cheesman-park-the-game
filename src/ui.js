@@ -8,7 +8,7 @@
 import { WEAPONS, WEAPON_ORDER, IMPROVEMENTS, HOTDOG, xpNeed, ARCHETYPES, ARCHETYPE_ORDER, MAX_LIVES, archName, ENEMY_TYPES } from './constants.js';
 import { nearShop, buyWeapon, buyChile, buyImprovement, buyHotdog, chooseArchetype, setStyle, weaponPrice, effectivePrice, ability1State, ability2State, startGardenRun } from './simulate.js';
 import { mkCanvas, px, drawPlayerChar } from './sprites.js';
-import { leaderboardEnabled, submitScore, fetchTop, fetchRank, cleanName } from './leaderboard.js';
+import { leaderboardEnabled, submitScore, fetchTop, fetchRank, cleanName, nameFlagged } from './leaderboard.js';
 import { GAME_VERSION } from './constants.js';
 import * as CONSTS from './constants.js';
 
@@ -87,7 +87,12 @@ function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&a
 
 async function postScore() {
   const btn = $('lbSubmit');
-  const name = cleanName($('lbName').value);
+  const raw = $('lbName').value;
+  if (nameFlagged(raw)) {                 // honest users get told; trolls get the server backstop
+    toast('\u{1F6AB} Not that name', 'The park rangers vetoed it. Pick another.', 4000);
+    return;
+  }
+  const name = cleanName(raw);
   $('lbName').value = name;
   try { localStorage.setItem('cheesman.name', name); } catch (e) { /* fine */ }
   btn.disabled = true; btn.textContent = 'Posting…';
