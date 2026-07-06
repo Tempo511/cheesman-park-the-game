@@ -5,7 +5,7 @@
 // the same authoritative world independently (each with its own camera on its
 // own player). Nothing here feeds back into the simulation.
 // ============================================================================
-import { T, MW, MH, GH, G, PAL, ZONES, GARDEN, SHOP_POS, ENEMY_TYPES } from './constants.js';
+import { T, MW, MH, GH, G, PAL, ZONES, GARDEN, SHOP_POS, ENEMY_TYPES, ARCHETYPES } from './constants.js';
 import { gi, getG } from './tiles.js';
 import { ambientActive } from './simulate.js';
 import {
@@ -516,10 +516,34 @@ export function render(state, t) {
       ctx.fillStyle = grd; ctx.fillRect(ax - r, ay - r, r * 2, r * 2);
     }
   }
-  // zen mode: the world takes on a lavender calm
+  // zen mode: the world takes on a lavender calm — with the light to match
   if (state.zenT > 0) {
     ctx.fillStyle = 'rgba(142,111,184,' + (0.1 + Math.sin(t * 3) * 0.03) + ')';
     ctx.fillRect(0, 0, VW, VH);
+    // motes of light drifting up through the stillness
+    for (let i = 0; i < 26; i++) {
+      const h = ((i * 2654435761) % 1000) / 1000;
+      const sx = (h * VW + Math.sin(t * 0.7 + i) * 14 + VW) % VW;
+      const sy = VH - ((t * (10 + h * 14) + h * VH * 3) % VH);
+      ctx.globalAlpha = Math.max(0, 0.45 + Math.sin(t * 5 + i * 1.7) * 0.4);
+      px(ctx, sx | 0, sy | 0, i % 4 === 0 ? 2 : 1, i % 4 === 0 ? 2 : 1,
+        i % 3 === 0 ? '#ffffff' : i % 3 === 1 ? '#d8c8f0' : '#ffe9a8');
+    }
+    ctx.globalAlpha = 1;
+    // orbiting petals around the centered one
+    const pax = (state.player.x | 0) - camX, pay = (state.player.y | 0) - camY - 8;
+    for (let k = 0; k < 6; k++) {
+      const a = t * 2 + k * Math.PI / 3;
+      px(ctx, (pax + Math.cos(a) * 15) | 0, (pay + Math.sin(a) * 9) | 0, 2, 2, k % 2 ? '#d8c8f0' : '#ffffff');
+    }
+    // the moment time stops: an expanding ripple on activation
+    const age = (ARCHETYPES.yogi.ability2.dur || 5) - state.zenT;
+    if (age >= 0 && age < 0.45) {
+      ctx.strokeStyle = 'rgba(216,200,240,' + (1 - age / 0.45) + ')'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(pax, pay, age / 0.45 * 70, 0, 7); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,233,168,' + (0.6 * (1 - age / 0.45)) + ')'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(pax, pay, age / 0.45 * 52, 0, 7); ctx.stroke();
+    }
   }
   ctx.fillStyle = 'rgba(255,225,150,.04)'; ctx.fillRect(0, 0, VW, VH);
 }
