@@ -358,6 +358,109 @@ export function buildSprites(rnd) {
   // the infamous eye (base red; render adds the night glow)
   px(x, 10, 11, 2, 2, '#e23b3b');
   SPR.blucifer = { c, ax: 28, ay: 66 };
+
+  // --- 13th Ave streetscape (north-edge overscan band; render-only dressing) --
+  // One Cheesman Place: the iconic international-style slab — dark glass,
+  // crisp white floor bands, blank concrete end piers
+  c = mkCanvas(68, 58); x = c.getContext('2d');
+  px(x, 0, 0, 5, 58, '#cfccbe'); px(x, 63, 0, 5, 58, '#cfccbe');   // end piers
+  px(x, 4, 0, 1, 58, '#a8a598'); px(x, 63, 0, 1, 58, '#b8b5a8');   // pier shading
+  px(x, 5, 0, 58, 2, '#dedbd0');                                    // roof band
+  for (let f = 0; f < 12; f++) {                                    // floors
+    const fy = 3 + f * 4;
+    px(x, 5, fy, 58, 1, '#d8d5c8');                                 // white band
+    px(x, 5, fy + 1, 58, 3, '#1e222b');                             // glass
+    for (let mx = 9; mx < 62; mx += 7) px(x, mx, fy + 1, 1, 3, '#151820');  // mullions
+    px(x, 5, fy + 1, 58, 1, '#2b313d');                             // sky reflection
+  }
+  px(x, 5, 51, 58, 7, '#101318');                                   // recessed lobby
+  for (let cx2 = 10; cx2 < 62; cx2 += 12) px(x, cx2, 51, 2, 7, '#cfccbe');  // piloti
+  px(x, 32, 53, 6, 5, '#3f4c5c');                                   // entry glass
+  SPR.b_ocp = { c, ax: 34, ay: 57 };
+
+  // Park Towers: taller bronze tower, stacked rounded corner balconies
+  c = mkCanvas(40, 62); x = c.getContext('2d');
+  px(x, 4, 2, 32, 60, '#6f5a40');                                   // body
+  px(x, 4, 2, 32, 1, '#8a7355'); px(x, 4, 2, 1, 60, '#5c4a34');
+  px(x, 14, 0, 12, 3, '#4a3d2c');                                   // roof mechanicals
+  for (let f = 0; f < 14; f++) {
+    const fy = 4 + f * 4;
+    px(x, 10, fy, 20, 2, '#2b241c');                                // window strip
+    px(x, 10, fy, 20, 1, '#3d3428');
+    px(x, 4, fy, 5, 2, '#c9b891'); px(x, 5, fy + 2, 4, 1, '#8a7355');   // west balcony stack
+    px(x, 31, fy, 5, 2, '#c9b891'); px(x, 31, fy + 2, 4, 1, '#8a7355'); // east balcony stack
+  }
+  px(x, 4, 58, 32, 4, '#3a2f22'); px(x, 17, 58, 6, 4, '#57493a');   // base + entry
+  SPR.b_parktowers = { c, ax: 20, ay: 61 };
+
+  // Tears-McFarlane House (RIP the Secret Garden cafe): red-brick Colonial
+  // Revival — white columned porch, hip roof, dormers
+  c = mkCanvas(46, 38); x = c.getContext('2d');
+  for (let r = 0; r < 44; r++) px(x, (2 + rnd() * 42) | 0, (14 + rnd() * 18) | 0, 2, 1, '#7d3a32');  // brick tone
+  px(x, 2, 14, 42, 1, '#a8a598');                                   // cornice
+  px(x, 2, 15, 42, 19, 'rgba(138,64,56,.0)');
+  x.fillStyle = '#8a4038'; x.fillRect(2, 15, 42, 19);
+  for (let r = 0; r < 60; r++) px(x, (2 + rnd() * 42) | 0, (15 + rnd() * 18) | 0, 2, 1, '#7d3a32');
+  // hip roof + dormers
+  for (let r = 0; r < 10; r++) px(x, 4 + r * 2 - r | 0, 4 + r, 46 - (4 + r * 2 - r) * 2 + 8 | 0, 1, '#3d453c');
+  px(x, 2, 13, 42, 2, '#2f362e');
+  px(x, 10, 7, 6, 6, '#5a625a'); px(x, 11, 8, 4, 3, '#20242c');     // dormer W
+  px(x, 30, 7, 6, 6, '#5a625a'); px(x, 31, 8, 4, 3, '#20242c');     // dormer E
+  px(x, 21, 2, 4, 6, '#6d5147');                                    // chimney
+  // second-floor windows, white frames
+  for (const wx of [6, 15, 26, 35]) { px(x, wx, 17, 5, 6, '#e8e4d4'); px(x, wx + 1, 18, 3, 4, '#28303c'); }
+  // porch: roof band + columns + door
+  px(x, 4, 25, 38, 2, '#e8e4d4');
+  for (const cx2 of [5, 14, 27, 38]) px(x, cx2, 27, 2, 7, '#e8e4d4');
+  px(x, 19, 26, 8, 8, '#3a2c22'); px(x, 21, 28, 4, 5, '#5a4232'); px(x, 24, 30, 1, 1, '#e5c04b');
+  px(x, 2, 34, 42, 2, '#8d8a80'); px(x, 18, 36, 10, 2, '#9a978c');  // steps
+  SPR.b_tears = { c, ax: 23, ay: 37 };
+
+  // filler walk-ups: modest brick apartments between the landmarks
+  const walkup = (w, h, brick, dark, trim) => {
+    const cc = mkCanvas(w, h), xx = cc.getContext('2d');
+    xx.fillStyle = brick; xx.fillRect(1, 2, w - 2, h - 2);
+    for (let r = 0; r < w * h / 14; r++) px(xx, (1 + rnd() * (w - 3)) | 0, (2 + rnd() * (h - 4)) | 0, 2, 1, dark);
+    px(xx, 0, 0, w, 2, trim); px(xx, 1, 2, w - 2, 1, dark);          // parapet
+    for (let fy = 5; fy < h - 8; fy += 7) for (let wx = 4; wx < w - 5; wx += 7) {
+      px(xx, wx, fy, 4, 4, '#242a34'); px(xx, wx, fy, 4, 1, trim);
+    }
+    px(xx, (w / 2 - 3) | 0, h - 7, 6, 7, '#33281e');                 // entry
+    return cc;
+  };
+  SPR.b_walkup1 = { c: walkup(30, 34, '#8a5a44', '#75492f', '#c9bfa8'), ax: 15, ay: 33 };
+  SPR.b_walkup2 = { c: walkup(26, 28, '#9a8468', '#7d6a50', '#d5cbb5'), ax: 13, ay: 27 };
+  SPR.b_walkup3 = { c: walkup(34, 30, '#6d5a52', '#59463e', '#c4baa8'), ax: 17, ay: 29 };
+
+  // night variants: same buildings with lit windows (drawn over at night alpha)
+  const nightVariant = (base, litFn) => {
+    const cc = mkCanvas(base.c.width, base.c.height), xx = cc.getContext('2d');
+    xx.drawImage(base.c, 0, 0); litFn(xx);
+    return { c: cc, ax: base.ax, ay: base.ay };
+  };
+  SPR.b_ocp_n = nightVariant(SPR.b_ocp, (xx) => {
+    for (let f = 0; f < 12; f++) for (let wx = 6; wx < 60; wx += 7)
+      if (rnd() < 0.45) px(xx, wx + 1, 4 + f * 4, 5, 3, rnd() < .5 ? '#e8c46a' : '#c9a94f');
+    px(xx, 32, 53, 6, 5, '#e8c46a');
+  });
+  SPR.b_parktowers_n = nightVariant(SPR.b_parktowers, (xx) => {
+    for (let f = 0; f < 14; f++) for (let wx = 10; wx < 28; wx += 5)
+      if (rnd() < 0.4) px(xx, wx, 4 + f * 4, 4, 2, '#e8c46a');
+    px(xx, 17, 59, 6, 3, '#e8c46a');
+  });
+  SPR.b_tears_n = nightVariant(SPR.b_tears, (xx) => {
+    px(xx, 16, 18, 3, 4, '#e8c46a');                                 // one upstairs light
+    px(xx, 24, 30, 1, 1, '#f6e39a');                                 // porch lamp
+  });
+  SPR.b_walkup1_n = nightVariant(SPR.b_walkup1, (xx) => {
+    for (let fy = 5; fy < 26; fy += 7) for (let wx = 4; wx < 25; wx += 7) if (rnd() < 0.5) px(xx, wx, fy + 1, 4, 3, '#e8c46a');
+  });
+  SPR.b_walkup2_n = nightVariant(SPR.b_walkup2, (xx) => {
+    for (let fy = 5; fy < 20; fy += 7) for (let wx = 4; wx < 21; wx += 7) if (rnd() < 0.5) px(xx, wx, fy + 1, 4, 3, '#e8c46a');
+  });
+  SPR.b_walkup3_n = nightVariant(SPR.b_walkup3, (xx) => {
+    for (let fy = 5; fy < 22; fy += 7) for (let wx = 4; wx < 29; wx += 7) if (rnd() < 0.5) px(xx, wx, fy + 1, 4, 3, '#e8c46a');
+  });
   return SPR;
 }
 

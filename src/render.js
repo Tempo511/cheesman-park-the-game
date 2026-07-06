@@ -192,12 +192,48 @@ function nightAlpha(state, t) {
   return NA;
 }
 
+// --- 13th Ave streetscape --------------------------------------------------
+// The world ends at row 0, so the far side of 13th Ave lives in a render-only
+// overscan band above it: One Cheesman Place, Park Towers, the
+// Tears-McFarlane House, and filler walk-ups. Pure dressing — no sim impact.
+export const NORTH_OVER = 4.5 * T;
+const STREETSCAPE = [
+  ['b_walkup1', 6], ['b_walkup2', 10], ['b_walkup3', 14.5], ['b_walkup2', 19], ['b_walkup1', 23],
+  ['b_parktowers', 28.5], ['b_ocp', 36], ['b_tears', 44.5],
+  ['b_walkup3', 50], ['b_walkup1', 54.5], ['b_walkup2', 58.5], ['b_walkup3', 63], ['b_walkup1', 67.5],
+];
+function drawNorthBand(state, t, camX, camY) {
+  const topY = -NORTH_OVER - camY;                       // screen y of band top
+  ctx.fillStyle = '#252e1e';                             // backyard canopy behind it all
+  ctx.fillRect(0, topY, VW, NORTH_OVER);
+  ctx.fillStyle = '#8d8a80';                             // far sidewalk of 13th Ave
+  ctx.fillRect(0, -10 - camY, VW, 10);
+  ctx.fillStyle = '#7d7a70'; ctx.fillRect(0, -2 - camY, VW, 2);   // curb
+  for (let i = 0; i < 36; i++) {                         // street trees along the walk
+    const tx = (i * 33 + 12) - camX;
+    if (tx < -8 || tx > VW + 8) continue;
+    ctx.fillStyle = i % 3 ? '#2f3d24' : '#37472a';
+    ctx.beginPath(); ctx.arc(tx, -13 - camY, 5 + (i * 7) % 3, 0, 7); ctx.fill();
+  }
+  for (const [type, tileX] of STREETSCAPE) {
+    const spr = SPR[type]; if (!spr) continue;
+    const bx = (tileX * T - spr.ax - camX) | 0, by = (-6 - spr.ay - camY) | 0;
+    if (bx > VW || bx + spr.c.width < 0) continue;
+    ctx.drawImage(spr.c, bx, by);
+    if (NA > 0.05) {                                     // windows light up at dusk
+      const ns = SPR[type + '_n'];
+      if (ns) { ctx.globalAlpha = Math.min(1, NA * 1.6); ctx.drawImage(ns.c, bx, by); ctx.globalAlpha = 1; }
+    }
+  }
+}
+
 export function render(state, t) {
   const player = state.player;
   const inGarden = state.scene === 'garden';
   const worldH = (inGarden ? GH : MH) * T;
+  const northOver = inGarden ? 0 : NORTH_OVER;   // peek past 13th Ave at the north edge
   let camX = Math.max(0, Math.min(MW * T - VW, player.x - VW / 2)) | 0;
-  let camY = Math.max(0, Math.min(Math.max(0, worldH - VH), player.y - VH / 2)) | 0;
+  let camY = Math.max(-northOver, Math.min(Math.max(-northOver, worldH - VH), player.y - VH / 2)) | 0;
   if (player.boulderT > 0) {               // Bolder Boulder: the ground rumbles
     camX += Math.round(Math.sin(t * 43) * 1.5);
     camY += Math.round(Math.cos(t * 37) * 1.5);
@@ -205,6 +241,7 @@ export function render(state, t) {
   CAMX = camX; CAMY = camY;
   ctx.fillStyle = '#151a12'; ctx.fillRect(0, 0, VW, VH);   // letterbox if world shorter than view
   ctx.drawImage(inGarden ? gardenCv : groundCv, camX, camY, VW, VH, 0, 0, VW, VH);
+  if (!inGarden && camY < 0) drawNorthBand(state, t, camX, camY);
   // water shimmer + jets (park scene only — these are park coordinates)
   if (!inGarden) {
   ctx.fillStyle = PAL.waterHi;
@@ -634,7 +671,7 @@ export function renderMini(state, t) {
   mctx.drawImage(miniBase, 0, 0);
   if (NA > 0.1) { mctx.fillStyle = 'rgba(18,24,58,.45)'; mctx.fillRect(0, 0, 72, 92); } // NA: smoothed in render()
   const camX = Math.max(0, Math.min(MW * T - VW, state.player.x - VW / 2));
-  const camY = Math.max(0, Math.min(MH * T - VH, state.player.y - VH / 2));
+  const camY = Math.max(-NORTH_OVER, Math.min(MH * T - VH, state.player.y - VH / 2));
   mctx.strokeStyle = 'rgba(242,234,214,.85)'; mctx.lineWidth = 1;
   mctx.strokeRect((camX / T) + .5, (camY / T) + .5, VW / T, VH / T);
   for (const z of ZONES) {
