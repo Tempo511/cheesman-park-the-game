@@ -190,15 +190,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#151a12;touch-action
   #archetypeItems .buy{padding:4px 7px;font-size:8px;border-width:2px;align-self:center}
   /* shop: two-column weapon grid + compact rows so the whole menu fits */
   #shop .card{max-width:660px}
-  #shopItems{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
-  #shopItems .item{margin-bottom:0;padding:5px 6px;gap:6px;border-width:2px}
-  #shopItems .ic{width:24px;height:24px;border-width:2px}
-  #shopItems .nm{font-size:9.5px}
-  #shopItems .st{font-size:8px}
-  #shopItems .ds{font-size:8px;line-height:1.25}
+  #shopItems{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:5px}
+  #shopItems .item{margin-bottom:0;padding:4px 5px;gap:5px;border-width:2px}
+  #shopItems .ic{width:22px;height:22px;border-width:2px}
+  #shopItems .nm{font-size:9px}
+  #shopItems .st{font-size:7.5px}
+  #shopItems .ds{display:none}
   #shopItems .buy{padding:5px 7px;font-size:8.5px;border-width:2px}
-  #impItems{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px}
-  #impItems .item{margin-bottom:0;padding:5px 6px;gap:6px;border-width:2px}
+  #impItems{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:5px}
+  #impItems .item{margin-bottom:0;padding:4px 5px;gap:5px;border-width:2px}
   #impItems .ic{width:24px;height:24px;border-width:2px;font-size:13px}
   #impItems .nm{font-size:9.5px}
   #impItems .st{font-size:8px}
