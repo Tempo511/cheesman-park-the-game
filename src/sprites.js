@@ -460,6 +460,70 @@ export function buildSprites(rnd) {
   SPR.b_walkup3_n = nightVariant(SPR.b_walkup3, (xx) => {
     for (let fy = 5; fy < 22; fy += 7) for (let wx = 4; wx < 29; wx += 7) if (rnd() < 0.5) px(xx, wx, fy + 1, 4, 3, '#e8c46a');
   });
+  // --- Humboldt/Race St mansions: 4 variants so the rows don't copy-paste ----
+  const mansion = (key, brick, dark, roofC, trim, style) => {
+    const cc = mkCanvas(46, 42), xx = cc.getContext('2d');
+    xx.fillStyle = brick; xx.fillRect(3, 16, 40, 22);
+    for (let r = 0; r < 70; r++) px(xx, (3 + rnd() * 39) | 0, (16 + rnd() * 21) | 0, 2, 1, dark);
+    if (style === 'hip') {                       // Denver Square: hipped roof
+      for (let r = 0; r < 9; r++) { const w = (14 + r * 3.2) | 0; px(xx, 23 - (w >> 1), 7 + r, w, 1, roofC); }
+      px(xx, 18, 6, 10, 1, trim);
+      px(xx, 8, 3, 4, 6, dark);                  // chimney
+    } else if (style === 'gable2') {             // twin front gables
+      for (let r = 0; r < 10; r++) { px(xx, 13 - r, 15 - r, r * 2 + 2, 1, roofC); px(xx, 33 - r, 15 - r, r * 2 + 2, 1, roofC); }
+      px(xx, 11, 10, 4, 3, '#20242c'); px(xx, 31, 10, 4, 3, '#20242c');   // attic vents
+    } else if (style === 'turret') {             // Queen Anne: corner turret
+      for (let r = 0; r < 8; r++) { const w = (16 + r * 3) | 0; px(xx, 26 - (w >> 1), 8 + r, w, 1, roofC); }
+      px(xx, 4, 10, 12, 28, brick);              // turret shaft
+      for (let r = 0; r < 30; r++) px(xx, (4 + rnd() * 11) | 0, (10 + rnd() * 26) | 0, 2, 1, dark);
+      for (let r = 0; r < 8; r++) px(xx, 10 - (r >> 1) - (8 - r), 2 + r, (8 - r) * 2 + 2, 1, '#2f3a44');  // cone
+      px(xx, 7, 16, 3, 5, '#e8e4d4'); px(xx, 7, 26, 3, 5, '#e8e4d4');     // turret windows
+    } else {                                     // tudor: big central half-timber gable
+      for (let r = 0; r < 11; r++) px(xx, 23 - r, 16 - r, r * 2 + 2, 1, roofC);
+      px(xx, 16, 9, 14, 7, '#d5cbb5');
+      px(xx, 16, 9, 14, 1, '#5a4232'); px(xx, 22, 9, 2, 7, '#5a4232'); px(xx, 16, 12, 14, 1, '#5a4232');
+    }
+    px(xx, 3, 15, 40, 1, trim);                                            // cornice
+    const wxs = style === 'turret' ? [20, 29, 37] : [7, 16, 28, 36];
+    for (const wx of wxs) { px(xx, wx, 18, 5, 6, trim); px(xx, wx + 1, 19, 3, 4, '#28303c'); }
+    px(xx, 5, 27, 36, 2, trim);                                            // porch roof
+    for (const cx2 of [6, 15, 28, 37]) px(xx, cx2, 29, 2, 7, trim);
+    px(xx, 20, 28, 7, 8, '#3a2c22'); px(xx, 22, 30, 3, 5, '#5a4232');      // door
+    px(xx, 3, 38, 40, 2, '#8d8a80'); px(xx, 18, 40, 10, 2, '#9a978c');     // steps
+    SPR[key] = { c: cc, ax: 23, ay: 41 };
+    SPR[key + '_n'] = nightVariant(SPR[key], (nn) => {
+      for (const wx of wxs) if (rnd() < 0.6) px(nn, wx + 1, 19, 3, 4, '#e8c46a');
+      px(nn, 23, 31, 1, 1, '#f6e39a');                                     // porch lamp
+    });
+  };
+  mansion('m_square', '#9a8468', '#7d6a50', '#3d453c', '#e8e4d4', 'hip');
+  mansion('m_queen',  '#8a4038', '#7d3a32', '#2f3a44', '#e8e4d4', 'turret');
+  mansion('m_gable',  '#6d5a52', '#59463e', '#353d34', '#c9bfa8', 'gable2');
+  mansion('m_tudor',  '#8a5a44', '#75492f', '#3d453c', '#d5cbb5', 'tudor');
+
+  // the two high-rises across from the Botanic Gardens (east band)
+  c = mkCanvas(40, 60); x = c.getContext('2d');
+  px(x, 2, 2, 36, 58, '#c9c3b2');                                          // white concrete slab
+  px(x, 2, 2, 36, 1, '#dedbd0'); px(x, 2, 2, 1, 58, '#a8a396');
+  for (let f = 0; f < 13; f++) {
+    px(x, 4, 5 + f * 4, 32, 2, '#28303c');                                 // window strip
+    px(x, 4, 7 + f * 4, 32, 1, '#8d8a80');                                 // balcony rail
+  }
+  px(x, 14, 56, 12, 4, '#3a3a40');
+  SPR.e_hr1 = { c, ax: 20, ay: 59 };
+  SPR.e_hr1_n = nightVariant(SPR.e_hr1, (xx) => {
+    for (let f = 0; f < 13; f++) for (let wx = 4; wx < 33; wx += 6) if (rnd() < 0.4) px(xx, wx, 5 + f * 4, 5, 2, '#e8c46a');
+  });
+  c = mkCanvas(32, 54); x = c.getContext('2d');
+  px(x, 2, 2, 28, 52, '#8a5a44');                                          // brick tower
+  for (let r = 0; r < 90; r++) px(x, (2 + rnd() * 27) | 0, (2 + rnd() * 50) | 0, 2, 1, '#75492f');
+  px(x, 2, 2, 28, 2, '#c9bfa8');
+  for (let f = 0; f < 12; f++) for (const wx of [6, 14, 22]) px(x, wx, 6 + f * 4, 4, 2, '#242a34');
+  px(x, 12, 50, 8, 4, '#33281e');
+  SPR.e_hr2 = { c, ax: 16, ay: 53 };
+  SPR.e_hr2_n = nightVariant(SPR.e_hr2, (xx) => {
+    for (let f = 0; f < 12; f++) for (const wx of [6, 14, 22]) if (rnd() < 0.45) px(xx, wx, 6 + f * 4, 4, 2, '#e8c46a');
+  });
   return SPR;
 }
 

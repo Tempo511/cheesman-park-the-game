@@ -21,8 +21,8 @@ export function buildMap(state, rnd) {
   // --- streets, sidewalks, botanic gardens ---------------------------------
   fillG(0, 0, MW - 1, 2, G.GRASS);         // north border: the park-side buildings' grounds (13th Ave is behind them, in the render band)
   fillG(0, MH - 3, MW - 1, MH - 1, G.ROAD); // E 8th Ave
-  fillG(0, 0, 2, MH - 1, G.ROAD);          // Franklin St
-  fillG(MW - 3, 34, MW - 1, MH - 1, G.ROAD); // Race St
+  fillG(0, 0, 2, MH - 1, G.GRASS);         // west border: mansion grounds (Humboldt St is behind, in the render band)
+  fillG(MW - 3, 34, MW - 1, MH - 1, G.GRASS); // east border below the gardens: mansion grounds (street behind)
   fillG(3, 3, MW - 4, 3, G.WALK);
   fillG(3, MH - 4, MW - 4, MH - 4, G.WALK);
   fillG(3, 3, 3, MH - 4, G.WALK);
@@ -102,6 +102,14 @@ export function buildMap(state, rnd) {
     addObj('bush', x, 2.75, false);
   }
   addObj('tree', 31.5, 2.8, false); addObj('tree', 41.5, 2.7, false); addObj('tree2', 51.5, 2.85, false);
+  // west border: Humboldt Island mansions, right up on the park
+  const westRow = ['m_queen', 'm_square', 'm_gable', 'm_tudor', 'm_square', 'm_queen', 'm_gable', 'm_square', 'm_tudor', 'm_queen', 'm_square', 'm_gable', 'm_tudor'];
+  westRow.forEach((mk, i) => addObj(mk, 1.45, 7 + i * 6.5, false));
+  // east border, south of the gardens: more mansions along Race St
+  const eastRow = ['m_gable', 'm_tudor', 'm_queen', 'm_square', 'm_gable', 'm_queen', 'm_tudor', 'm_square'];
+  eastRow.forEach((mk, i) => addObj(mk, 70.5, 38 + i * 6.4, false));
+  for (let y = 0; y < MH; y++) { solid[gi(0, y)] = 1; solid[gi(1, y)] = 1; solid[gi(2, y)] = 1; }
+  for (let y = 34; y < MH; y++) { solid[gi(MW - 3, y)] = 1; solid[gi(MW - 2, y)] = 1; solid[gi(MW - 1, y)] = 1; }
   for (let y = 3; y <= 33; y += 1) { if (y < 17 || y > 20) addObj('fence', 63, y); }
   addObj('gardengate', 63.5, 21.15);         // the Cheesman Gate into the Botanic Gardens
   for (let y = 17; y <= 20; y++) if (inMap(63, y)) solid[gi(63, y)] = 1;   // gateway itself stays solid (entry is by proximity)
@@ -184,7 +192,5 @@ export function buildMap(state, rnd) {
   }
 
   // --- traffic on the surrounding streets ----------------------------------
-  for (let y = 8; y < MH - 8; y += 11) cars.push({ x: 1, y, v: 1 });
-  for (let y = 40; y < MH - 8; y += 13) cars.push({ x: MW - 2, y, v: 1 });
   for (let x = 8; x < 58; x += 15) cars.push({ x, y: MH - 2, v: 0 });
 }
