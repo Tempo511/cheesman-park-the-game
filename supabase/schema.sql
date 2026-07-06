@@ -46,6 +46,13 @@ $$;
 create or replace function public.scores_guard()
 returns trigger language plpgsql as $$
 begin
+  -- sanitize names server-side: length, whitespace, profanity -> 'Ranger'
+  -- (client filters too, but direct API posts bypass the client)
+  new.name := left(btrim(coalesce(new.name, '')), 16);
+  if new.name = ''
+     or new.name ~* '(fuck|shit|bitch|cunt|dick|nigg|fagg|rape)' then
+    new.name := 'Ranger';
+  end if;
   -- kills are bounded by what the game can actually spawn
   if new.kills > 90 * new.night + 10 then
     raise exception 'implausible kills for night %', new.night;
