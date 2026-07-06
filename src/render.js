@@ -155,8 +155,8 @@ export function buildMini() {
 // fade-in term here caused a one-second daylight flash at nightfall), easing
 // out over the final second before dawn.
 function nightTarget(state) {
-  if (state.phase === 'night') return Math.min(0.5, state.phaseT * 0.5);
-  return Math.min(0.5, Math.max(0, (3 - state.phaseT) * 0.2)); // pre-dusk ramp
+  if (state.phase === 'night') return Math.min(0.42, state.phaseT * 0.5);
+  return Math.min(0.42, Math.max(0, (3 - state.phaseT) * 0.2)); // pre-dusk ramp
 }
 // Render-side smoothing so abrupt phase changes (early dawn when the last
 // enemy dies, console jumps) ease instead of snapping. Cosmetic only.
@@ -249,9 +249,14 @@ function drawTraffic(t, camX, camY, vertical, laneX, laneY, dir, span, n, speed,
       px(ctx, cx, cy, 11, 24, col);
       px(ctx, cx + 1, cy + (dir > 0 ? 14 : 4), 9, 6, '#cfe3ea');
       if (NA > 0.1) {                                            // headlights
-        ctx.fillStyle = 'rgba(240,198,88,' + (NA * 0.55).toFixed(2) + ')';
-        const hy = dir > 0 ? cy + 24 : cy - 7;
-        ctx.fillRect(cx + 1, hy, 3, 7); ctx.fillRect(cx + 7, hy, 3, 7);
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = 'rgba(255,186,46,' + (NA * 1.15).toFixed(2) + ')';
+        const hy = dir > 0 ? cy + 24 : cy - 9;
+        ctx.fillRect(cx + 1, hy, 3, 9); ctx.fillRect(cx + 7, hy, 3, 9);
+        ctx.fillStyle = 'rgba(255,232,140,' + (NA * 0.9).toFixed(2) + ')';
+        const hy2 = dir > 0 ? cy + 24 : cy - 4;
+        ctx.fillRect(cx + 1, hy2, 3, 4); ctx.fillRect(cx + 7, hy2, 3, 4);
+        ctx.globalCompositeOperation = 'source-over';
         px(ctx, cx + 2, dir > 0 ? cy - 1 : cy + 24, 2, 1, 'rgba(255,60,50,' + NA.toFixed(2) + ')');
         px(ctx, cx + 8, dir > 0 ? cy - 1 : cy + 24, 2, 1, 'rgba(255,60,50,' + NA.toFixed(2) + ')');
       }
@@ -261,9 +266,14 @@ function drawTraffic(t, camX, camY, vertical, laneX, laneY, dir, span, n, speed,
       px(ctx, cx, cy, 24, 11, col);
       px(ctx, cx + (dir > 0 ? 14 : 4), cy + 1, 6, 9, '#cfe3ea');
       if (NA > 0.1) {
-        ctx.fillStyle = 'rgba(240,198,88,' + (NA * 0.55).toFixed(2) + ')';
-        const hx = dir > 0 ? cx + 24 : cx - 7;
-        ctx.fillRect(hx, cy + 1, 7, 3); ctx.fillRect(hx, cy + 7, 7, 3);
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = 'rgba(255,186,46,' + (NA * 1.15).toFixed(2) + ')';
+        const hx = dir > 0 ? cx + 24 : cx - 9;
+        ctx.fillRect(hx, cy + 1, 9, 3); ctx.fillRect(hx, cy + 7, 9, 3);
+        ctx.fillStyle = 'rgba(255,232,140,' + (NA * 0.9).toFixed(2) + ')';
+        const hx2 = dir > 0 ? cx + 24 : cx - 4;
+        ctx.fillRect(hx2, cy + 1, 4, 3); ctx.fillRect(hx2, cy + 7, 4, 3);
+        ctx.globalCompositeOperation = 'source-over';
         px(ctx, dir > 0 ? cx - 1 : cx + 24, cy + 2, 1, 2, 'rgba(255,60,50,' + NA.toFixed(2) + ')');
         px(ctx, dir > 0 ? cx - 1 : cx + 24, cy + 8, 1, 2, 'rgba(255,60,50,' + NA.toFixed(2) + ')');
       }
