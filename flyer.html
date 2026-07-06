@@ -12,7 +12,7 @@
          font-family: ui-monospace, 'Courier New', monospace; }
   .sheet { width: 7.7in; min-height: 10.2in; background: #f2ead6; color: #141a10;
            border: 6px solid #141a10; padding: 0.45in 0.5in 0.25in; position: relative;
-           display: flex; flex-direction: column; align-items: center; text-align: center; }
+           display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   @media print {
     body { background: none; padding: 0; }
     .sheet { border-width: 6px; }
@@ -30,11 +30,6 @@
   .url { font-size: 23px; font-weight: 700; letter-spacing: 0.02em; margin: 4px 0 8px;
          border: 4px solid #141a10; padding: 8px 18px; background: #e5c04b; box-shadow: 5px 5px 0 #141a10; }
   .fine { font-size: 11.5px; color: #5a5342; margin-top: 8px; }
-  .tabs { display: flex; width: 100%; margin-top: auto; border-top: 2px dashed #141a10; padding-top: 2px; }
-  .tab { flex: 1; border-left: 2px dashed #141a10; padding: 6px 2px; }
-  .tab:first-child { border-left: none; }
-  .tab div { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 10.5px; letter-spacing: 0.04em;
-             height: 1.5in; margin: 0 auto; }
 </style>
 </head>
 <body>
@@ -52,7 +47,6 @@
   </div>
   <div class="url">www.cheesmanparkthegame.com</div>
   <div class="fine">Made with love by a neighbor · pixel-art homage to Cheesman Park &amp; Denver Botanic Gardens history</div>
-  <div class="tabs" id="tabs"></div>
 </div>
 <script type="module">
 import { buildSprites, drawZombie, drawPlayerChar, drawSprout } from './src/sprites.js';
@@ -77,14 +71,6 @@ const qr = qrcode(0, 'M');
 qr.addData('https://www.cheesmanparkthegame.com');
 qr.make();
 document.getElementById('qr').innerHTML = qr.createImgTag(6, 8);
-
-// tear-off tabs, because lampposts deserve the classic
-const tabs = document.getElementById('tabs');
-for (let i = 0; i < 8; i++) {
-  const d = document.createElement('div'); d.className = 'tab';
-  d.innerHTML = '<div>cheesmanparkthegame.com 🌭</div>';
-  tabs.appendChild(d);
-}
 </script>
 </body>
 </html>
