@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Cheesman Park: The Game</title>
 <link rel="stylesheet" href="./styles.css">
+<script>
+// GoatCounter analytics — production only, so dev/playtest hits don't count
+if (location.hostname === 'cheesmanparkthegame.com' || location.hostname.endsWith('.github.io')) {
+  const gc = document.createElement('script');
+  gc.dataset.goatcounter = 'https://cheesmanparkthegame.goatcounter.com/count';
+  gc.async = true; gc.src = 'https://gc.zgo.at/count.js';
+  document.head.appendChild(gc);
+}
+</script>
 </head>
 <body>
 <canvas id="game"></canvas>
