@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cheesman Park: The Game — Minimal Flyer</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<style>
+  /* prints on US Letter portrait; open this file and hit Cmd+P */
+  @page { size: letter portrait; margin: 0.5in; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #777; display: flex; justify-content: center; padding: 20px;
+         font-family: ui-monospace, 'Courier New', monospace; }
+  .sheet { width: 7.5in; min-height: 10in; background: #fff; color: #000;
+           display: flex; flex-direction: column; align-items: center; justify-content: center;
+           text-align: center; gap: 0.55in; padding: 0.6in; }
+  @media print { body { background: none; padding: 0; } }
+  h1 { font-size: 52px; line-height: 1.25; font-weight: 700; }
+  .url { font-size: 26px; font-weight: 700; letter-spacing: 0.01em; }
+  #qr img { width: 3.4in; height: 3.4in; image-rendering: pixelated; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>Enjoy Cheesman Park?<br>Play the game!</h1>
+  <div class="url">www.cheesmanparkthegame.com</div>
+  <div id="qr"></div>
+</div>
+<script>
+// QR generated locally in the page — nothing leaves your machine
+const qr = qrcode(0, 'M');
+qr.addData('https://www.cheesmanparkthegame.com');
+qr.make();
+document.getElementById('qr').innerHTML = qr.createImgTag(10, 4);
+</script>
+</body>
+</html>
