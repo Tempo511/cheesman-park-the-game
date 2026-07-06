@@ -178,6 +178,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:#151a12;touch-action
   .stylebtns{gap:8px;margin-bottom:6px}
   .stylebtns .pick{padding:3px;border-width:2px}
   .stylebtns .pick canvas{width:28px;height:31px}
+  /* tribe picker: two-column grid + compact cards so all five fit unscrolled */
+  #archetype .card{max-width:680px}
+  #archetypeItems{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+  #archetypeItems .item{margin-bottom:0;padding:4px 6px;gap:5px;border-width:2px;align-items:flex-start}
+  #archetypeItems .portrait{width:30px;height:32px;border-width:2px}
+  #archetypeItems .nm{font-size:9px}
+  #archetypeItems .ds{display:none}
+  #archetypeItems .st{font-size:7.5px}
+  #archetypeItems .kit{font-size:7.5px;line-height:1.3;margin-top:2px;padding-top:2px}
+  #archetypeItems .buy{padding:4px 7px;font-size:8px;border-width:2px;align-self:center}
   /* shop: two-column weapon grid + compact rows so the whole menu fits */
   #shop .card{max-width:660px}
   #shopItems{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
