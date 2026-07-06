@@ -466,22 +466,24 @@ export function buildSprites(rnd) {
     xx.fillStyle = brick; xx.fillRect(3, 16, 40, 22);
     for (let r = 0; r < 70; r++) px(xx, (3 + rnd() * 39) | 0, (16 + rnd() * 21) | 0, 2, 1, dark);
     if (style === 'hip') {                       // Denver Square: hipped roof
-      for (let r = 0; r < 9; r++) { const w = (14 + r * 3.2) | 0; px(xx, 23 - (w >> 1), 7 + r, w, 1, roofC); }
-      px(xx, 18, 6, 10, 1, trim);
-      px(xx, 8, 3, 4, 6, dark);                  // chimney
-    } else if (style === 'gable2') {             // twin front gables
-      for (let r = 0; r < 10; r++) { px(xx, 13 - r, 15 - r, r * 2 + 2, 1, roofC); px(xx, 33 - r, 15 - r, r * 2 + 2, 1, roofC); }
-      px(xx, 11, 10, 4, 3, '#20242c'); px(xx, 31, 10, 4, 3, '#20242c');   // attic vents
+      for (let r = 0; r < 9; r++) { const w = (14 + r * 3.2) | 0; px(xx, 23 - (w >> 1), 7 + r, w, 1, r % 3 === 2 ? roofC : roofC); }
+      for (let r = 2; r < 9; r += 3) { const w = (14 + r * 3.2) | 0; px(xx, 23 - (w >> 1), 7 + r, w, 1, '#2b312a'); }  // shingle courses
+      px(xx, 18, 6, 10, 1, trim);                // ridge cap
+      px(xx, 12, 5, 4, 6, dark); px(xx, 12, 5, 4, 1, '#4a3a32');   // chimney rooted in the slope
+    } else if (style === 'gable2') {             // twin front gables, peaks up
+      for (let r = 0; r < 10; r++) { px(xx, 13 - r, 6 + r, r * 2 + 2, 1, roofC); px(xx, 33 - r, 6 + r, r * 2 + 2, 1, roofC); }
+      px(xx, 11, 11, 4, 3, '#20242c'); px(xx, 31, 11, 4, 3, '#20242c');   // attic vents
     } else if (style === 'turret') {             // Queen Anne: corner turret
       for (let r = 0; r < 8; r++) { const w = (16 + r * 3) | 0; px(xx, 26 - (w >> 1), 8 + r, w, 1, roofC); }
       px(xx, 4, 10, 12, 28, brick);              // turret shaft
       for (let r = 0; r < 30; r++) px(xx, (4 + rnd() * 11) | 0, (10 + rnd() * 26) | 0, 2, 1, dark);
-      for (let r = 0; r < 8; r++) px(xx, 10 - (r >> 1) - (8 - r), 2 + r, (8 - r) * 2 + 2, 1, '#2f3a44');  // cone
+      for (let r = 0; r < 8; r++) { const w = 2 + r * 2; px(xx, 10 - (w >> 1), 2 + r, w, 1, '#2f3a44'); }  // cone, apex up
+      px(xx, 9, 1, 2, 1, trim);                  // finial
       px(xx, 7, 16, 3, 5, '#e8e4d4'); px(xx, 7, 26, 3, 5, '#e8e4d4');     // turret windows
-    } else {                                     // tudor: big central half-timber gable
-      for (let r = 0; r < 11; r++) px(xx, 23 - r, 16 - r, r * 2 + 2, 1, roofC);
-      px(xx, 16, 9, 14, 7, '#d5cbb5');
-      px(xx, 16, 9, 14, 1, '#5a4232'); px(xx, 22, 9, 2, 7, '#5a4232'); px(xx, 16, 12, 14, 1, '#5a4232');
+    } else {                                     // tudor: big central half-timber gable, peak up
+      for (let r = 0; r < 11; r++) px(xx, 23 - r, 6 + r, r * 2 + 2, 1, roofC);
+      px(xx, 19, 11, 9, 5, '#d5cbb5');           // half-timber panel inside the gable
+      px(xx, 19, 11, 9, 1, '#5a4232'); px(xx, 23, 11, 1, 5, '#5a4232'); px(xx, 19, 15, 9, 1, '#5a4232');
     }
     px(xx, 3, 15, 40, 1, trim);                                            // cornice
     const wxs = style === 'turret' ? [20, 29, 37] : [7, 16, 28, 36];

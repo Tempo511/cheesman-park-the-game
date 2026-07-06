@@ -206,32 +206,34 @@ const FAR_SIDE = [
 // beyond it. East side north of 34: the two high-rises across from the gardens.
 function drawSideBand(camX, camY, side) {
   const W = MW * T, east = side === 'e';
-  const bandL = east ? W : -SIDE_OVER;                   // world x of band left edge
+  const roadW = east ? 22 : 34;                          // Humboldt runs wider
+  const bandL = east ? W : -SIDE_OVER;
   ctx.fillStyle = '#252e1e';
   ctx.fillRect(bandL - camX, -NORTH_OVER - camY, SIDE_OVER, MH * T + NORTH_OVER);
-  const roadL = east ? W : -22;                          // street hugs the park
+  const roadL = east ? W : -roadW;
   ctx.fillStyle = PAL.road;
-  ctx.fillRect(roadL - camX, -NORTH_OVER - camY, 22, MH * T + NORTH_OVER);
+  ctx.fillRect(roadL - camX, -NORTH_OVER - camY, roadW, MH * T + NORTH_OVER);
   for (let y = 4 - ((camY + NORTH_OVER) % 24) - NORTH_OVER; y < MH * T - camY; y += 24)
-    px(ctx, roadL + 10 - camX, y, 2, 12, PAL.dash);
-  const walkL = east ? W + 22 : -30;                     // far sidewalk
+    px(ctx, roadL + (roadW >> 1) - 1 - camX, y, 2, 12, PAL.dash);
+  const walkL = east ? W + roadW : roadL - 8;            // far sidewalk + curb
   ctx.fillStyle = '#8d8a80'; ctx.fillRect(walkL - camX, -NORTH_OVER - camY, 8, MH * T + NORTH_OVER);
-  ctx.fillStyle = '#7d7a70'; ctx.fillRect((east ? W + 22 : -23) - camX, -NORTH_OVER - camY, 1, MH * T + NORTH_OVER);
-  const carCols = ['#7a8ba0', '#a05a4c', '#4c6b57', '#5a5a80'];
-  for (let i = 0; i < 5; i++) {                          // parked along the far curb
-    const cy = ((i * 17 + 9) * T) - camY;
+  ctx.fillStyle = '#7d7a70'; ctx.fillRect((east ? W + roadW : roadL) - camX, -NORTH_OVER - camY, 1, MH * T + NORTH_OVER);
+  const carCols = ['#7a8ba0', '#a05a4c', '#4c6b57', '#5a5a80', '#c9c3b2'];
+  const nCars = east ? 5 : 9, carGap = east ? 17 : 10;   // wider street = busier parking
+  for (let i = 0; i < nCars; i++) {
+    const cy = ((i * carGap + 7) * T) - camY;
     if (cy < -30 || cy > VH) continue;
-    const cx2 = (east ? W + 8 : -20) - camX;
-    px(ctx, cx2, cy, 11, 26, carCols[i % 4]);
+    const cx2 = (east ? W + 8 : roadL + 3) - camX;
+    px(ctx, cx2, cy, 11, 26, carCols[i % 5]);
     px(ctx, cx2 + 1, cy + 4, 9, 6, '#cfe3ea'); px(ctx, cx2 + 1, cy + 16, 9, 5, '#cfe3ea');
   }
   ctx.fillStyle = '#cfc9b6'; ctx.font = 'bold 9px ui-monospace,monospace'; ctx.textBaseline = 'middle';
   for (const ly of [24, 68]) {
-    ctx.save(); ctx.translate((east ? W + 11 : -11) - camX, ly * T - camY); ctx.rotate(-Math.PI / 2);
+    ctx.save(); ctx.translate((east ? W + 11 : roadL + (roadW >> 1)) - camX, ly * T - camY); ctx.rotate(-Math.PI / 2);
     ctx.textAlign = 'center'; ctx.fillText(east ? 'F R A N K L I N   S T' : 'H U M B O L D T   S T', 0, 0); ctx.restore();
   }
-  const cxHouse = east ? W + 51 : -51;                   // far-side buildings
   if (east) {
+    const cxHouse = W + 51;
     for (const [type, ty] of [['e_hr1', 10], ['e_hr2', 22]]) {   // across from the gardens
       const spr = SPR[type];
       drawBandSprite(spr, SPR[type + '_n'], cxHouse - (spr.c.width >> 1), ty * T - spr.ay, camX, camY);
@@ -241,9 +243,11 @@ function drawSideBand(camX, camY, side) {
       drawBandSprite(spr, SPR[type + '_n'], cxHouse - (spr.c.width >> 1), (38 + i * 6) * T - spr.ay, camX, camY);
     }
   } else {
-    for (let i = 0; i < 14; i++) {                       // Humboldt: mansions both sides
-      const type = ['m_square', 'm_gable', 'm_tudor', 'm_queen'][i % 4], spr = SPR[type];
-      drawBandSprite(spr, SPR[type + '_n'], cxHouse - (spr.c.width >> 1), (6 + i * 6.3) * T - spr.ay, camX, camY);
+    for (let i = 0; i < 30; i++) {                       // west: just the tree lawn beyond
+      const ty = (i * 51 + 20) - camY;
+      if (ty < -10 || ty > VH + 10) continue;
+      ctx.fillStyle = i % 3 ? '#2f3d24' : '#37472a';
+      ctx.beginPath(); ctx.arc(walkL - 6 - camX, ty, 5 + (i * 7) % 4, 0, 7); ctx.fill();
     }
   }
 }
