@@ -50,7 +50,7 @@ begin
   -- (client filters too, but direct API posts bypass the client)
   new.name := left(btrim(coalesce(new.name, '')), 16);
   if new.name = ''
-     or regexp_replace(translate(lower(new.name), '013457８8@$!', 'oieast88asi'), '[^a-z]', '', 'g')
+     or regexp_replace(translate(lower(new.name), '0134578@$!', 'oieastbasi'), '[^a-z]', '', 'g')
         ~ '(fuck|shit|bitch|cunt|dick|nigg|fagg|rape|whore|slut|penis|vagin|porn|tranny|kike|hitler|nazi)' then
     new.name := 'Ranger';
   end if;
