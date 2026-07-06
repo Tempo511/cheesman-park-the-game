@@ -34,6 +34,7 @@ export function initUI(state, { onStart, onRespawn, onNewRun, getRecording: getR
   abBtn = $('btnAbility1'); ab1Lbl = $('ab1lbl'); ab1Fill = $('ab1fill');
   ability2El = $('ability2'); ab2Btn = $('btnAbility2'); ab2Lbl = $('ab2lbl'); ab2Fill = $('ab2fill');
   livesEl = $('livesRow');
+  livesEl.textContent = '\u2665'.repeat(MAX_LIVES);   // correct even behind the intro card
   bossbarEl = $('bossbar'); bossFillEl = $('bossfill');
   shopEl = $('shop'); shopItemsEl = $('shopItems');
   toastEl = $('toast'); toastH = $('toast-h'); toastP = $('toast-p');
