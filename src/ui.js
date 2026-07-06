@@ -79,7 +79,7 @@ function renderRows(el, rows, meName) {
   if (!rows.length) { el.innerHTML = '<div class="lbmsg">No scores yet — be the first ranger on the board.</div>'; return; }
   el.innerHTML = rows.map((r, i) =>
     `<div class="lbrow${meName && r.name === meName ? ' me' : ''}">
-      <span class="r">${i + 1}.</span><span class="n">${escapeHtml(r.name)}</span>
+      <span class="r">${i + 1}.</span><span class="n">${escapeHtml(cleanName(r.name))}</span>
       <span class="s">${r.score}</span><span class="d">night ${r.night} · ${r.kills} kills</span>
     </div>`).join('');
 }
