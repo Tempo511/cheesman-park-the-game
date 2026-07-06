@@ -56,10 +56,10 @@ begin
   end if;
   -- kills are bounded by what the game can actually spawn
   if new.kills > 90 * new.night + 10 then
-    raise exception 'implausible kills for night %', new.night;
+    raise exception 'implausible kills';
   end if;
   if new.score > public.max_plausible_score(new.night, new.kills) then
-    raise exception 'implausible score for night % / % kills', new.night, new.kills;
+    raise exception 'implausible score';
   end if;
   -- crude rate limit: one post per name per minute
   if exists (select 1 from public.scores s
