@@ -394,23 +394,22 @@ export function buildSprites(rnd) {
   SPR.b_parktowers = { c, ax: 20, ay: 61 };
 
   // Tears-McFarlane House (RIP the Secret Garden cafe): red-brick Colonial
-  // Revival — white columned porch, hip roof, dormers
+  // Revival — hip roof with dormers, white columned porch
   c = mkCanvas(46, 38); x = c.getContext('2d');
-  for (let r = 0; r < 44; r++) px(x, (2 + rnd() * 42) | 0, (14 + rnd() * 18) | 0, 2, 1, '#7d3a32');  // brick tone
-  px(x, 2, 14, 42, 1, '#a8a598');                                   // cornice
-  px(x, 2, 15, 42, 19, 'rgba(138,64,56,.0)');
-  x.fillStyle = '#8a4038'; x.fillRect(2, 15, 42, 19);
-  for (let r = 0; r < 60; r++) px(x, (2 + rnd() * 42) | 0, (15 + rnd() * 18) | 0, 2, 1, '#7d3a32');
-  // hip roof + dormers
-  for (let r = 0; r < 10; r++) px(x, 4 + r * 2 - r | 0, 4 + r, 46 - (4 + r * 2 - r) * 2 + 8 | 0, 1, '#3d453c');
-  px(x, 2, 13, 42, 2, '#2f362e');
+  for (let r = 0; r < 10; r++) {                                    // hip roof: ridge to eaves
+    const w = (12 + r * 3.4) | 0, rx = (23 - w / 2) | 0;
+    px(x, rx, 4 + r, w, 1, r % 3 === 2 ? '#353d34' : '#3d453c');
+  }
+  px(x, 17, 3, 12, 1, '#4a544a');                                   // ridge cap
+  px(x, 21, 0, 4, 5, '#6d5147'); px(x, 21, 0, 4, 1, '#4a3a32');     // chimney
+  px(x, 1, 13, 44, 2, '#2f362e');                                   // eaves
   px(x, 10, 7, 6, 6, '#5a625a'); px(x, 11, 8, 4, 3, '#20242c');     // dormer W
   px(x, 30, 7, 6, 6, '#5a625a'); px(x, 31, 8, 4, 3, '#20242c');     // dormer E
-  px(x, 21, 2, 4, 6, '#6d5147');                                    // chimney
-  // second-floor windows, white frames
+  px(x, 2, 15, 42, 1, '#a8a598');                                   // cornice
+  x.fillStyle = '#8a4038'; x.fillRect(2, 16, 42, 18);               // brick body
+  for (let r = 0; r < 60; r++) px(x, (2 + rnd() * 42) | 0, (16 + rnd() * 17) | 0, 2, 1, '#7d3a32');
   for (const wx of [6, 15, 26, 35]) { px(x, wx, 17, 5, 6, '#e8e4d4'); px(x, wx + 1, 18, 3, 4, '#28303c'); }
-  // porch: roof band + columns + door
-  px(x, 4, 25, 38, 2, '#e8e4d4');
+  px(x, 4, 25, 38, 2, '#e8e4d4');                                   // porch roof
   for (const cx2 of [5, 14, 27, 38]) px(x, cx2, 27, 2, 7, '#e8e4d4');
   px(x, 19, 26, 8, 8, '#3a2c22'); px(x, 21, 28, 4, 5, '#5a4232'); px(x, 24, 30, 1, 1, '#e5c04b');
   px(x, 2, 34, 42, 2, '#8d8a80'); px(x, 18, 36, 10, 2, '#9a978c');  // steps
