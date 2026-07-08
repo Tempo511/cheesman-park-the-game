@@ -190,6 +190,7 @@ function showDeath(ev) {
       + ev.lives + (ev.lives === 1 ? ' rescue' : ' rescues') + ' left.';
     $('respawn').style.display = '';
     $('newRun').style.display = 'none';
+    $('deathFollow').style.display = 'none';
     $('lbPost').style.display = 'none'; $('lbList').innerHTML = '';   // only finished runs post
   } else {                                         // out of rescues: run over
     $('deathTitle').textContent = 'Game Over';
@@ -199,6 +200,7 @@ function showDeath(ev) {
       : 'The rangers are out of patience — and you are out of rescues. Best score: ' + ev.bestScore + '.';
     $('respawn').style.display = 'none';
     $('newRun').style.display = '';
+    $('deathFollow').style.display = '';   // the run is over: thanks + follow
     if (leaderboardEnabled()) {                    // offer to post the finished run
       $('lbPost').style.display = 'flex';
       $('lbSubmit').disabled = false; $('lbSubmit').textContent = 'Post score';
