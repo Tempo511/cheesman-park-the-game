@@ -44,6 +44,47 @@ export function finishRecording(rec, state) {
   return { v: GAME_VERSION, seed: rec.seed, frames: rec.frames, actions: state.actionLog };
 }
 
+// --- transport packing ------------------------------------------------------
+// Raw recordings upload poorly: dt jitter (16ms/17ms alternating on real
+// displays) defeats the RLE, so marathon runs serialize to 5-15 MB of JSON —
+// and Supabase kills the connection somewhere past ~5 MB, which is why long
+// runs failed to post. The JSON is hugely repetitive, so gzip recovers what
+// the RLE lost (~20x). On the wire a packed recording is { gz: "<base64>" }
+// in the same jsonb column; a row without `gz` is a legacy raw recording.
+const B64_CHUNK = 0x8000;   // String.fromCharCode arg limit safety
+function bytesToB64(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i += B64_CHUNK) s += String.fromCharCode(...bytes.subarray(i, i + B64_CHUNK));
+  return btoa(s);
+}
+function b64ToBytes(b64) {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+// Pack a recording for upload. Fails soft: a score must never be lost to its
+// own evidence, so anything that can't be packed under maxChars (no
+// CompressionStream, still too big) returns null and the score posts bare.
+export async function packReplay(recording, maxChars = 3_500_000) {
+  if (!recording) return null;
+  try {
+    const json = JSON.stringify(recording);
+    if (typeof CompressionStream === 'undefined') return json.length <= maxChars ? recording : null;
+    const stream = new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'));
+    const gz = bytesToB64(new Uint8Array(await new Response(stream).arrayBuffer()));
+    return gz.length <= maxChars ? { gz } : null;
+  } catch (e) { return null; }
+}
+
+// Inverse of packReplay; accepts legacy raw recordings unchanged.
+export async function unpackReplay(stored) {
+  if (!stored || !stored.gz) return stored ?? null;
+  const stream = new Blob([b64ToBytes(stored.gz)]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return JSON.parse(await new Response(stream).text());
+}
+
 // Re-run a recording through the actual simulation and return what really
 // happened. The claimed score never enters into it.
 const ACTIONS = { buyWeapon, buyChile, chooseArchetype, setStyle, buyImprovement, buyHotdog };

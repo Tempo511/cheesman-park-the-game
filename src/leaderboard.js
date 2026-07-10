@@ -6,6 +6,7 @@
 // no problem, the game never notices.
 // ============================================================================
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { packReplay } from './replay.js';
 
 export const leaderboardEnabled = () => !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 
@@ -46,7 +47,10 @@ export async function submitScore(entry) {
         name: cleanName(entry.name),
         score: entry.score, night: entry.night, kills: entry.kills,
         archetype: entry.archetype, style: entry.style,
-        seed: entry.seed, version: entry.version, replay: entry.replay,
+        seed: entry.seed, version: entry.version,
+        // gzip the recording: marathon runs serialize to more MB of JSON than
+        // the API will accept, and the score matters more than its evidence
+        replay: await packReplay(entry.replay),
       }),
     });
     if (!res.ok) return { ok: false, error: 'rejected (' + res.status + ')' };

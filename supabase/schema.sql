@@ -9,6 +9,9 @@
 --  * One post per name per 60s (crude but effective rate limit).
 --  * `replay` stores the full input recording for v2 server-side replay
 --    verification (an Edge Function re-running the deterministic sim).
+--    Format: { gz: "<base64 gzip of the recording JSON>" } — packed by
+--    packReplay in src/replay.js; rows from before 2026-07-10 hold the raw
+--    recording object instead (no `gz` key). Null = run too big to pack.
 -- ============================================================================
 
 create table public.scores (

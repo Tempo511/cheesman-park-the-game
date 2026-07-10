@@ -714,7 +714,7 @@ ok('style persisted', dst.player.style === 'f');
 // --- 10b. record -> replay: the leaderboard anti-cheat guarantee ------------
 section('Replay recording');
 {
-  const { createRecorder, recordFrame, finishRecording, quantizeInputs, quantizeDtMs, replay } =
+  const { createRecorder, recordFrame, finishRecording, quantizeInputs, quantizeDtMs, replay, packReplay, unpackReplay } =
     await import('../src/replay.js');
   const live = createState(); live.started = true;
   const rec = createRecorder(live.worldSeed);
@@ -743,6 +743,28 @@ section('Replay recording');
   ok('recording is compact (RLE)', recording.frames.length < 3200 / 4);
   ok('the run reached night (combat was replayed too)', rep.night >= 1);
   ok('live run actually did something (score > 0)', live.parkScore > 0);
+
+  // pack -> unpack -> replay: the upload format must reproduce the run too
+  const packed = JSON.parse(JSON.stringify(await packReplay(recording)));   // must survive JSON (it's uploaded)
+  ok('packed recording is { gz } wire format', typeof packed.gz === 'string' && !packed.frames);
+  const unpacked = await unpackReplay(packed);
+  ok('pack/unpack roundtrips the recording exactly', JSON.stringify(unpacked) === JSON.stringify(recording));
+  ok('unpacked recording still replays to the same score', replay(unpacked).score === live.parkScore);
+  ok('legacy raw recordings pass through unpackReplay', await unpackReplay(recording) === recording);
+  ok('packReplay of nothing is null', await packReplay(null) === null);
+
+  // the failure this exists to fix: a marathon-sized recording (dt jitter
+  // defeats the RLE -> one entry per frame) must pack far below the API's
+  // ~5 MB kill zone, and an unpackable one must fail soft to null
+  const marathon = { v: recording.v, seed: recording.seed, actions: [],
+    frames: Array.from({ length: 400_000 }, (_, i) => [1, 16 + (i % 2), (i % 128) / 64 - 1, ((i * 7) % 128) / 64 - 1, i % 8]) };
+  const rawLen = JSON.stringify(marathon).length;
+  const packedMarathon = await packReplay(marathon);
+  const packedLen = JSON.stringify(packedMarathon).length;
+  ok('marathon recording is realistically huge raw (> 5 MB)', rawLen > 5_000_000);
+  ok('marathon recording packs under 3.5 MB cap', packedMarathon && packedLen <= 3_500_000);
+  ok('marathon pack roundtrips', JSON.stringify(await unpackReplay(packedMarathon)) === JSON.stringify(marathon));
+  ok('over-cap pack fails soft to null (score still postable)', await packReplay(marathon, 1000) === null);
 }
 
 // --- 11. soak: a full night with no crashes --------------------------------
