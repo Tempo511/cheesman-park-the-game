@@ -16,7 +16,7 @@ create table public.scores (
   created_at timestamptz not null default now(),
   name       text not null check (char_length(name) between 1 and 16),
   score      int  not null check (score >= 0),
-  night      int  not null check (night between 0 and 60),
+  night      int  not null check (night >= 0),
   kills      int  not null check (kills >= 0),
   archetype  text check (archetype is null or archetype in ('volleyball','tech','hippie','jogger','yogi')),
   style      text check (style is null or style in ('m','f')),
