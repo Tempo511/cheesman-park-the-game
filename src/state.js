@@ -163,7 +163,7 @@ function initEntities(state, rnd) {
       ],
       dogs:[
         {x:28*T,   y:25.5*T, col:'#b98d5e', dark:'#8a6540'},  // tan
-        {x:31*T,   y:26*T,   col:'#3f3a36', dark:'#2a2622'},  // black lab
+        {x:31*T,   y:26*T,   col:'#5a4234', dark:'#3e2c22'},  // chocolate lab (was black — Art is the only black dog)
         {x:29*T,   y:28*T,   col:'#e0c078', dark:'#b8944a'},  // golden
         {x:27*T,   y:27*T,   col:'#9a968e', dark:'#6f6b63'},  // grey
         {x:32*T,   y:25.5*T, col:'#c8743f', dark:'#9a5227'},  // ginger
