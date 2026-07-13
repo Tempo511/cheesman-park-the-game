@@ -52,6 +52,13 @@ function passable(state, px, py) {
   }
   return true;
 }
+// forced displacement (knockback, slams) obeys the same collision as walking —
+// the shove slides along a bank or wall instead of depositing the player
+// inside it (a hit at the pool's edge used to knock you onto water for good)
+function shove(state, p, dx, dy) {
+  if (passable(state, p.x + dx, p.y)) p.x += dx;
+  if (passable(state, p.x, p.y + dy)) p.y += dy;
+}
 function zPassable(state, px, py) {
   const tx = Math.floor(px / T), ty = Math.floor(py / T);
   if (!inMap(tx, ty)) return false;
@@ -63,10 +70,13 @@ function zPassable(state, px, py) {
 // --- player ----------------------------------------------------------------
 function movePlayer(state, inputs, dt, rng) {
   const p = state.player;
+  // self-heal: if the player is somehow inside a solid (any displacement bug,
+  // ever), collision must not also trap them there — let them walk free
+  const stuck = !passable(state, p.x, p.y);
   if (p.dashT > 0) {                       // Spike Dash: locked trajectory, i-frames, damages on contact
     const nx = p.x + p.dashVX * dt, ny = p.y + p.dashVY * dt;
-    if (passable(state, nx, p.y)) p.x = nx;
-    if (passable(state, p.x, ny)) p.y = ny;
+    if (stuck || passable(state, nx, p.y)) p.x = nx;
+    if (stuck || passable(state, p.x, ny)) p.y = ny;
     p.moving = true; p.phase += dt * 16;
     for (const e of state.enemies) {
       if (e.rise < 1 || e.dashHit) continue;
@@ -86,8 +96,8 @@ function movePlayer(state, inputs, dt, rng) {
     else p.dir = dy > 0 ? 'down' : 'up';
     const spd = p.speed * (perk(state).moveMult || 1) * (p.hasteT > 0 ? p.hasteMoveMult : 1);
     const nx = p.x + dx * spd * dt, ny = p.y + dy * spd * dt;
-    if (passable(state, nx, p.y)) p.x = nx;
-    if (passable(state, p.x, ny)) p.y = ny;
+    if (stuck || passable(state, nx, p.y)) p.x = nx;
+    if (stuck || passable(state, p.x, ny)) p.y = ny;
     p.phase += dt * 10;
   }
   if (p.boulderT > 0) {                    // Bolder Boulder: ram everything you touch
@@ -241,7 +251,7 @@ function updateEnemies(state, dt, rng) {
             player.hp -= sd; player.flashT = 0.25; player.hurtCd = 0.8;
             addFloat(state, player.x, player.y - 24, '-' + sd, '#c94f43');
             const kd = Math.max(1, pd);
-            player.x += (player.x - e.x) / kd * 22; player.y += ((player.y - 4) - e.y) / kd * 22;
+            shove(state, player, (player.x - e.x) / kd * 22, ((player.y - 4) - e.y) / kd * 22);
             if (player.hp <= 0) die(state);
           }
           for (let k = 0; k < ty.summon; k++) makeEnemy(state, 'zombie', e.x + (rng() * 90 - 45), e.y + (rng() * 70 - 35), rng);
@@ -295,7 +305,7 @@ function updateEnemies(state, dt, rng) {
       player.hp -= dmg;
       addFloat(state, player.x, player.y - 24, '-' + dmg, '#c94f43');
       const kd = Math.max(1, d);
-      player.x -= dx / kd * 10; player.y -= dy / kd * 10;
+      shove(state, player, -dx / kd * 10, -dy / kd * 10);
       if (ty.lifesteal) e.hp = Math.min(e.maxHp, e.hp + Math.round(e.dmg * 0.5)); // vampire drain
       if (player.hp <= 0) die(state);
     }

@@ -5,7 +5,7 @@
 
 // Bump whenever a change affects the SIMULATION (balance, mechanics, scoring):
 // leaderboard replays are only valid against the version that recorded them.
-export const GAME_VERSION = '1.2.2';
+export const GAME_VERSION = '1.2.3';   // knockback obeys collision; stuck players self-heal
 
 export const T = 16;                 // tile size in pixels
 export const MW = 72, MH = 92;       // map width/height in tiles

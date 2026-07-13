@@ -767,6 +767,39 @@ section('Replay recording');
   ok('over-cap pack fails soft to null (score still postable)', await packReplay(marathon, 1000) === null);
 }
 
+// --- 10c. knockback vs the pool: nobody drowns in Cheesman -----------------
+section('Knockback collision');
+{
+  const G_WATER = 6;
+  const onWater = (st) => st.ground[gi(Math.floor(st.player.x / T), Math.floor(st.player.y / T))] === G_WATER;
+  // player on the pool's east bank (water spans tiles 30-44 x 43-49), zombie
+  // attacking from the east: every contact hit shoves the player pool-ward
+  const kb = createState(); kb.started = true;
+  kb.phaseT = 0.001; step(kb, NO_INPUT, 1 / 60);      // nightfall (contact damage is live)
+  kb.enemies.length = 0;
+  kb.player.x = 45.6 * T; kb.player.y = 46 * T;
+  kb.player.hp = kb.player.maxHp = 10000;             // survive the barrage
+  const biter = { kind: 'zombie', x: kb.player.x + 8, y: kb.player.y, hp: 1e6, maxHp: 1e6, spd: 0, dmg: 1,
+    xp: 0, coin: 0, rise: 1, phase: 0, hitT: 0, kx: 0, ky: 0, dir: 'left' };
+  kb.enemies.push(biter);
+  let wet = false;
+  for (let i = 0; i < 600; i++) {                     // ~10s of repeated shoves at the bank
+    biter.x = kb.player.x + 8; biter.y = kb.player.y; // stay glued to the east side
+    kb.player.hurtCd = 0;                             // every frame hits
+    step(kb, NO_INPUT, 1 / 60);
+    if (onWater(kb)) { wet = true; break; }
+  }
+  ok('contact knockback never shoves the player onto water', !wet);
+
+  // and if a player IS somehow inside the pool (old saves, future bugs),
+  // movement self-heals instead of trapping them
+  const st = createState(); st.started = true;
+  st.player.x = 40 * T; st.player.y = 46 * T;         // dead center of the pool
+  ok('(setup) player is on water', onWater(st));
+  for (let i = 0; i < 600 && onWater(st); i++) step(st, { move: { x: 1, y: 0 }, attack: false }, 1 / 60);
+  ok('a stuck player can walk back out', !onWater(st));
+}
+
 // --- 11. soak: a full night with no crashes --------------------------------
 section('Soak test');
 let crashed = null;
